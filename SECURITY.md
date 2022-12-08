@@ -11,11 +11,11 @@ as well as to third-party distributions.
 Short version: please report security issues by emailing
 [security@beeware.org](mailto:security@beeware.org).
 
-Most normal bugs in Django are reported to our public Github issue trackers,
+Most normal bugs in BeeWare are reported to our public Github issue trackers,
 but due to the sensitive nature of security issues, we ask that they not be
 publicly reported in this fashion.
 
-Instead, if you believe you’ve found something in Django which has security
+Instead, if you believe you’ve found something in BeeWare which has security
 implications, please send a description of the issue via email to
 [security@beeware.org](mailto:security@beeware.org). Mail sent to that address
 reaches the security team.

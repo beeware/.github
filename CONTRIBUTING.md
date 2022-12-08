@@ -68,6 +68,6 @@ turned into bug reports or patches.
 
 If you've got your own idea for something, or if you don't see any tickets, or
 you want to be mentored on a ticket, or you aren't sure how to proceed, contact
-the project maintainers on Twitter or Gitter. The project maintainers love
+the project maintainers on Twitter or Discord. The project maintainers love
 collaborating, especially with new contributors, and will gladly answer any
 questions or walk you through any problems you may encounter.
