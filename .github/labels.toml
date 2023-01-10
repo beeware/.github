@@ -73,7 +73,7 @@ description = "Is this your first time contributing? This could be a good place 
 
 [more-details]
 color = "d876e3"
-name = "more details"
+name = "awaiting details"
 description = "More details are needed before the issue can be triaged."
 
 [not-quite-right]
