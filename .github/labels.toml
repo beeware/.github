@@ -13,13 +13,13 @@
 # 4. cd into the .github folder where the labels.toml file is stored
 # 5. Perform a dry run for a specific repo (say beeware/toga):
 #
-#      labels sync -n -f -o beeware -r toga
+#      labels sync -n -o beeware -r toga
 #
 #    Audit the changes that will be made
 #
 # 6. Run the update:
 #
-#      labels sync -n -f -o beeware -r toga
+#      labels sync -o beeware -r toga
 #
 
 ###########################################################################
