@@ -41,6 +41,14 @@ name = "documentation"
 description = "An improvement required in the project's documentation."
 
 ###########################################################################
+# Automated processes
+###########################################################################
+[preview]
+color = "d4c5f9"
+name = "preview"
+description = "Approved for an automated preview"
+
+###########################################################################
 # Triage results
 ###########################################################################
 [duplicate]
