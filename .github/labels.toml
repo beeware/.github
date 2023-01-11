@@ -66,17 +66,17 @@ color = "cfd3d7"
 name = "wontfix"
 description = "The problem described is real, but we've decided against fixing it."
 
-[first-timers-only]
+["good first issue"]
 color = "7057ff"
 name = "good first issue"
 description = "Is this your first time contributing? This could be a good place to start!"
 
-[more-details]
+["awaiting details"]
 color = "d876e3"
 name = "awaiting details"
 description = "More details are needed before the issue can be triaged."
 
-[not-quite-right]
+["not quite right"]
 color = "d876e3"
 name = "not quite right"
 description = "The idea or PR has been reviewed, but more work is needed."
