@@ -1,84 +1,115 @@
-[android]
-color = "25d4dd"
-name = "android"
-description = "The issue relates to Android mobile support."
+# These labels are derived from the default Github names and colors,
+# augmented with:
+#   * More details for triage states
+#   * Tags for platform specific issues
+#
+# To sync these labels with a repository
+# 1. Generate a Github Access Token
+# 2. Export a LABELS_USERNAME and LABELS_TOKEN environment variable
+# 3. Install `labels` from PyPI:
+#
+#      pip install labels
+#
+# 4. cd into the .github folder where the labels.toml file is stored
+# 5. Perform a dry run for a specific repo (say beeware/toga):
+#
+#      labels sync -n -o beeware -r toga
+#
+#    Audit the changes that will be made
+#
+# 6. Run the update:
+#
+#      labels sync -o beeware -r toga
+#
 
+###########################################################################
+# General categories
+###########################################################################
 [bug]
-color = "dd2525"
+color = "d73a4a"
 name = "bug"
-description = "A confirmed crash or error in behavior."
+description = "A crash or error in behavior."
+
+[enhancement]
+color = "a2eeef"
+name = "enhancement"
+description = "New features, or improvements to existing features."
 
 [documentation]
 color = "8125dd"
 name = "documentation"
-description = "The issue relates to documentation."
+description = "An improvement required in the project's documentation."
 
+###########################################################################
+# Automated processes
+###########################################################################
+[preview]
+color = "d4c5f9"
+name = "preview"
+description = "Approved for an automated preview"
+
+###########################################################################
+# Triage results
+###########################################################################
 [duplicate]
-color = "333333"
+color = "cfd3d7"
 name = "duplicate"
 description = "A duplicate of an existing ticket."
 
-[enhancement]
-color = "2525dd"
-name = "enhancement"
-description = "New features, or improvements on existing features."
-
-[first-timers-only]
-color = "25dd25"
-name = "first-timers-only"
-description = "Is this your first time contributing? This could be a good place to start!"
-
-[iOS]
-color = "25d4dd"
-name = "iOS"
-description = "The issue relates to Apple iOS mobile support."
-
 [invalid]
-color = "333333"
+color = "cfd3d7"
 name = "invalid"
 description = "The issue is mistaken or incorrect in some way."
 
+[wontfix]
+color = "cfd3d7"
+name = "wontfix"
+description = "The problem described is real, but we've decided against fixing it."
+
+[first-timers-only]
+color = "7057ff"
+name = "good first issue"
+description = "Is this your first time contributing? This could be a good place to start!"
+
+[more-details]
+color = "d876e3"
+name = "awaiting details"
+description = "More details are needed before the issue can be triaged."
+
+[not-quite-right]
+color = "d876e3"
+name = "not quite right"
+description = "The idea or PR has been reviewed, but more work is needed."
+
+###########################################################################
+# Platforms
+###########################################################################
+[android]
+color = "2525dd"
+name = "android"
+description = "The issue relates to Android mobile support."
+
+[iOS]
+color = "2525dd"
+name = "iOS"
+description = "The issue relates to Apple iOS mobile support."
+
 [linux]
-color = "25d4dd"
+color = "2525dd"
 name = "linux"
 description = "The issue relates Linux support."
 
 [macOS]
-color = "25d4dd"
+color = "2525dd"
 name = "macOS"
 description = "The issue relates to Apple macOS support."
 
-[more-details]
-color = "f975e6"
-name = "more-details"
-description = "More details are needed before the question can be answered."
-
-[not-quite-right]
-color = "f975e6"
-name = "not-quite-right"
-description = "The idea or PR has been reviewed, but more work is needed."
-
-[up-for-grabs]
-color = "25dd25"
-name = "up-for-grabs"
-description = "Help wanted!"
-
 [web]
-color = "25d4dd"
+color = "2525dd"
 name = "web"
 description = "The issue relates to supporting the web as a platform."
 
 [windows]
-color = "25d4dd"
+color = "2525dd"
 name = "windows"
 description = "The issue relates to Microsoft Windows support."
-
-[wontfix]
-color = "333333"
-name = "wontfix"
-description = "The problem described is real, but we've decided against fixing it."
-
-[work-in-progress]
-color = "f975e6"
-name = "work-in-progress"
-description = "The PR is a work in progress"
