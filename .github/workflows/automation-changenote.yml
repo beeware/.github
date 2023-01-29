@@ -1,0 +1,82 @@
+name: Automation Change Note
+
+#######
+# Adds a changenote to PRs from automation such as Dependabot.
+#######
+
+on:
+  workflow_call:
+
+permissions:
+  pull-requests: write
+
+env:
+  COMMIT_MESSAGE: "Add changenote."
+
+jobs:
+  changenote:
+    name: Automated Change Note
+    if: github.repository != 'beeware/.github'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.BRUTUS_PAT_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.email "brutus@beeware.org"
+          git config user.name "Brutus (robot)"
+
+      - name: Change Note Details
+        id: changenote
+        run: |
+          # If the last commit was a changenote commit, then a changenote commit is not needed on this run
+          if [[ '${{ github.event.head_commit.message }}' == "${COMMIT_MESSAGE}"* ]]; then
+            echo "needed=false" >> ${GITHUB_OUTPUT}
+          else
+            echo "needed=true" >> ${GITHUB_OUTPUT}
+            
+            # Generate a filename for the changenote based on the PR for this commit
+            API_URL="${{ github.api_url }}/repos/${{ github.repository }}/commits/${{ github.event.head_commit.id }}/pulls"
+            PR_NUM=$(curl -s -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.[].number')
+            echo "filename=./changes/${PR_NUM}.misc.rst" >> ${GITHUB_OUTPUT}
+          fi
+
+      - name: Create Dependabot Change Note
+        id: dependabot
+        if: startsWith(github.ref, 'refs/heads/dependabot/') && (steps.changenote.outputs.needed == 'true')
+        run: |
+          # Create change note from first line of dependabot commit
+          NEWS=$(printf "%s" "${{ github.event.head_commit.message }}" | head -n1 | sed -e 's/Bump/Updated/')
+          printf "%s.\n" "${NEWS}" > "${{ steps.changenote.outputs.filename }}"
+
+          git add "${{ steps.changenote.outputs.filename }}"
+          echo "skip=true" >> ${GITHUB_OUTPUT}
+
+      - name: Create pre-commit Autoupdate Change Note
+        id: pre-commit
+        if: github.ref == 'refs/heads/autoupdates/pre-commit' && (steps.changenote.outputs.needed == 'true')
+        run: |
+          printf 'Updated hooks for ``pre-commit`` to the latest version.\n' > "${{ steps.changenote.outputs.filename }}"
+
+          git add "${{ steps.changenote.outputs.filename }}"
+
+      - name: Commit and Push changenote
+        if: steps.changenote.outputs.needed == 'true'
+        run: |
+          if [[ "${{ steps.dependabot.outputs.skip }}" == "true" ]]; then
+            # "dependabot skip" tells Dependabot to continue rebasing this branch despite foreign commits
+            COMMIT_MESSAGE="${COMMIT_MESSAGE} [dependabot skip]"
+          fi
+          
+          # Only attempt to push if files changed; otherwise, the empty push fails the entire job.
+          if [[ $(git status --porcelain) ]]; then
+            echo "Pushing commit..."
+            git commit -m "${COMMIT_MESSAGE}"
+            git push origin
+          fi
