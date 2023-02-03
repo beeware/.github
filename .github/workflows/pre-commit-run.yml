@@ -1,0 +1,58 @@
+name: Pre-commit Checks
+
+#######
+# Runs the repository's pre-commit hooks.
+#######
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use; defaults to latest Python release.'
+        default: '3.X'
+        type: string
+      repository:
+        description: 'GitHub repository to checkout; defaults to repo running this workflow.'
+        default: ${{ github.repository }}
+        type: string
+      pre-commit-source:
+        description: 'The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo''s pinned version.'
+        default: '.[dev]'
+        type: string
+      runner-os:
+        description: 'Runner OS to use to run tox; defaults to ubuntu-latest'
+        default: 'ubuntu-latest'
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pre-commit:
+    name: Pre-commit Checks
+    runs-on: ${{ inputs.runner-os }}
+    timeout-minutes: 10
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3.3.0
+      with:
+        repository: ${{ inputs.repository }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Cache pre-commit
+      uses: actions/cache@v3.2.4
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+    - name: Install pre-commit
+      run: python -m pip install ${{ inputs.pre-commit-source }}
+
+    - name: Run pre-commit
+      run: pre-commit run --show-diff-on-failure --color=always --all-files

@@ -8,11 +8,11 @@ on:
   workflow_call:
     inputs:
       pre-commit-source:
-        description: "The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo's pinned version."
+        description: 'The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo''s pinned version.'
         default: '.[dev]'
         type: string
       create-changenote:
-        description: "If 'true', creates a misc changenote in the './changes' directory."
+        description: 'Defaults "true" to create a misc changenote in the "./changes" directory.'
         default: true
         type: boolean
 
@@ -20,8 +20,12 @@ permissions:
   pull-requests: write
 
 env:
-  BRANCH_NAME: "autoupdates/pre-commit"
-  CHANGENOTE_DIR: "./changes"
+  BRANCH_NAME: 'autoupdates/pre-commit'
+  CHANGENOTE_DIR: './changes'
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   pre-commit-update:
@@ -38,8 +42,8 @@ jobs:
 
       - name: Configure git
         run: |
-          git config user.email "brutus@beeware.org"
-          git config user.name "Brutus (robot)"
+          git config user.email 'brutus@beeware.org'
+          git config user.name 'Brutus (robot)'
 
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
@@ -63,9 +67,9 @@ jobs:
         id: pr
         run: |
           if [[ $(git status --porcelain) ]]; then
-            echo "needed=true" >> ${GITHUB_OUTPUT}
+            echo 'needed=true' >> ${GITHUB_OUTPUT}
           else
-            echo "needed=false" >> ${GITHUB_OUTPUT}
+            echo 'needed=false' >> ${GITHUB_OUTPUT}
           fi
 
       - name: Create Pull Request
@@ -74,13 +78,13 @@ jobs:
         uses: peter-evans/create-pull-request@v4.2.3
         with:
           token: ${{ secrets.BRUTUS_PAT_TOKEN }}
-          title: "Auto-update `pre-commit` hooks"
+          title: 'Auto-update `pre-commit` hooks'
           branch: ${{ env.BRANCH_NAME }}
-          commit-message: "Auto-updated `pre-commit` hooks."
-          committer: "Brutus (robot) <brutus@beeware.org>"
-          author: "Brutus (robot) <brutus@beeware.org>"
-          body: "Updated `pre-commit` hooks to their latest versions and ran updated hooks against the repo."
-          labels: "dependencies"
+          commit-message: 'Auto-updated `pre-commit` hooks.'
+          committer: 'Brutus (robot) <brutus@beeware.org>'
+          author: 'Brutus (robot) <brutus@beeware.org>'
+          body: 'Updated `pre-commit` hooks to their latest versions and ran updated hooks against the repo.'
+          labels: 'dependencies'
 
       - name: Add changenote
         if: (inputs.create-changenote == true) && (steps.created-pr.outputs.pull-request-number != '')
@@ -88,9 +92,9 @@ jobs:
           git fetch origin
           git checkout ${{ env.BRANCH_NAME }}
 
-          FILENAME="${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.rst"
-          printf 'Updated ``pre-commit`` hooks to the latest version.\n' > "${FILENAME}" 
+          FILENAME='${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.rst'
+          printf 'Updated ``pre-commit`` hooks to the latest version.\n' > '${FILENAME}' 
 
-          git add "${FILENAME}"          
-          git commit -m "Add changenote."
+          git add '${FILENAME}'          
+          git commit -m 'Add changenote.'
           git push --set-upstream origin ${{ env.BRANCH_NAME }}

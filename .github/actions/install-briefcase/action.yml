@@ -1,0 +1,101 @@
+name: Install Briefcase
+description: Installs a version of Briefcase appropriate for the context.
+
+inputs:
+  briefcase-url:
+    description: 'URL to Briefcase git repository.'
+    default: 'https://github.com/beeware/briefcase.git'
+  briefcase-default-branch:
+    description: 'Briefcase''s default branch.'
+    default: 'main'
+  briefcase-override-version:
+    description: 'Version of Briefcase to install without it being derived; e.g. v0.3.12'
+    required: false
+  testing-pr-ref:
+    description: 'Override value for github.base_ref; only for testing.'
+    required: false
+  testing-ref-name:
+    description: 'Override value for github.ref_name; only for testing.'
+    required: false
+
+outputs:
+  installed-version:
+    value: ${{ steps.briefcase.outputs.version }}
+    description: 'The version or branch of Briefcase that was installed.'
+
+runs:
+  using: composite
+  steps:
+
+    - name: Derive Target Briefcase Version
+      id: briefcase
+      shell: bash
+      run: |
+        # Branch or tag that triggered the workflow.
+        # For example, when github.event is:
+        #  push:         refs/heads/<branch_name>
+        #                refs/tags/<tag_name>
+        #  pull_request: refs/pull/<pr_number>/merge
+        #  release:      refs/tags/<tag_name>
+        TRIGGER_REF="${{ inputs.briefcase-override-version }}"
+        TRIGGER_REF="${TRIGGER_REF:-${{ github.ref }}}"
+
+        # PR target branch (only available for pull requests)
+        PR_TARGET_REF="${{ inputs.testing-pr-ref }}"
+        PR_TARGET_REF="${PR_TARGET_REF:-${{ github.base_ref }}}"
+
+        REF_NAME="${{ inputs.testing-ref-name }}"
+        REF_NAME="${REF_NAME:-${{ github.ref_name }}}"
+        
+        echo "::group::Workflow Trigger Details"
+        echo "Event:    ${{ github.event_name }}"
+        echo "Ref:      ${{ github.ref }}"
+        echo "Base Ref: ${{ github.base_ref }}"
+        echo "Head Ref: ${{ github.head_ref }}"
+        echo "Ref Name: ${{ github.ref_name }}"
+        echo "::endgroup::"
+
+        case "${TRIGGER_REF}" in
+
+          # Use override version
+          v* | main | ${{ inputs.briefcase-default-branch }} )
+            TARGET_VERSION="${TRIGGER_REF}"
+            ;;
+          
+          # Not a PR; use branch or tag name
+          refs/tags/* | refs/heads/* )
+            TARGET_VERSION="${REF_NAME}"
+            ;;
+          
+          # Is a PR; use target branch name
+          refs/pull/* )
+            TARGET_VERSION="${PR_TARGET_REF/refs\/heads\//}"
+            ;;
+        
+          # Default to 'main'
+          * )
+            echo "::warning::Could not determine Briefcase version from '${TRIGGER_REF}'; defaulting to '${{ inputs.briefcase-default-branch }}'."
+            TARGET_VERSION="${{ inputs.briefcase-default-branch }}"
+            ;;
+
+        esac
+
+        echo "Derived Briefcase version: ${TARGET_VERSION}"
+        
+        # Use Briefcase's default branch 
+        if [[ "${TARGET_VERSION}" == "${{ inputs.briefcase-default-branch }}" ]]; then
+          echo "version=${TARGET_VERSION}" >> ${GITHUB_OUTPUT}
+        
+        # Use version if it is a valid Briefcase tag
+        elif [[ $(git ls-remote --tags "${{ inputs.briefcase-url }}" "${TARGET_VERSION}") ]]; then
+          echo "version=${TARGET_VERSION}" >> ${GITHUB_OUTPUT}
+        
+        # Default to Briefcase's default branch
+        else
+          echo "::warning::Unknown Briefcase version: '${TARGET_VERSION}'; defaulting to '${{ inputs.briefcase-default-branch }}'."
+          echo "version=${{ inputs.briefcase-default-branch }}" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: Install Briefcase
+      shell: bash
+      run: python -m pip install -U git+${{ inputs.briefcase-url }}@${{ steps.briefcase.outputs.version }}
