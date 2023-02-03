@@ -9,7 +9,19 @@ inputs:
     description: "Briefcase's default branch."
     default: "main"
   briefcase-override-version:
-    description: "Override version l"
+    description: "Version of Briefcase to install without it being derived; e.g. v0.3.12"
+    required: false
+  testing-pr-ref:
+    description: "Override value for github.base_ref; only for testing."
+    required: false
+  testing-ref-name:
+    description: "Override value for github.ref_name; only for testing."
+    required: false
+
+outputs:
+  installed-version:
+    value: ${{ steps.briefcase.outputs.version }}
+    description: "The version of Briefcase that was installed."
 
 runs:
   using: composite
@@ -25,10 +37,15 @@ runs:
         #                refs/tags/<tag_name>
         #  pull_request: refs/pull/<pr_number>/merge
         #  release:      refs/tags/<tag_name>
-        TRIGGER_REF="${{ github.ref }}"
+        TRIGGER_REF="${{ inputs.briefcase-override-version }}"
+        TRIGGER_REF="${TRIGGER_REF:-${{ github.ref }}}"
 
         # PR target branch (only available for pull requests)
-        PR_TARGET_REF="${{ github.base_ref }}"
+        PR_TARGET_REF="${{ inputs.testing-pr-ref }}"
+        PR_TARGET_REF="${PR_TARGET_REF:-${{ github.base_ref }}}"
+
+        REF_NAME="${{ inputs.testing-ref-name }}"
+        REF_NAME="${REF_NAME:-${{ github.ref_name }}}"
         
         echo "::group::Workflow Trigger Details"
         echo "Event:    ${{ github.event_name }}"
@@ -39,10 +56,15 @@ runs:
         echo "::endgroup::"
 
         case "${TRIGGER_REF}" in
+
+          # Use override version
+          v* | main | ${{ inputs.briefcase-default-branch }} )
+            TARGET_VERSION="${TRIGGER_REF}"
+            ;;
           
           # Not a PR; use branch or tag name
           refs/tags/* | refs/heads/* )
-            TARGET_VERSION="${{ github.ref_name	}}"
+            TARGET_VERSION="${REF_NAME}"
             ;;
         
           # Is a PR; use target branch name

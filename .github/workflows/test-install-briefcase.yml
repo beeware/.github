@@ -1,0 +1,82 @@
+name: Test Action install-briefcase
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-install-briefcase:
+    name: Install Briefcase
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        version:
+        - "v0.3.12"
+        - "main"
+        - "40.0.5"
+        - "refs/tags/v0.3.11"
+        - "refs/tags/v40.0.5"
+        - "refs/heads/v0.3.10"
+        - "refs/heads/v40.0.5"
+        - "refs/pull/v0.3.9"
+        - "refs/pull/v40.0.5"
+        include:
+        - version: "v0.3.12"
+          expected: "v0.3.12"
+        - version: "main"
+          expected: "main"
+        - version: "40.0.5"
+          expected: "main"
+        - version: "refs/tags/v0.3.11"
+          testing-ref-name: "v0.3.11"
+          expected: "v0.3.11"
+        - version: "refs/tags/v40.0.5"
+          testing-ref-name: "v40.0.5"
+          expected: "main"
+        - version: "refs/heads/v0.3.10"
+          testing-ref-name: "v0.3.10"
+          expected: "v0.3.10"
+        - version: "refs/heads/v40.0.5"
+          testing-ref-name: "v40.0.5"
+          expected: "main"
+        - version: "refs/pull/v0.3.9"
+          testing-pr-ref: "refs/heads/v0.3.9"
+          expected: "v0.3.9"
+        - version: "refs/pull/v0.3.9"
+          testing-pr-ref: "v0.3.9"
+          expected: "v0.3.9"
+        - version: "refs/pull/v40.0.5"
+          testing-pr-ref: "v40.0.5"
+          expected: "main"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: 3.X
+
+    - name: Install Briefcase
+      id: briefcase
+      uses: ./.github/actions/install-briefcase
+      with:
+        briefcase-override-version: "${{ matrix.version }}"
+        testing-pr-ref: "${{ matrix.testing-pr-ref }}"
+        testing-ref-name: "${{ matrix.testing-ref-name }}"
+
+    - name: Test Briefcase @ ${{ matrix.version }}
+      run: |
+        if [[ "${{ matrix.expected }}" != "${{ steps.briefcase.outputs.installed-version }}" ]]; then
+          echo "installed-version: ${{ steps.briefcase.outputs.installed-version }}"
+          echo "Found Briefcase version v$(briefcase -V)"
+          echo "Expected Briefcase version ${{ matrix.expected }}"
+          exit 1
+        fi
