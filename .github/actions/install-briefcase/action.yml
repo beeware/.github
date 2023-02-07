@@ -3,25 +3,25 @@ description: Installs a version of Briefcase appropriate for the context.
 
 inputs:
   briefcase-url:
-    description: 'URL to Briefcase git repository.'
-    default: 'https://github.com/beeware/briefcase.git'
+    description: "URL to Briefcase git repository."
+    default: "https://github.com/beeware/briefcase.git"
   briefcase-default-branch:
-    description: 'Briefcase''s default branch.'
-    default: 'main'
+    description: "Briefcase's default branch."
+    default: "main"
   briefcase-override-version:
-    description: 'Version of Briefcase to install without it being derived; e.g. v0.3.12'
+    description: "Version of Briefcase to install without it being derived; e.g. v0.3.12"
     required: false
   testing-pr-ref:
-    description: 'Override value for github.base_ref; only for testing.'
+    description: "Override value for github.base_ref; only for testing."
     required: false
   testing-ref-name:
-    description: 'Override value for github.ref_name; only for testing.'
+    description: "Override value for github.ref_name; only for testing."
     required: false
 
 outputs:
   installed-version:
     value: ${{ steps.briefcase.outputs.version }}
-    description: 'The version or branch of Briefcase that was installed.'
+    description: "The version or branch of Briefcase that was installed."
 
 runs:
   using: composite

@@ -8,20 +8,20 @@ on:
   workflow_call:
     inputs:
       python-version:
-        description: 'Python version to use; defaults to latest Python release.'
-        default: '3.X'
+        description: "Python version to use; defaults to latest Python release."
+        default: "3.X"
         type: string
       repository:
-        description: 'GitHub repository to checkout; defaults to repo running this workflow.'
+        description: "GitHub repository to checkout; defaults to repo running this workflow."
         default: ${{ github.repository }}
         type: string
       tox-source:
-        description: 'The arguments for `pip install` to install tox; use ./path/to/package[dev] for the repo''s pinned version.'
-        default: '.[dev]'
+        description: "The arguments for `pip install` to install tox; use ./path/to/package[dev] for the repo's pinned version."
+        default: ".[dev]"
         type: string
       runner-os:
-        description: 'Runner OS to use to run tox; defaults to ubuntu-latest'
-        default: 'ubuntu-latest'
+        description: "Runner OS to use to run tox; defaults to ubuntu-latest"
+        default: "ubuntu-latest"
         type: string
 
 defaults:
@@ -52,8 +52,10 @@ jobs:
       uses: actions/setup-python@v4.5.0
       with:
         python-version: ${{ inputs.python-version }}
-        cache: 'pip'
-        cache-dependency-path: '**/setup.cfg'
+        cache: "pip"
+        cache-dependency-path: |
+          **/setup.cfg
+          **/pyproject.toml
 
     - name: Install towncrier
       run: python -m pip install ${{ inputs.tox-source }}

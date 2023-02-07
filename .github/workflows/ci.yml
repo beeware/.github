@@ -19,43 +19,43 @@ jobs:
       fail-fast: false
       matrix:
         version:
-        - 'v0.3.12'
-        - 'main'
-        - '40.0.5'
-        - 'refs/tags/v0.3.11'
-        - 'refs/tags/v40.0.5'
-        - 'refs/heads/v0.3.10'
-        - 'refs/heads/v40.0.5'
-        - 'refs/pull/v0.3.9'
-        - 'refs/pull/v40.0.5'
+        - "v0.3.12"
+        - "main"
+        - "40.0.5"
+        - "refs/tags/v0.3.11"
+        - "refs/tags/v40.0.5"
+        - "refs/heads/v0.3.10"
+        - "refs/heads/v40.0.5"
+        - "refs/pull/v0.3.9"
+        - "refs/pull/v40.0.5"
         include:
-        - version: 'v0.3.12'
-          expected: 'v0.3.12'
-        - version: 'main'
-          expected: 'main'
-        - version: '40.0.5'
-          expected: 'main'
-        - version: 'refs/tags/v0.3.11'
-          testing-ref-name: 'v0.3.11'
-          expected: 'v0.3.11'
-        - version: 'refs/tags/v40.0.5'
-          testing-ref-name: 'v40.0.5'
-          expected: 'main'
-        - version: 'refs/heads/v0.3.10'
-          testing-ref-name: 'v0.3.10'
-          expected: 'v0.3.10'
-        - version: 'refs/heads/v40.0.5'
-          testing-ref-name: 'v40.0.5'
-          expected: 'main'
-        - version: 'refs/pull/v0.3.9'
-          testing-pr-ref: 'refs/heads/v0.3.9'
-          expected: 'v0.3.9'
-        - version: 'refs/pull/v0.3.9'
-          testing-pr-ref: 'v0.3.9'
-          expected: 'v0.3.9'
-        - version: 'refs/pull/v40.0.5'
-          testing-pr-ref: 'v40.0.5'
-          expected: 'main'
+        - version: "v0.3.12"
+          expected: "v0.3.12"
+        - version: "main"
+          expected: "main"
+        - version: "40.0.5"
+          expected: "main"
+        - version: "refs/tags/v0.3.11"
+          testing-ref-name: "v0.3.11"
+          expected: "v0.3.11"
+        - version: "refs/tags/v40.0.5"
+          testing-ref-name: "v40.0.5"
+          expected: "main"
+        - version: "refs/heads/v0.3.10"
+          testing-ref-name: "v0.3.10"
+          expected: "v0.3.10"
+        - version: "refs/heads/v40.0.5"
+          testing-ref-name: "v40.0.5"
+          expected: "main"
+        - version: "refs/pull/v0.3.9"
+          testing-pr-ref: "refs/heads/v0.3.9"
+          expected: "v0.3.9"
+        - version: "refs/pull/v0.3.9"
+          testing-pr-ref: "v0.3.9"
+          expected: "v0.3.9"
+        - version: "refs/pull/v40.0.5"
+          testing-pr-ref: "v40.0.5"
+          expected: "main"
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -63,7 +63,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4.5.0
       with:
-        python-version: '3.X'
+        python-version: "3.X"
 
     - name: Install Briefcase
       id: briefcase
@@ -88,7 +88,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10', '3.11' ]
+        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
     steps:
     - uses: actions/checkout@v3
 
@@ -122,19 +122,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ 'briefcase', 'gbulb', 'Python-support-testbed', 'rubicon-objc', 'toga' ]
+        repo: [ "briefcase", "gbulb", "Python-support-testbed", "rubicon-objc", "toga" ]
         include:
-        - pre-commit-source: '.[dev]'
+        - pre-commit-source: ".[dev]"
         - repo: gbulb
-          pre-commit-source: 'pre-commit'
+          pre-commit-source: "pre-commit"
         - repo: Python-support-testbed
-          pre-commit-source: 'pre-commit'
+          pre-commit-source: "pre-commit"
         - repo: toga
-          pre-commit-source: './core[dev]'
+          pre-commit-source: "./core[dev]"
 
   test-package-python:
     name: Python Package
-    uses: ./.github/workflows/package-python.yml
+    uses: ./.github/workflows/python-package-create.yml
     with:
       repository: beeware/${{ matrix.repo }}
       tox-source: ${{ matrix.tox-source }}
@@ -143,38 +143,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ 'briefcase', 'gbulb', 'rubicon-objc', 'toga' ]
+        repo: [ "briefcase", "gbulb", "rubicon-objc", "toga" ]
         include:
-        - tox-source: '.[dev]'
-        - dist-path: 'dist'
-        - repo: 'gbulb'
-          tox-source: 'tox'
-          dist-path: 'dist'
-        - repo: 'toga'
-          tox-source: './core[dev]'
-          dist-path: '*/dist/*'
-          build-subdir: 'core'
+        - tox-source: ".[dev]"
+        - dist-path: "dist"
+        - repo: "gbulb"
+          tox-source: "tox"
+          dist-path: "dist"
+        - repo: "toga"
+          tox-source: "./core[dev]"
+          dist-path: "*/dist/*"
+          build-subdir: "core"
 
   test-verify-apps-briefcase:
     name: Verify Apps
     needs: test-package-python
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
       matrix:
-        framework: [ 'toga', 'pyside2', 'pyside6', 'ppb' ]
-        runner-os: [ 'macos-latest', 'windows-latest', 'ubuntu-latest' ]
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-android-templates:
     name: Android App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase-android-gradle-template
       runner-os: ${{ matrix.runner-os }}
       target-platform: android
@@ -183,13 +183,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner-os: [ 'macos-latest', 'windows-latest', 'ubuntu-latest' ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-iOS-templates:
     name: iOS App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase-iOS-xcode-template
       runner-os: macos-latest
       target-platform: iOS
@@ -198,9 +198,9 @@ jobs:
 
   test-verify-apps-appimage-templates:
     name: AppImage App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase-linux-appimage-template
       runner-os: ubuntu-latest
       target-platform: linux
@@ -209,13 +209,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ 'toga', 'pyside2', 'pyside6', 'ppb' ]
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
 
   test-verify-apps-flatpak-templates:
     name: Flatpak App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase-linux-flatpak-template
       runner-os: ubuntu-latest
       target-platform: linux
@@ -224,9 +224,9 @@ jobs:
 
   test-verify-apps-macOS-templates:
     name: macOS App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase-macos-${{ matrix.format }}-template
       runner-os: macos-latest
       target-platform: macOS
@@ -235,14 +235,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        format: [ 'app', 'Xcode' ]
-        framework: [ 'toga', 'pyside2', 'pyside6', 'ppb' ]
+        format: [ "app", "Xcode" ]
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
 
   test-verify-apps-web-templates:
     name: Web App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       repository: beeware/briefcase-web-static-template
       runner-os: ubuntu-latest
       target-platform: web
@@ -251,9 +251,9 @@ jobs:
 
   test-verify-apps-windows-templates:
     name: Windows App
-    uses: ./.github/workflows/verify-app-build.yml
+    uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: '3.9'
+      python-version: "3.9"
       python-source: ${{ matrix.python-source }}
       repository: beeware/briefcase-windows-${{ matrix.format }}-template
       runner-os: windows-latest
@@ -263,6 +263,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        format: [ 'app', 'VisualStudio' ]
-        framework: [ 'toga', 'pyside2', 'pyside6', 'ppb' ]
-        python-source: [ 'github', 'winstore' ]
+        format: [ "app", "VisualStudio" ]
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        python-source: [ "github", "winstore" ]

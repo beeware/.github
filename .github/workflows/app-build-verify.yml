@@ -9,32 +9,32 @@ on:
   workflow_call:
     inputs:
       python-version:
-        description: 'Python version to use; defaults to latest Python release.'
-        default: '3.X'
+        description: "Python version to use; defaults to latest Python release."
+        default: "3.X"
         type: string
       python-source:
-        description: 'Where to install python from; i.e. github or winstore.'
-        default: 'github'
+        description: "Where to install python from; i.e. github or winstore."
+        default: "github"
         type: string
       runner-os:
-        description: 'The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest.'
+        description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
         required: true
         type: string
       framework:
-        description: 'Framework to use to build the App, e.g. toga.'
+        description: "Framework to use to build the App, e.g. toga."
         required: true
         type: string
       repository:
-        description: 'GitHub repository to checkout; defaults to repo running this workflow.'
+        description: "GitHub repository to checkout; defaults to repo running this workflow."
         default: ${{ github.repository }}
         type: string
       target-platform:
-        description: 'The target platform for the app, i.e. linux, macos, or windows. Leave blank all supported platforms.'
-        default: ''
+        description: "The target platform for the app, i.e. linux, macos, or windows. Leave blank all supported platforms."
+        default: ""
         type: string
       target-format:
-        description: 'The target format for the app, e.g. appimage, xcode, app, etc. Leave blank all supported formats.'
-        default: ''
+        description: "The target format for the app, e.g. appimage, xcode, app, etc. Leave blank all supported formats."
+        default: ""
         type: string
 
 defaults:
@@ -53,19 +53,11 @@ jobs:
         repository: ${{ inputs.repository }}
         fetch-depth: 0
 
-#    - name: Checkout beeware/.github
-#      uses: actions/checkout@v3.3.0
-#      with:
-#        repository: 'beeware/.github'
-#        path: 'beeware-.github'
-
-    # TODO:PR: replace with commented block above before merging
-    - name: Checkout rmartin16/.github-beeware
+    - name: Checkout beeware/.github
       uses: actions/checkout@v3.3.0
       with:
-        repository: 'rmartin16/.github-beeware'
-        path: 'beeware-.github'
-        ref: 'shared-ci'
+        repository: "beeware/.github"
+        path: "beeware-.github"
 
     - name: Package name
       id: package
@@ -124,14 +116,14 @@ jobs:
     - name: Install Briefcase artifact
       if: endsWith(inputs.repository, 'briefcase')
       run: python -m pip install dist/briefcase-*.whl
-      
+
     - name: Install Briefcase
-      if: endsWith(inputs.repository, 'briefcase') != true
+      if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
 
     - name: Create Briefcase project
       # Don't run for template repos since they already contain a created app.
-      if: endsWith(inputs.repository, '-template') != true
+      if: ${{ !endsWith(inputs.repository, '-template') }}
       run: |
         cd tests/apps
         cat verify-${{ inputs.framework }}.config | briefcase new

@@ -8,20 +8,20 @@ on:
   workflow_call:
     inputs:
       python-version:
-        description: 'Python version to use; defaults to latest Python release.'
-        default: '3.X'
+        description: "Python version to use; defaults to latest Python release."
+        default: "3.X"
         type: string
       repository:
-        description: 'GitHub repository to checkout; defaults to repo running this workflow.'
+        description: "GitHub repository to checkout; defaults to repo running this workflow."
         default: ${{ github.repository }}
         type: string
       pre-commit-source:
-        description: 'The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo''s pinned version.'
-        default: '.[dev]'
+        description: "The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo's pinned version."
+        default: ".[dev]"
         type: string
       runner-os:
-        description: 'Runner OS to use to run tox; defaults to ubuntu-latest'
-        default: 'ubuntu-latest'
+        description: "Runner OS to use to run pre-commit; defaults to ubuntu-latest"
+        default: "ubuntu-latest"
         type: string
 
 defaults:

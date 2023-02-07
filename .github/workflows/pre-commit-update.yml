@@ -8,11 +8,11 @@ on:
   workflow_call:
     inputs:
       pre-commit-source:
-        description: 'The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo''s pinned version.'
-        default: '.[dev]'
+        description: "The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo's pinned version."
+        default: ".[dev]"
         type: string
       create-changenote:
-        description: 'Defaults "true" to create a misc changenote in the "./changes" directory.'
+        description: "Defaults 'true' to create a misc changenote in the './changes' directory."
         default: true
         type: boolean
 
@@ -20,8 +20,8 @@ permissions:
   pull-requests: write
 
 env:
-  BRANCH_NAME: 'autoupdates/pre-commit'
-  CHANGENOTE_DIR: './changes'
+  BRANCH_NAME: "autoupdates/pre-commit"
+  CHANGENOTE_DIR: "./changes"
 
 defaults:
   run:
@@ -78,13 +78,13 @@ jobs:
         uses: peter-evans/create-pull-request@v4.2.3
         with:
           token: ${{ secrets.BRUTUS_PAT_TOKEN }}
-          title: 'Auto-update `pre-commit` hooks'
+          title: "Auto-update `pre-commit` hooks"
           branch: ${{ env.BRANCH_NAME }}
-          commit-message: 'Auto-updated `pre-commit` hooks.'
-          committer: 'Brutus (robot) <brutus@beeware.org>'
-          author: 'Brutus (robot) <brutus@beeware.org>'
-          body: 'Updated `pre-commit` hooks to their latest versions and ran updated hooks against the repo.'
-          labels: 'dependencies'
+          commit-message: "Auto-updated `pre-commit` hooks."
+          committer: "Brutus (robot) <brutus@beeware.org>"
+          author: "Brutus (robot) <brutus@beeware.org>"
+          body: "Updated `pre-commit` hooks to their latest versions and ran updated hooks against the repo."
+          labels: "dependencies"
 
       - name: Add changenote
         if: (inputs.create-changenote == true) && (steps.created-pr.outputs.pull-request-number != '')
