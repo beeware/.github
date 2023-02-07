@@ -93,8 +93,8 @@ jobs:
           git checkout ${{ env.BRANCH_NAME }}
 
           FILENAME='${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.rst'
-          printf 'Updated ``pre-commit`` hooks to the latest version.\n' > '${FILENAME}' 
+          printf 'Updated ``pre-commit`` hooks to the latest version.\n' > '${FILENAME}'
 
-          git add '${FILENAME}'          
+          git add '${FILENAME}'
           git commit -m 'Add changenote.'
           git push --set-upstream origin ${{ env.BRANCH_NAME }}

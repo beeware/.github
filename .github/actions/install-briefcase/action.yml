@@ -46,7 +46,7 @@ runs:
 
         REF_NAME="${{ inputs.testing-ref-name }}"
         REF_NAME="${REF_NAME:-${{ github.ref_name }}}"
-        
+
         echo "::group::Workflow Trigger Details"
         echo "Event:    ${{ github.event_name }}"
         echo "Ref:      ${{ github.ref }}"
@@ -61,17 +61,17 @@ runs:
           v* | main | ${{ inputs.briefcase-default-branch }} )
             TARGET_VERSION="${TRIGGER_REF}"
             ;;
-          
+
           # Not a PR; use branch or tag name
           refs/tags/* | refs/heads/* )
             TARGET_VERSION="${REF_NAME}"
             ;;
-          
+
           # Is a PR; use target branch name
           refs/pull/* )
             TARGET_VERSION="${PR_TARGET_REF/refs\/heads\//}"
             ;;
-        
+
           # Default to 'main'
           * )
             echo "::warning::Could not determine Briefcase version from '${TRIGGER_REF}'; defaulting to '${{ inputs.briefcase-default-branch }}'."
@@ -81,15 +81,15 @@ runs:
         esac
 
         echo "Derived Briefcase version: ${TARGET_VERSION}"
-        
-        # Use Briefcase's default branch 
+
+        # Use Briefcase's default branch
         if [[ "${TARGET_VERSION}" == "${{ inputs.briefcase-default-branch }}" ]]; then
           echo "version=${TARGET_VERSION}" >> ${GITHUB_OUTPUT}
-        
+
         # Use version if it is a valid Briefcase tag
         elif [[ $(git ls-remote --tags "${{ inputs.briefcase-url }}" "${TARGET_VERSION}") ]]; then
           echo "version=${TARGET_VERSION}" >> ${GITHUB_OUTPUT}
-        
+
         # Default to Briefcase's default branch
         else
           echo "::warning::Unknown Briefcase version: '${TARGET_VERSION}'; defaulting to '${{ inputs.briefcase-default-branch }}'."

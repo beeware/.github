@@ -71,12 +71,12 @@ jobs:
         if [[ "${{ startsWith(inputs.runner-os, 'ubuntu') }}" == "true" ]]; then
           echo "briefcase-data-dir=~/.cache/briefcase" >> ${GITHUB_OUTPUT}
           echo "pip-cache-dir=~/.cache/pip" >> ${GITHUB_OUTPUT}
-        
+
         elif [[ "${{ startsWith(inputs.runner-os, 'macos') }}" == "true" ]]; then
           echo "briefcase-data-dir=~/Library/Caches/org.beeware.briefcase" >> ${GITHUB_OUTPUT}
           echo "pip-cache-dir=~/Library/Caches/pip" >> ${GITHUB_OUTPUT}
           echo "docker-cache-dir=~/Library/Containers/com.docker.docker/Data/vms/0/" >> ${GITHUB_OUTPUT}
-        
+
         elif [[ "${{ startsWith(inputs.runner-os, 'windows') }}" == "true" ]]; then
           echo "briefcase-data-dir=~/AppData/Local/BeeWare/briefcase/Cache" >> ${GITHUB_OUTPUT}
           echo "pip-cache-dir=~/AppData/Local/pip/Cache" >> ${GITHUB_OUTPUT}
@@ -110,7 +110,7 @@ jobs:
       if: endsWith(inputs.repository, 'briefcase')
       uses: actions/download-artifact@v3.0.2
       with:
-        name: packages-${{ steps.package.outputs.name}}
+        name: packages-${{ steps.package.outputs.name }}
         path: dist
 
     - name: Install Briefcase artifact
