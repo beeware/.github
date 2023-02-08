@@ -3,8 +3,8 @@ description: Installs Python from the Windows Store
 
 inputs:
   python-version:
-    description: 'Python version to install'
-    default: '3.11'  # should default to the latest Python
+    description: "Python version to install"
+    default: "3.11"  # should default to the latest Python
     required: false
 
 runs:

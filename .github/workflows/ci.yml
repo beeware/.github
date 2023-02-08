@@ -1,0 +1,274 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pre-commit:
+    name: Pre-commit checks
+    uses: ./.github/workflows/pre-commit-run.yml
+    with:
+      pre-commit-source: "pre-commit"
+
+  test-install-briefcase:
+    name: Test Install Briefcase
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+        - "v0.3.12"
+        - "main"
+        - "40.0.5"
+        - "refs/tags/v0.3.11"
+        - "refs/tags/v40.0.5"
+        - "refs/heads/v0.3.10"
+        - "refs/heads/v40.0.5"
+        - "refs/pull/v0.3.9"
+        - "refs/pull/v40.0.5"
+        include:
+        - version: "v0.3.12"
+          expected: "v0.3.12"
+        - version: "main"
+          expected: "main"
+        - version: "40.0.5"
+          expected: "main"
+        - version: "refs/tags/v0.3.11"
+          testing-ref-name: "v0.3.11"
+          expected: "v0.3.11"
+        - version: "refs/tags/v40.0.5"
+          testing-ref-name: "v40.0.5"
+          expected: "main"
+        - version: "refs/heads/v0.3.10"
+          testing-ref-name: "v0.3.10"
+          expected: "v0.3.10"
+        - version: "refs/heads/v40.0.5"
+          testing-ref-name: "v40.0.5"
+          expected: "main"
+        - version: "refs/pull/v0.3.9"
+          testing-pr-ref: "refs/heads/v0.3.9"
+          expected: "v0.3.9"
+        - version: "refs/pull/v0.3.9"
+          testing-pr-ref: "v0.3.9"
+          expected: "v0.3.9"
+        - version: "refs/pull/v40.0.5"
+          testing-pr-ref: "v40.0.5"
+          expected: "main"
+    steps:
+    - name: Checkout .github repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: "3.X"
+
+    - name: Install Briefcase
+      id: briefcase
+      uses: ./.github/actions/install-briefcase
+      with:
+        briefcase-override-version: ${{ matrix.version }}
+        testing-pr-ref: ${{ matrix.testing-pr-ref }}
+        testing-ref-name: ${{ matrix.testing-ref-name }}
+
+    - name: Test Briefcase @ ${{ matrix.version }}
+      run: |
+        if [[ "${{ matrix.expected }}" != "${{ steps.briefcase.outputs.installed-version }}" ]]; then
+          echo "installed-version: ${{ steps.briefcase.outputs.installed-version }}"
+          echo "Found Briefcase version v$(briefcase -V)"
+          echo "Expected Briefcase version ${{ matrix.expected }}"
+          exit 1
+        fi
+
+  test-install-win-store-python:
+    name: Test Win Store Python Installtion
+    runs-on: windows-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Windows Store Python
+      uses: ./.github/actions/install-win-store-python
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Test Windows Store Python Install
+      shell: powershell
+      run: |
+        $PythonExeSubDir = "\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.${{ matrix.python-version }}_qbz5n2kfra8p0\python.exe"
+        $ExpectedPythonPath = Join-Path "$env:LOCALAPPDATA" "$PythonExeSubDir"
+        if ( "$((Get-Command python).Path)" -ne "$ExpectedPythonPath" ) {
+          echo "Python is at $((Get-Command python).Path)"
+          echo "Python was expected at $ExpectedPythonPath"
+          exit 1
+        }
+        if ( "$(python -V)" -cnotlike "Python ${{ matrix.python-version }}*" ) {
+          echo "Found $(python -V)"
+          echo "Expected Python ${{ matrix.python-version }}"
+          exit 1
+        }
+
+  test-pre-commit-run:
+    name: Test Pre-commit
+    uses: ./.github/workflows/pre-commit-run.yml
+    with:
+      repository: beeware/${{ matrix.repo }}
+      pre-commit-source: ${{ matrix.pre-commit-source }}
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [ "briefcase", "gbulb", "Python-support-testbed", "rubicon-objc", "toga" ]
+        include:
+        - pre-commit-source: ".[dev]"
+        - repo: gbulb
+          pre-commit-source: "pre-commit"
+        - repo: Python-support-testbed
+          pre-commit-source: "pre-commit"
+        - repo: toga
+          pre-commit-source: "./core[dev]"
+
+  test-package-python:
+    name: Test Python Package Create
+    uses: ./.github/workflows/python-package-create.yml
+    with:
+      repository: beeware/${{ matrix.repo }}
+      tox-source: ${{ matrix.tox-source }}
+      distribution-path: ${{ matrix.dist-path }}
+      build-subdirectory: ${{ matrix.build-subdir }}
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [ "briefcase", "gbulb", "rubicon-objc", "toga" ]
+        include:
+        - tox-source: ".[dev]"
+        - dist-path: "dist"
+        - repo: "gbulb"
+          tox-source: "tox"
+          dist-path: "dist"
+        - repo: "toga"
+          tox-source: "./core[dev]"
+          dist-path: "*/dist/*"
+          build-subdir: "core"
+
+  test-verify-apps-briefcase:
+    name: Test Verify Apps
+    needs: test-package-python
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase
+      runner-os: ${{ matrix.runner-os }}
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
+
+  test-verify-apps-android-templates:
+    name: Test Verify Android App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase-android-gradle-template
+      runner-os: ${{ matrix.runner-os }}
+      target-platform: android
+      target-format: gradle
+      framework: toga
+    strategy:
+      fail-fast: false
+      matrix:
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
+
+  test-verify-apps-iOS-templates:
+    name: Test Verify iOS App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase-iOS-xcode-template
+      runner-os: macos-latest
+      target-platform: iOS
+      target-format: xcode
+      framework: toga
+
+  test-verify-apps-appimage-templates:
+    name: Test Verify AppImage App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase-linux-appimage-template
+      runner-os: ubuntu-latest
+      target-platform: linux
+      target-format: appimage
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+
+  test-verify-apps-flatpak-templates:
+    name: Test Verify Flatpak App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase-linux-flatpak-template
+      runner-os: ubuntu-latest
+      target-platform: linux
+      target-format: flatpak
+      framework: toga
+
+  test-verify-apps-macOS-templates:
+    name: Test Verify macOS App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase-macos-${{ matrix.format }}-template
+      runner-os: macos-latest
+      target-platform: macOS
+      target-format: ${{ matrix.format }}
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        format: [ "app", "Xcode" ]
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+
+  test-verify-apps-web-templates:
+    name: Test Verify Web App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      repository: beeware/briefcase-web-static-template
+      runner-os: ubuntu-latest
+      target-platform: web
+      target-format: static
+      framework: toga
+
+  test-verify-apps-windows-templates:
+    name: Test Verify Windows App
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.9"
+      python-source: ${{ matrix.python-source }}
+      repository: beeware/briefcase-windows-${{ matrix.format }}-template
+      runner-os: windows-latest
+      target-platform: windows
+      target-format: ${{ matrix.format }}
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        format: [ "app", "VisualStudio" ]
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        python-source: [ "github", "winstore" ]
