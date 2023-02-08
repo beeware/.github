@@ -11,6 +11,12 @@ defaults:
     shell: bash
 
 jobs:
+  pre-commit:
+    name: Pre-commit checks
+    uses: ./.github/workflows/pre-commit-run.yml
+    with:
+      pre-commit-source: "pre-commit"
+
   test-install-briefcase:
     name: Install Briefcase
     runs-on: ubuntu-latest
