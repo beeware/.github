@@ -18,7 +18,7 @@ jobs:
       pre-commit-source: "pre-commit"
 
   test-install-briefcase:
-    name: Install Briefcase
+    name: Test Install Briefcase
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -63,7 +63,7 @@ jobs:
           testing-pr-ref: "v40.0.5"
           expected: "main"
     steps:
-    - name: Checkout
+    - name: Checkout .github repo
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -89,7 +89,7 @@ jobs:
         fi
 
   test-install-win-store-python:
-    name: Win Store Python
+    name: Test Win Store Python Installtion
     runs-on: windows-latest
     timeout-minutes: 30
     strategy:
@@ -120,7 +120,7 @@ jobs:
         }
 
   test-pre-commit-run:
-    name: Pre-commit
+    name: Test Pre-commit
     uses: ./.github/workflows/pre-commit-run.yml
     with:
       repository: beeware/${{ matrix.repo }}
@@ -139,7 +139,7 @@ jobs:
           pre-commit-source: "./core[dev]"
 
   test-package-python:
-    name: Python Package
+    name: Test Python Package Create
     uses: ./.github/workflows/python-package-create.yml
     with:
       repository: beeware/${{ matrix.repo }}
@@ -162,7 +162,7 @@ jobs:
           build-subdir: "core"
 
   test-verify-apps-briefcase:
-    name: Verify Apps
+    name: Test Verify Apps
     needs: test-package-python
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -177,7 +177,7 @@ jobs:
         runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-android-templates:
-    name: Android App
+    name: Test Verify Android App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"
@@ -192,7 +192,7 @@ jobs:
         runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-iOS-templates:
-    name: iOS App
+    name: Test Verify iOS App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"
@@ -203,7 +203,7 @@ jobs:
       framework: toga
 
   test-verify-apps-appimage-templates:
-    name: AppImage App
+    name: Test Verify AppImage App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"
@@ -218,7 +218,7 @@ jobs:
         framework: [ "toga", "pyside2", "pyside6", "ppb" ]
 
   test-verify-apps-flatpak-templates:
-    name: Flatpak App
+    name: Test Verify Flatpak App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"
@@ -229,7 +229,7 @@ jobs:
       framework: toga
 
   test-verify-apps-macOS-templates:
-    name: macOS App
+    name: Test Verify macOS App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"
@@ -245,7 +245,7 @@ jobs:
         framework: [ "toga", "pyside2", "pyside6", "ppb" ]
 
   test-verify-apps-web-templates:
-    name: Web App
+    name: Test Verify Web App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"
@@ -256,7 +256,7 @@ jobs:
       framework: toga
 
   test-verify-apps-windows-templates:
-    name: Windows App
+    name: Test Verify Windows App
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.9"

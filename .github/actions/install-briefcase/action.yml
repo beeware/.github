@@ -96,6 +96,10 @@ runs:
           echo "version=${{ inputs.briefcase-default-branch }}" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: Update pip
+      shell: bash
+      run: python -m pip install -U pip
+
     - name: Install Briefcase
       shell: bash
       run: python -m pip install -U git+${{ inputs.briefcase-url }}@${{ steps.briefcase.outputs.version }}
