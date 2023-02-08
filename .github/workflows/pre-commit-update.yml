@@ -5,6 +5,9 @@ name: Update pre-commit
 #######
 
 on:
+  schedule:
+    - cron: "0 20 * * SUN"  # Sunday @ 2000 UTC
+  workflow_dispatch:
   workflow_call:
     inputs:
       pre-commit-source:
