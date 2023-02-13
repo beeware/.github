@@ -123,7 +123,7 @@ jobs:
 
     - name: Create Briefcase project
       # Don't run for template repos since they already contain a created app.
-      if: ${{ !endsWith(inputs.repository, '-template') }}
+      if: ${{ !endsWith(inputs.repository, '-template') || inputs.repository == 'beeware/briefcase-template' }}
       run: |
         cd tests/apps
         cat verify-${{ inputs.framework }}.config | briefcase new
