@@ -36,6 +36,10 @@ on:
         description: "The target format for the app, e.g. appimage, xcode, app, etc. Leave blank all supported formats."
         default: ""
         type: string
+      briefcase-template-source:
+        description: "Path to use for --template for `briefcase new` to create app."
+        default: ""
+        type: string
 
 defaults:
   run:
@@ -125,8 +129,11 @@ jobs:
       # Don't run for template repos since they already contain a created app.
       if: ${{ !endsWith(inputs.repository, '-template') || inputs.repository == 'beeware/briefcase-template' }}
       run: |
+        if [[ "${{ inputs.briefcase-template-source }}" != "" ]]; then
+          TEMPLATE=$(printf -- "--template %q" "${{ inputs.briefcase-template-source }}")
+        fi
         cd tests/apps
-        cat verify-${{ inputs.framework }}.config | briefcase new
+        cat verify-${{ inputs.framework }}.config | briefcase new ${TEMPLATE}
 
     # In the steps below, using the builtin functions for comparison (instead of ==)
     # allows for case-insensitivity to the inputs for the workflow.
