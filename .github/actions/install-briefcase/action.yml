@@ -11,6 +11,12 @@ inputs:
   briefcase-override-version:
     description: "Version of Briefcase to install without it being derived; e.g. v0.3.12"
     required: false
+  testing-pr-body:
+    description: "Override value for body of PR; only for testing."
+    required: false
+  testing-trigger-ref:
+    description: "Override value for github.ref; only for testing."
+    required: false
   testing-pr-ref:
     description: "Override value for github.base_ref; only for testing."
     required: false
@@ -20,7 +26,7 @@ inputs:
 
 outputs:
   installed-version:
-    value: ${{ steps.briefcase.outputs.version }}
+    value: ${{ steps.install.outputs.version }}
     description: "The version or branch of Briefcase that was installed."
 
 runs:
@@ -33,10 +39,13 @@ runs:
         set +o pipefail  # prevent grep failing the step if repo/ref isn't found
 
         # Source version from Body of PR
-        API_URL="${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
-        PR_BODY=$(curl -s -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.body')
-        BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | grep -ioP "BRIEFCASE[-_]*REPO:\s*\K\w+" | head -n1)
-        BRIEFCASE_REF=$(printf "%s" "${PR_BODY}" | grep -ioP "BRIEFCASE[-_]*REF:\s*\K\w+" | head -n1)
+        PR_BODY="${{ inputs.testing-pr-body }}"
+        if [ -z "${PR_BODY}" ]; then
+          API_URL="${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
+          PR_BODY=$(curl -s -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.body')
+        fi
+        BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | grep -ioP "BRIEFCASE[-_]*REPO:\s*\K\S+" | head -n1)
+        BRIEFCASE_REF=$(printf "%s" "${PR_BODY}" | grep -ioP "BRIEFCASE[-_]*REF:\s*\K\S+" | head -n1)
 
         # If a version is not in the PR, use inputs specified in CI workflow
         if [ -z "${BRIEFCASE_REPO}" ]; then
@@ -51,25 +60,27 @@ runs:
         echo "ref=${BRIEFCASE_REF}" >> ${GITHUB_OUTPUT}
 
     - name: Derive Target Briefcase Version
-      id: briefcase
+      id: briefcase-derived
       if: steps.briefcase-override.outputs.ref == ''
       shell: bash
       run: |
         # Branch or tag that triggered the workflow.
-        # For example, when github.event is:
-        #  push:         refs/heads/<branch_name>
-        #                refs/tags/<tag_name>
-        #  pull_request: refs/pull/<pr_number>/merge
-        #  release:      refs/tags/<tag_name>
-
-        TRIGGER_REF="${{ github.ref }}"
+        #  For example, when github.event is:
+        #   push:         refs/heads/<branch_name>
+        #                 refs/tags/<tag_name>
+        #   release:      refs/tags/<tag_name>
+        #   pull_request: refs/pull/<pr_number>/merge
+        TRIGGER_REF="${{ inputs.testing-trigger-ref || github.ref }}"
 
         # PR target branch (only available for pull requests)
-        PR_TARGET_REF="${{ inputs.testing-pr-ref }}"
-        PR_TARGET_REF="${PR_TARGET_REF:-${{ github.base_ref }}}"
+        PR_TARGET_REF="${{ inputs.testing-pr-ref || github.base_ref }}"
 
-        REF_NAME="${{ inputs.testing-ref-name }}"
-        REF_NAME="${REF_NAME:-${{ github.ref_name }}}"
+        # The short ref name of the branch or tag that triggered the workflow
+        #  For example:
+        #   push:         main
+        #   release:      v0.3.12
+        #   pull_request: 18/merge
+        REF_NAME="${{ inputs.testing-ref-name || github.ref_name }}"
 
         echo "::group::Workflow Trigger Details"
         echo "Event:    ${{ github.event_name }}"
@@ -120,8 +131,14 @@ runs:
       run: python -m pip install -U pip
 
     - name: Install Briefcase
+      id: install
       shell: bash
       run: |
         REPO="${{ steps.briefcase-override.outputs.repo || inputs.briefcase-url }}"
-        REF="${{ steps.briefcase-override.outputs.ref || steps.briefcase.outputs.version }}"
+        REF="${{ steps.briefcase-override.outputs.ref || steps.briefcase-derived.outputs.version }}"
+
+        echo "Installing ${REPO}@${REF}"
         python -m pip install -U "git+${REPO}@${REF}"
+
+        echo "Installed version: $(briefcase --version)"
+        echo "version=${REF}" >> ${GITHUB_OUTPUT}
