@@ -30,13 +30,13 @@ runs:
       id: briefcase-override
       shell: bash
       run: |
-        set +o pipefail
+        set +o pipefail  # prevent grep failing the step if repo/ref isn't found
 
         # Source version from Body of PR
         API_URL="${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
         PR_BODY=$(curl -s -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.body')
-        BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | grep -oP "BRIEFCASE_REPO:\s*\K\S+" | head -n1)
-        BRIEFCASE_REF=$(printf "%s" "${PR_BODY}" | grep -oP "BRIEFCASE_REF:\s*\K\S+" | head -n1)
+        BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | grep -ioP "BRIEFCASE[-_]*REPO:\s*\K\w+" | head -n1)
+        BRIEFCASE_REF=$(printf "%s" "${PR_BODY}" | grep -ioP "BRIEFCASE[-_]*REF:\s*\K\w+" | head -n1)
 
         # If a version is not in the PR, use inputs specified in CI workflow
         if [ -z "${BRIEFCASE_REPO}" ]; then
@@ -122,10 +122,6 @@ runs:
     - name: Install Briefcase
       shell: bash
       run: |
-        REPO="${{ steps.briefcase-override.outputs.repo }}"
-        REPO="${REPO:-${{ inputs.briefcase-url }}}"
-
-        REF="${{ steps.briefcase-override.outputs.ref }}"
-        REF="${REF:-${{ steps.briefcase.outputs.version }}}"
-
+        REPO="${{ steps.briefcase-override.outputs.repo || inputs.briefcase-url }}"
+        REF="${{ steps.briefcase-override.outputs.ref || steps.briefcase.outputs.version }}"
         python -m pip install -U "git+${REPO}@${REF}"
