@@ -26,9 +26,33 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Use Specified Briefcase Version
+      id: briefcase-override
+      shell: bash
+      run: |
+        set +o pipefail
+
+        # Source version from Body of PR
+        API_URL="${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
+        PR_BODY=$(curl -s -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.body')
+        BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | grep -oP "BRIEFCASE_REPO:\s*\K\S+" | head -n1)
+        BRIEFCASE_REF=$(printf "%s" "${PR_BODY}" | grep -oP "BRIEFCASE_REF:\s*\K\S+" | head -n1)
+
+        # If a version is not in the PR, use inputs specified in CI workflow
+        if [ -z "${BRIEFCASE_REPO}" ]; then
+          BRIEFCASE_REPO="${{ inputs.briefcase-url }}"
+        fi
+        if [ -z "${BRIEFCASE_REF}" ]; then
+          BRIEFCASE_REF="${{ inputs.briefcase-override-version }}"
+        fi
+
+        # Expose repo and version via outputs
+        echo "repo=${BRIEFCASE_REPO}" >> ${GITHUB_OUTPUT}
+        echo "ref=${BRIEFCASE_REF}" >> ${GITHUB_OUTPUT}
 
     - name: Derive Target Briefcase Version
       id: briefcase
+      if: steps.briefcase-override.outputs.ref == ''
       shell: bash
       run: |
         # Branch or tag that triggered the workflow.
@@ -37,8 +61,8 @@ runs:
         #                refs/tags/<tag_name>
         #  pull_request: refs/pull/<pr_number>/merge
         #  release:      refs/tags/<tag_name>
-        TRIGGER_REF="${{ inputs.briefcase-override-version }}"
-        TRIGGER_REF="${TRIGGER_REF:-${{ github.ref }}}"
+
+        TRIGGER_REF="${{ github.ref }}"
 
         # PR target branch (only available for pull requests)
         PR_TARGET_REF="${{ inputs.testing-pr-ref }}"
@@ -57,12 +81,7 @@ runs:
 
         case "${TRIGGER_REF}" in
 
-          # Use override version
-          v* | main | ${{ inputs.briefcase-default-branch }} )
-            TARGET_VERSION="${TRIGGER_REF}"
-            ;;
-
-          # Not a PR; use branch or tag name
+          # Not a PR; use current branch or tag name
           refs/tags/* | refs/heads/* )
             TARGET_VERSION="${REF_NAME}"
             ;;
@@ -102,4 +121,11 @@ runs:
 
     - name: Install Briefcase
       shell: bash
-      run: python -m pip install -U git+${{ inputs.briefcase-url }}@${{ steps.briefcase.outputs.version }}
+      run: |
+        REPO="${{ steps.briefcase-override.outputs.repo }}"
+        REPO="${REPO:-${{ inputs.briefcase-url }}}"
+
+        REF="${{ steps.briefcase-override.outputs.ref }}"
+        REF="${REF:-${{ steps.briefcase.outputs.version }}}"
+
+        python -m pip install -U "git+${REPO}@${REF}"
