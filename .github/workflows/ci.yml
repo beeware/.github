@@ -29,10 +29,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version:
+        test-case:
         - "v0.3.12"
         - "main"
-        - "40.0.5"
+        - "PR Repo & Ref"
+        - "PR Repo & Ref (irregular)"
+        - "PR Ref"
         - "refs/tags/v0.3.11"
         - "refs/tags/v40.0.5"
         - "refs/heads/v0.3.10"
@@ -40,31 +42,51 @@ jobs:
         - "refs/pull/v0.3.9"
         - "refs/pull/v40.0.5"
         include:
-        - version: "v0.3.12"
+        # Test override logic
+        - test-case: "v0.3.12"
+          version: "v0.3.12"
           expected: "v0.3.12"
-        - version: "main"
+        - test-case: "main"
+          version: "main"
           expected: "main"
-        - version: "40.0.5"
-          expected: "main"
-        - version: "refs/tags/v0.3.11"
+        # Test PR body override
+        - test-case: "PR Repo & Ref"
+          testing-pr-body: "sadf asdf BRIEFCASE_REPO: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFCASE_REF: 3470d95 xczvb"
+          expected: "3470d95"
+        - test-case: "PR Repo & Ref (irregular)"
+          testing-pr-body: "sadf asdf BrIeFcAsE__REpo: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFcaseREF:3470d95 xczvb"
+          expected: "3470d95"
+        - test-case: "PR Ref"
+          testing-pr-body: "sadf asdf BRIEFcaseREF: v0.3.12"
+          expected: "v0.3.12"
+        # Test version derivation for Releases
+        - test-case: "refs/tags/v0.3.11"
+          testing-trigger-ref: "refs/tags/v0.3.11"
           testing-ref-name: "v0.3.11"
           expected: "v0.3.11"
-        - version: "refs/tags/v40.0.5"
+        - test-case: "refs/tags/v40.0.5"
+          testing-trigger-ref: "refs/tags/v40.0.5"
           testing-ref-name: "v40.0.5"
           expected: "main"
-        - version: "refs/heads/v0.3.10"
+        - test-case: "refs/heads/v0.3.10"
+          testing-trigger-ref: "refs/heads/v0.3.10"
           testing-ref-name: "v0.3.10"
           expected: "v0.3.10"
-        - version: "refs/heads/v40.0.5"
+        - test-case: "refs/heads/v40.0.5"
+          testing-trigger-ref: "refs/heads/v40.0.5"
           testing-ref-name: "v40.0.5"
           expected: "main"
-        - version: "refs/pull/v0.3.9"
+        # Test version derivation for PRs
+        - test-case: "refs/pull/v0.3.9"
+          testing-trigger-ref: "refs/pull/18/merge"
           testing-pr-ref: "refs/heads/v0.3.9"
           expected: "v0.3.9"
-        - version: "refs/pull/v0.3.9"
+        - test-case: "refs/pull/v0.3.9"
+          testing-trigger-ref: "refs/pull/20/merge"
           testing-pr-ref: "v0.3.9"
           expected: "v0.3.9"
-        - version: "refs/pull/v40.0.5"
+        - test-case: "refs/pull/v40.0.5"
+          testing-trigger-ref: "refs/pull/25/merge"
           testing-pr-ref: "v40.0.5"
           expected: "main"
     steps:
@@ -81,10 +103,12 @@ jobs:
       uses: ./.github/actions/install-briefcase
       with:
         briefcase-override-version: ${{ matrix.version }}
+        testing-pr-body: ${{ matrix.testing-pr-body }}
+        testing-trigger-ref: ${{ matrix.testing-trigger-ref }}
         testing-pr-ref: ${{ matrix.testing-pr-ref }}
         testing-ref-name: ${{ matrix.testing-ref-name }}
 
-    - name: Test Briefcase @ ${{ matrix.version }}
+    - name: Test Briefcase @ ${{ matrix.test-case }}
       run: |
         if [[ "${{ matrix.expected }}" != "${{ steps.briefcase.outputs.installed-version }}" ]]; then
           echo "installed-version: ${{ steps.briefcase.outputs.installed-version }}"
