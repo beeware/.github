@@ -26,6 +26,8 @@ jobs:
     needs: pre-commit
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -107,8 +109,6 @@ jobs:
         testing-trigger-ref: ${{ matrix.testing-trigger-ref }}
         testing-pr-ref: ${{ matrix.testing-pr-ref }}
         testing-ref-name: ${{ matrix.testing-ref-name }}
-      secrets:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Test Briefcase @ ${{ matrix.test-case }}
       run: |

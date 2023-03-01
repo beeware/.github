@@ -55,6 +55,9 @@ jobs:
   verify-app:
     name: Verify App Build
     runs-on: ${{ inputs.runner-os }}
+    secrets:
+      github-token: ${{ secrets.github-token }}
+
     steps:
 
     - name: Checkout ${{ inputs.repository }}
@@ -130,8 +133,6 @@ jobs:
     - name: Install Briefcase
       if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
-      secrets:
-        github-token: ${{ secrets.github-token }}
 
     - name: Create Briefcase project
       # Don't run for template repos since they already contain a created app.
