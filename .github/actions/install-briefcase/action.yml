@@ -41,7 +41,7 @@ runs:
         # Source version from Body of PR
         PR_BODY="${{ inputs.testing-pr-body }}"
         if [ -z "${PR_BODY}" ]; then
-          PR_BODY=$(gh api repos/{owner}/{repo}/pulls/${{ github.event.pull_request.number }} --jq '.body')
+          PR_BODY=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.body')
           printf "::group::Retrieved PR Body\n${PR_BODY}\n::endgroup::\n"
         fi
         BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*REPO:\s*\K\S+/i and print $&')
