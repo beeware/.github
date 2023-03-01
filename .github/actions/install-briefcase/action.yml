@@ -43,7 +43,7 @@ runs:
         PR_BODY="${{ inputs.testing-pr-body }}"
         if [ -z "${PR_BODY}" ]; then
           API_URL="${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
-          API_RESPONSE=$(curl -s -H "authorization: Bearer ${{ secrets.github-token }}" -H "Accept: application/vnd.github+json" "${API_URL}")
+          API_RESPONSE=$(curl -s -H "authorization: Bearer ${{ inputs.github-token }}" -H "Accept: application/vnd.github+json" "${API_URL}")
           echo "::group::GitHub API Response"
           echo "${API_RESPONSE}"
           echo "::endgroup::"
