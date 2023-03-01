@@ -43,6 +43,9 @@ on:
         description: "Path to use for --template for `briefcase new` to create app."
         default: ""
         type: string
+    secrets:
+      github-token:
+        required: true
 
 defaults:
   run:
@@ -127,7 +130,8 @@ jobs:
     - name: Install Briefcase
       if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
-      secrets: inherit
+      secrets:
+        github-token: ${{ secrets.github-token }}
 
     - name: Create Briefcase project
       # Don't run for template repos since they already contain a created app.
