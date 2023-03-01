@@ -5,6 +5,9 @@ name: Build App
 # If a platform and format are not specified, then an app is built for each platform and format supported on the OS.
 #######
 
+permissions:
+  pull-requests: read
+
 on:
   workflow_call:
     inputs:
@@ -124,6 +127,7 @@ jobs:
     - name: Install Briefcase
       if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
+      secrets: inherit
 
     - name: Create Briefcase project
       # Don't run for template repos since they already contain a created app.

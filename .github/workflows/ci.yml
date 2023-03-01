@@ -107,6 +107,7 @@ jobs:
         testing-trigger-ref: ${{ matrix.testing-trigger-ref }}
         testing-pr-ref: ${{ matrix.testing-pr-ref }}
         testing-ref-name: ${{ matrix.testing-ref-name }}
+      secrets: inherit
 
     - name: Test Briefcase @ ${{ matrix.test-case }}
       run: |
