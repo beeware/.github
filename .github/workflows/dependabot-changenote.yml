@@ -29,7 +29,7 @@ jobs:
         run: |
           # Fetch PR number for commit from Github API
           API_URL="${{ github.api_url }}/repos/${{ github.repository }}/commits/${{ github.event.head_commit.id }}/pulls"
-          PR_NUM=$(curl -s -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.[].number')
+          PR_NUM=$(curl -s -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" "${API_URL}" | jq -r '.[].number')
 
           # Create change note from first line of dependabot commit
           NEWS=$(printf "%s" "${{ github.event.head_commit.message }}" | head -n1 | sed -e 's/Bump/Updated/')
