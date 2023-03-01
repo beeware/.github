@@ -23,9 +23,8 @@ inputs:
   testing-ref-name:
     description: "Override value for github.ref_name; only for testing."
     required: false
-
-secrets:
   github-token:
+    description: "A Github access token with read permissions for pull requests"
     required: true
 
 outputs:

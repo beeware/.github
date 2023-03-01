@@ -5,9 +5,6 @@ name: Build App
 # If a platform and format are not specified, then an app is built for each platform and format supported on the OS.
 #######
 
-permissions:
-  pull-requests: read
-
 on:
   workflow_call:
     inputs:
@@ -55,9 +52,6 @@ jobs:
   verify-app:
     name: Verify App Build
     runs-on: ${{ inputs.runner-os }}
-    secrets:
-      github-token: ${{ secrets.github-token }}
-
     steps:
 
     - name: Checkout ${{ inputs.repository }}
@@ -133,6 +127,8 @@ jobs:
     - name: Install Briefcase
       if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
+      with:
+        github-token: ${{ secrets.github-token }}
 
     - name: Create Briefcase project
       # Don't run for template repos since they already contain a created app.
