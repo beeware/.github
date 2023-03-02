@@ -38,9 +38,10 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        # Source version from Body of PR
+        # Source version from Body of PR (if there is one; if there isn't,
+        # github.event.pull_request.number will be empty)
         PR_BODY="${{ inputs.testing-pr-body }}"
-        if [ -z "${PR_BODY}" ]; then
+        if [[ -z "${PR_BODY}" && -n "${{ github.event.pull_request.number }}" ]]; then
           PR_BODY=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.body')
           printf "::group::Retrieved PR Body\n${PR_BODY}\n::endgroup::\n"
         fi
