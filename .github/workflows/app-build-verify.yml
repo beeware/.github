@@ -186,7 +186,7 @@ jobs:
         briefcase build windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
 
-    - name: Build Linux System project
+    - name: Build Linux System project (Debian, local)
       if: |
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
@@ -197,7 +197,7 @@ jobs:
         briefcase build linux system
         briefcase package linux system --adhoc-sign
 
-    - name: Build Linux System project (Dockerized)
+    - name: Build Linux System project (RPM, Dockerized)
       if: |
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
@@ -207,6 +207,18 @@ jobs:
         briefcase create linux system --target fedora:37
         briefcase build linux system --target fedora:37
         briefcase package linux system --target fedora:37 --adhoc-sign
+
+    - name: Build Linux System project (Arch, Dockerized)
+      if: |
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      run: |
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux system --target archlinux:latest
+        briefcase build linux system --target archlinux:latest
+        # FIXME: Arch packaging not supported (yet!)
+        # briefcase package linux system --target archlinux:latest --adhoc-sign
 
     - name: Build AppImage project
       if: |
