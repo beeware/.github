@@ -240,7 +240,7 @@ jobs:
       # This *must* be the version of Python that is the system Python on ubuntu-latest.
       # Otherwise native system package builds won't be included.
       python-version: "3.10"
-      repository: beeware/briefcase-linux-appimage-template
+      repository: beeware/briefcase-linux-system-template
       runner-os: ubuntu-latest
       target-platform: linux
       target-format: system
