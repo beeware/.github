@@ -175,7 +175,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       # This *must* be the version of Python that is the system Python on ubuntu-latest.
-      # Otherwise native system package builds won't succeed.
+      # Otherwise native system package builds won't be included.
       python-version: "3.10"
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
@@ -191,7 +191,9 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.9"
+      # This *must* be the version of Python that is the system Python on ubuntu-latest.
+      # Otherwise native system package builds won't be included.
+      python-version: "3.10"
       repository: beeware/briefcase-template
       briefcase-template-source: "../../"
       runner-os: ${{ matrix.runner-os }}
@@ -229,6 +231,24 @@ jobs:
       target-platform: iOS
       target-format: xcode
       framework: toga
+
+  test-verify-apps-linux-system-templates:
+    name: Test Verify Linux System App
+    needs: pre-commit
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      # This *must* be the version of Python that is the system Python on ubuntu-latest.
+      # Otherwise native system package builds won't be included.
+      python-version: "3.10"
+      repository: beeware/briefcase-linux-appimage-template
+      runner-os: ubuntu-latest
+      target-platform: linux
+      target-format: system
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
 
   test-verify-apps-appimage-templates:
     name: Test Verify AppImage App

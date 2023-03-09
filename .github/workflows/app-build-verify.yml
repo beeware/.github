@@ -186,16 +186,28 @@ jobs:
         briefcase build windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
 
-    - name: Build Linux System project (Debian, local)
+    - name: Build Linux System project (Ubuntu, local)
+      if: |
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+        && ${{ inputs.python-version == '3.10' }}
+      run: |
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux system
+        briefcase build linux system
+        briefcase package linux system --adhoc-sign
+
+    - name: Build Linux System project (Debian, Dockerized)
       if: |
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       run: |
         cd tests/apps/verify-${{ inputs.framework }}
-        briefcase create linux system
-        briefcase build linux system
-        briefcase package linux system --adhoc-sign
+        briefcase create linux system --target debian:bullseye
+        briefcase build linux system --target debian:bullseye
+        briefcase package linux system --target debian:bullseye --adhoc-sign
 
     - name: Build Linux System project (RPM, Dockerized)
       if: |
