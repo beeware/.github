@@ -174,7 +174,9 @@ jobs:
     needs: [pre-commit, test-package-python]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.9"
+      # This *must* be the version of Python that is the system Python on ubuntu-latest.
+      # Otherwise native system package builds won't succeed.
+      python-version: "3.10"
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
