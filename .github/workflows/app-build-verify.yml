@@ -217,8 +217,10 @@ jobs:
         briefcase package linux system --target debian:bullseye --adhoc-sign
 
     - name: Build Linux System project (RPM, Dockerized)
+      # fedora:37 ships with Python 3.11 and PySide2 cannot be installed
       if: |
         startsWith(inputs.runner-os, 'ubuntu')
+        && !contains(fromJSON('["PySide2"]'), inputs.framework)
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       run: |
