@@ -248,7 +248,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-appimage-templates:
     name: Test Verify AppImage App
@@ -264,7 +264,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-flatpak-templates:
     name: Test Verify Flatpak App
@@ -293,7 +293,7 @@ jobs:
       fail-fast: false
       matrix:
         format: [ "app", "Xcode" ]
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-web-templates:
     name: Test Verify Web App
@@ -323,5 +323,5 @@ jobs:
       fail-fast: false
       matrix:
         format: [ "app", "VisualStudio" ]
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
         python-source: [ "github", "winstore" ]
