@@ -205,7 +205,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
         runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-briefcase-template:
@@ -221,7 +221,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
         runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-android-templates:
@@ -252,6 +252,24 @@ jobs:
       target-format: xcode
       framework: toga
 
+  test-verify-apps-linux-system-templates:
+    name: Test Verify Linux System App
+    needs: pre-commit
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      # This *must* be the version of Python that is the system Python on ubuntu-22.04.
+      # Otherwise native system package builds won't be included.
+      python-version: "3.10"
+      repository: beeware/briefcase-linux-system-template
+      runner-os: ubuntu-22.04
+      target-platform: linux
+      target-format: system
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ "toga", "ppb" ]
+
   test-verify-apps-appimage-templates:
     name: Test Verify AppImage App
     needs: pre-commit
@@ -266,7 +284,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-flatpak-templates:
     name: Test Verify Flatpak App
@@ -295,7 +313,7 @@ jobs:
       fail-fast: false
       matrix:
         format: [ "app", "Xcode" ]
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-web-templates:
     name: Test Verify Web App
@@ -325,5 +343,5 @@ jobs:
       fail-fast: false
       matrix:
         format: [ "app", "VisualStudio" ]
-        framework: [ "toga", "pyside2", "pyside6", "ppb" ]
+        framework: [ "toga", "ppb" ]
         python-source: [ "github", "winstore" ]

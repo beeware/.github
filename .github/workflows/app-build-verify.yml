@@ -97,6 +97,12 @@ jobs:
           ${{ steps.dirs.outputs.pip-cache-dir }}
           ${{ steps.dirs.outputs.docker-cache-dir }}
 
+    - name: Determine system python3 version
+      id: system-python
+      run: |
+        echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+        echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" >> ${GITHUB_OUTPUT}
+
     - name: Set up Python
       if: inputs.python-source == 'github'
       uses: actions/setup-python@v4.5.0
@@ -185,6 +191,53 @@ jobs:
         briefcase create windows VisualStudio
         briefcase build windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
+
+    - name: Build Linux System project (Ubuntu, local)
+      if: |
+        startsWith(inputs.runner-os, 'ubuntu')
+        && startsWith(inputs.python-version, steps.system-python.outputs.python-version)
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      run: |
+        sudo apt-get update -y && sudo apt-get install -y python3-dev python3-pip libcairo2-dev libgirepository1.0-dev
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux system
+        briefcase build linux system
+        briefcase package linux system --adhoc-sign
+
+    - name: Build Linux System project (Debian, Dockerized)
+      if: |
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      run: |
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux system --target debian:bullseye
+        briefcase build linux system --target debian:bullseye
+        briefcase package linux system --target debian:bullseye --adhoc-sign
+
+    - name: Build Linux System project (RPM, Dockerized)
+      if: |
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      run: |
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux system --target fedora:37
+        briefcase build linux system --target fedora:37
+        briefcase package linux system --target fedora:37 --adhoc-sign
+
+    - name: Build Linux System project (Arch, Dockerized)
+      if: |
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      run: |
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux system --target archlinux:latest
+        briefcase build linux system --target archlinux:latest
+        # FIXME: Arch packaging not supported (yet!)
+        # briefcase package linux system --target archlinux:latest --adhoc-sign
 
     - name: Build AppImage project
       if: |
