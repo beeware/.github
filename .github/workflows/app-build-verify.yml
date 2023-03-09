@@ -99,7 +99,7 @@ jobs:
 
     - name: Determine default system python3 version
       run: |
-        echo "SYSTEM_PYTHON_VERSION=$(python3 -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")')" >> $GITHUB_ENV
+        echo "SYSTEM_PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" >> $GITHUB_ENV
 
     - name: Set up Python
       if: inputs.python-source == 'github'

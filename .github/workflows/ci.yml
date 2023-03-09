@@ -174,9 +174,7 @@ jobs:
     needs: [pre-commit, test-package-python]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      # This *must* be the version of Python that is the system Python on ubuntu-latest.
-      # Otherwise native system package builds won't be included.
-      python-version: "3.10"
+      python-version: "3.9"
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -191,9 +189,7 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      # This *must* be the version of Python that is the system Python on ubuntu-latest.
-      # Otherwise native system package builds won't be included.
-      python-version: "3.10"
+      python-version: "3.9"
       repository: beeware/briefcase-template
       briefcase-template-source: "../../"
       runner-os: ${{ matrix.runner-os }}
@@ -237,11 +233,11 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      # This *must* be the version of Python that is the system Python on ubuntu-latest.
+      # This *must* be the version of Python that is the system Python on ubuntu-22.04.
       # Otherwise native system package builds won't be included.
       python-version: "3.10"
       repository: beeware/briefcase-linux-system-template
-      runner-os: ubuntu-latest
+      runner-os: ubuntu-22.04
       target-platform: linux
       target-format: system
       framework: ${{ matrix.framework }}
