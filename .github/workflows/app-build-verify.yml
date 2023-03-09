@@ -97,6 +97,10 @@ jobs:
           ${{ steps.dirs.outputs.pip-cache-dir }}
           ${{ steps.dirs.outputs.docker-cache-dir }}
 
+    - name: Determine default system python3 version
+      run: |
+        echo "SYSTEM_PYTHON_VERSION=$(python3 -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")')" >> $GITHUB_ENV
+
     - name: Set up Python
       if: inputs.python-source == 'github'
       uses: actions/setup-python@v4.5.0
@@ -189,7 +193,7 @@ jobs:
     - name: Build Linux System project (Ubuntu, local)
       if: |
         startsWith(inputs.runner-os, 'ubuntu')
-        && startsWith(inputs.python-version, '3.10')
+        && startsWith(inputs.python-version, ${{ env.SYSTEM_PYTHON_VERSION }})
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       run: |
