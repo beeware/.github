@@ -193,6 +193,10 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
         && ${{ inputs.python-version == '3.10' }}
       run: |
+        echo "RUNNER OS ${{ inputs.runner-os }}"
+        echo "TARGET PLATFORM ${{ inputs.target-platform }}"
+        echo "TARGET FORMAT ${{ inputs.target-format }}"
+        echo "PYTHON VERSION ${{ inputs.python-version }}"
         cd tests/apps/verify-${{ inputs.framework }}
         briefcase create linux system
         briefcase build linux system
