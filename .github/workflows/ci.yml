@@ -268,7 +268,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb" ]
+        framework: [ "toga", "ppb", "pyside2" ]
 
   test-verify-apps-appimage-templates:
     name: Test Verify AppImage App
