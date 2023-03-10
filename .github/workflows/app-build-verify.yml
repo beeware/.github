@@ -145,7 +145,7 @@ jobs:
     # allows for case-insensitivity to the inputs for the workflow.
 
     - name: Build macOS app
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'macOS')
         && contains(fromJSON('["", "macOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "app"]'), inputs.target-format)
@@ -156,7 +156,7 @@ jobs:
         briefcase package macOS app --adhoc-sign
 
     - name: Build macOS Xcode project
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'macOS')
         && contains(fromJSON('["", "macOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
@@ -167,7 +167,7 @@ jobs:
         briefcase package macOS Xcode --adhoc-sign
 
     - name: Build Windows app
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'Windows')
         && contains(fromJSON('["", "Windows"]'), inputs.target-platform)
         && contains(fromJSON('["", "app"]'), inputs.target-format)
@@ -180,7 +180,7 @@ jobs:
         briefcase package windows app --adhoc-sign
 
     - name: Build Windows Visual Studio project
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'Windows')
         && contains(fromJSON('["", "Windows"]'), inputs.target-platform)
         && contains(fromJSON('["", "VisualStudio"]'), inputs.target-format)
@@ -193,7 +193,7 @@ jobs:
         briefcase package windows VisualStudio --adhoc-sign
 
     - name: Build Linux System project (Ubuntu, local)
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && startsWith(inputs.python-version, steps.system-python.outputs.python-version)
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
@@ -206,7 +206,7 @@ jobs:
         briefcase package linux system --adhoc-sign
 
     - name: Build Linux System project (Debian, Dockerized)
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
@@ -218,9 +218,9 @@ jobs:
 
     - name: Build Linux System project (RPM, Dockerized)
       # fedora:37 ships with Python 3.11 and PySide2 cannot be installed
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'ubuntu')
-        && !contains(fromJSON('["pyside2"]'), inputs.framework)
+        && !contains(fromJSON('["PySide2"]'), inputs.framework)
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       run: |
@@ -230,7 +230,7 @@ jobs:
         briefcase package linux system --target fedora:37 --adhoc-sign
 
     - name: Build Linux System project (Arch, Dockerized)
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
@@ -242,7 +242,7 @@ jobs:
         # briefcase package linux system --target archlinux:latest --adhoc-sign
 
     - name: Build AppImage project
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "AppImage"]'), inputs.target-format)
@@ -253,7 +253,7 @@ jobs:
         briefcase package linux AppImage --adhoc-sign
 
     - name: Build Flatpak project
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "Flatpak"]'), inputs.target-format)
@@ -268,7 +268,7 @@ jobs:
         briefcase package linux flatpak --adhoc-sign
 
     - name: Build Android App
-      if: |
+      if: >
         contains(fromJSON('["", "Android"]'), inputs.target-platform)
         && contains(fromJSON('["", "Gradle"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
@@ -279,7 +279,7 @@ jobs:
         briefcase package android gradle --adhoc-sign
 
     - name: Build iOS App
-      if: |
+      if: >
         startsWith(inputs.runner-os, 'macOS')
         && contains(fromJSON('["", "iOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
@@ -291,7 +291,7 @@ jobs:
         briefcase package iOS xcode --adhoc-sign
 
     - name: Build Web App
-      if: |
+      if: >
         contains(fromJSON('["", "web"]'), inputs.target-platform)
         && contains(fromJSON('["", "static"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
