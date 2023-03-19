@@ -88,7 +88,7 @@ jobs:
         fi
 
     - name: Cache Briefcase tools
-      uses: actions/cache@v3.3.0
+      uses: actions/cache@v3.3.1
       with:
         key: briefcase-${{ runner.os }}-${{ inputs.repository }}-${{ inputs.framework }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
         path: |
