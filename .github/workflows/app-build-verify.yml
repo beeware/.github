@@ -238,8 +238,7 @@ jobs:
         cd tests/apps/verify-${{ inputs.framework }}
         briefcase create linux system --target archlinux:latest
         briefcase build linux system --target archlinux:latest
-        # FIXME: Arch packaging not supported (yet!)
-        # briefcase package linux system --target archlinux:latest --adhoc-sign
+        briefcase package linux system --target archlinux:latest --adhoc-sign
 
     - name: Build AppImage project
       if: >
