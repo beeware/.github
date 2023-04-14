@@ -21,6 +21,27 @@ jobs:
     with:
       pre-commit-source: "pre-commit"
 
+  test-docs-build-verify:
+    name: Test Verify Docs Build
+    needs: pre-commit
+    uses: ./.github/workflows/docs-build-verify.yml
+    secrets: inherit
+    with:
+      project-name: ${{ matrix.name }}
+      project-version: ${{ matrix.version }}
+      timeout: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ "v0.3.13", "v42.42.42" ]
+        include:
+        - name: "briefcase"
+        - is-failure-expected: false
+        - timeout: 10
+        - version: "v42.42.42"
+          is-failure-expected: true
+          timeout: 1
+
   test-install-briefcase:
     name: Test Install Briefcase
     needs: pre-commit

@@ -1,0 +1,53 @@
+name: Verify ReadTheDocs Build
+
+#######
+# Successfully completes if ReadTheDocs has successfully built docs for a project version.
+# Errors if docs are not successfully built after a finite amount of time.
+#######
+
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        description: "Name of project on ReadTheDocs; e.g. briefcase."
+        required: true
+        type: string
+      project-version:
+        description: "Version of the docs to verify were built; e.g. v0.3.13."
+        required: true
+        type: string
+      timeout:
+        description: "Amount of time to wait for ReadTheDocs to report success; defaults to 10 minutes."
+        default: 10
+        type: number
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  docs:
+    name: Verify RTD Docs
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout }}
+    env:
+      RTD_API_URL: "https://readthedocs.org/api/v3/projects/${{ inputs.project-name }}/versions/${{ inputs.project-version }}/"
+    steps:
+      - name: Verify RTD Built Docs for ${{ inputs.project-version }}
+        run: |
+          echo "Verifying docs for ${{ inputs.project-version }} were successfully built:"
+          while true
+          do
+              RTD_RESPONSE=$(curl -s -H "Authorization: Token ${{ secrets.RTD_API_TOKEN }}" "${RTD_API_URL}")
+              IS_DOCS_BUILT=$(jq .built <<< ${RTD_RESPONSE})
+
+              echo "::group::IS_DOCS_BUILT=${IS_DOCS_BUILT}"
+              jq <<< ${RTD_RESPONSE}
+              echo "::endgroup::"
+
+              if [[ "${IS_DOCS_BUILT}" == "true" ]]; then
+                  exit 0
+              fi
+
+              sleep 5
+          done
