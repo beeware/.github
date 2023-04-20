@@ -24,6 +24,7 @@ jobs:
   test-docs-build-verify:
     name: Test Verify Docs Build
     needs: pre-commit
+    # lets see if this works...
     # inheriting secrets does not work for forked repos
     if: ${{ github.event.pull_request.head.repo.owner == 'beeware' }}
     uses: ./.github/workflows/docs-build-verify.yml
