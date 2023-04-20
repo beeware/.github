@@ -27,7 +27,7 @@ jobs:
     env:
       CONTEXT: ${{ toJson(github.event.pull_request) }}
     steps:
-      - run: echo ${CONTEXT}
+      - run: jq <<< ${CONTEXT}
 
   test-docs-build-verify:
     name: Test Verify Docs Build
