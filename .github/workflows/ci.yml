@@ -23,9 +23,11 @@ jobs:
 
   print-context:
     name: Print Event Context
+    runs-on: ubuntu-latest
     env:
       CONTEXT: ${{ toJson(github.event.pull_request) }}
-    run: echo ${CONTEXT}
+    steps:
+      - run: echo ${CONTEXT}
 
   test-docs-build-verify:
     name: Test Verify Docs Build
