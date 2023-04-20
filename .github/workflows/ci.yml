@@ -21,6 +21,12 @@ jobs:
     with:
       pre-commit-source: "pre-commit"
 
+  print-context:
+    name: Print Event Context
+    env:
+      CONTEXT: ${{ toJson(github.event.pull_request) }}
+    run: echo ${CONTEXT}
+
   test-docs-build-verify:
     name: Test Verify Docs Build
     needs: pre-commit
