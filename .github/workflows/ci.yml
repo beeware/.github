@@ -25,7 +25,7 @@ jobs:
     name: Test Verify Docs Build
     needs: pre-commit
     # inheriting secrets does not work for forked repos
-    if: ${{ github.event.pull_request.head.repo.owner == 'beeware' }}
+    if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
     uses: ./.github/workflows/docs-build-verify.yml
     secrets: inherit
     with:
