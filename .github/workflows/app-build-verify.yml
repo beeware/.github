@@ -230,8 +230,10 @@ jobs:
         briefcase package linux system --target fedora:37 --adhoc-sign
 
     - name: Build Linux System project (Arch, Dockerized)
+      # arch started shipping Python 3.11 on 3 may 2023 and PySide2 cannot be installed
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
+        && !contains(fromJSON('["PySide2"]'), inputs.framework)
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       run: |
