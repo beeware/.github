@@ -71,11 +71,11 @@ jobs:
 
       - name: Build wheels
         if: inputs.build-subdirectory == ''
-        run: tox -e package
+        run: tox --colored yes -e package
 
       - name: Build wheels from subdirectory
         if: inputs.build-subdirectory != ''
-        run: tox -e package -- ${{ inputs.build-subdirectory }}
+        run: tox --colored yes -e package -- ${{ inputs.build-subdirectory }}
 
       - name: Upload Package
         uses: actions/upload-artifact@v3.1.2
