@@ -28,6 +28,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  FORCE_COLOR: "1"
+
 jobs:
   towncrier:
     name: Towncrier Checks

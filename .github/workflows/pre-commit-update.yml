@@ -25,6 +25,7 @@ permissions:
 env:
   BRANCH_NAME: "autoupdates/pre-commit"
   CHANGENOTE_DIR: "./changes"
+  FORCE_COLOR: "1"
 
 defaults:
   run:

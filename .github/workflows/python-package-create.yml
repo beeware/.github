@@ -36,6 +36,9 @@ on:
         description: "Name of the uploaded artifact; use for artifact retrieval."
         value: ${{ jobs.package.outputs.artifact-name }}
 
+env:
+  FORCE_COLOR: "1"
+
 jobs:
   package:
     name: Create Python Package
