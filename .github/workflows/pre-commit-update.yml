@@ -64,7 +64,7 @@ jobs:
       - name: Run pre-commit
         # pre-commit returns non-zero when files are changed and fails the job
         continue-on-error: true
-        run: pre-commit run --all-files --color=always
+        run: pre-commit run --all-files
 
       - name: PR Needed?
         id: pr

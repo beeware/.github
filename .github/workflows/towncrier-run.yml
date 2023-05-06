@@ -64,4 +64,4 @@ jobs:
       run: python -m pip install ${{ inputs.tox-source }}
 
     - name: Run towncrier check
-      run: tox --colored yes -e towncrier-check
+      run: tox -e towncrier-check
