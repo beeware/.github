@@ -45,6 +45,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  FORCE_COLOR: "1"
+
 jobs:
   verify-app:
     name: Verify App Build

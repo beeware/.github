@@ -36,6 +36,9 @@ on:
         description: "Name of the uploaded artifact; use for artifact retrieval."
         value: ${{ jobs.package.outputs.artifact-name }}
 
+env:
+  FORCE_COLOR: "1"
+
 jobs:
   package:
     name: Create Python Package
@@ -71,11 +74,11 @@ jobs:
 
       - name: Build wheels
         if: inputs.build-subdirectory == ''
-        run: tox --colored yes -e package
+        run: tox -e package
 
       - name: Build wheels from subdirectory
         if: inputs.build-subdirectory != ''
-        run: tox --colored yes -e package -- ${{ inputs.build-subdirectory }}
+        run: tox -e package -- ${{ inputs.build-subdirectory }}
 
       - name: Upload Package
         uses: actions/upload-artifact@v3.1.2
