@@ -23,7 +23,7 @@ permissions:
   pull-requests: write
 
 env:
-  BRANCH_NAME: "autoupdates/pre-commit"
+  BRANCH_PREFIX: "autoupdates/pre-commit"
   CHANGENOTE_DIR: "./changes"
   FORCE_COLOR: "1"
 
@@ -32,12 +32,32 @@ defaults:
     shell: bash
 
 jobs:
+  pre-commit-hooks:
+    name: Pre-commit hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      hook-repos: ${{ steps.hooks.outputs.repos }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3.5.2
+
+      - name: Get Pre-commit Hooks
+        id: hooks
+        run: |
+          REPOS=$(yq .repos[].repo < .pre-commit-config.yaml | jq -R -s -c 'split("\n")[:-1]')
+          echo "repos=${REPOS}" >> ${GITHUB_OUTPUT}
+
   pre-commit-update:
-    name: Update Pre-commit config
+    name: Update Pre-commit hook
+    needs: pre-commit-hooks
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        hook-repo: ${{ fromJson(needs.pre-commit-hooks.outputs.hook-repos) }}
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -59,7 +79,7 @@ jobs:
 
       - name: Update pre-commit hooks
         run: |
-          pre-commit autoupdate
+          pre-commit autoupdate --repo ${{ matrix.hook-repo }}
           pre-commit install-hooks
 
       - name: Run pre-commit
@@ -75,6 +95,8 @@ jobs:
           else
             echo "needed=false" >> ${GITHUB_OUTPUT}
           fi
+          REPO="${{ matrix.hook-repo }}"
+          echo "hook-name=${REPO##*/}" >> ${GITHUB_OUTPUT}
 
       - name: Create Pull Request
         id: created-pr
@@ -82,12 +104,12 @@ jobs:
         uses: peter-evans/create-pull-request@v5.0.1
         with:
           token: ${{ secrets.BRUTUS_PAT_TOKEN }}
-          title: "Auto-update `pre-commit` hooks"
-          branch: ${{ env.BRANCH_NAME }}
-          commit-message: "Auto-updated `pre-commit` hooks."
+          title: "Bump pre-commit hook for ${{ steps.pr.outputs.hook-name }}"
+          branch: "${{ env.BRANCH_PREFIX }}/${{ steps.pr.outputs.hook-name }}"
+          commit-message: "Bumped pre-commit hook for ${{ steps.pr.outputs.hook-name }}"
           committer: "Brutus (robot) <brutus@beeware.org>"
           author: "Brutus (robot) <brutus@beeware.org>"
-          body: "Updated `pre-commit` hooks to their latest versions and ran updated hooks against the repo."
+          body: "Automatically bumped `pre-commit` hook for `${{ steps.pr.outputs.hook-name }}` and ran the update against the repo."
           labels: "dependencies"
 
       - name: Add changenote
@@ -97,7 +119,7 @@ jobs:
           git checkout ${{ env.BRANCH_NAME }}
 
           FILENAME="${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.rst"
-          printf 'Updated ``pre-commit`` hooks to the latest version.\n' > "${FILENAME}"
+          printf 'The ``pre-commit`` hook for ``${{ steps.pr.outputs.hook-name }}`` was updated to its latest version.\n' > "${FILENAME}"
 
           git add "${FILENAME}"
           git commit -m "Add changenote."
