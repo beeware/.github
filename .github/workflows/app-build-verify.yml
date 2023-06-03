@@ -277,8 +277,14 @@ jobs:
         && contains(fromJSON('["", "Gradle"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
       run: |
+        # force Briefcase to use its own installs of JDK and Android SDK
+        # clear all env vars starting with "JAVA_HOME" or "ANDROID"
+        unset "${!JAVA_HOME@}"
+        unset "${!ANDROID@}"
+
         cd tests/apps/verify-${{ inputs.framework }}
-        briefcase create android gradle
+        # pipe "yes" to accept Android SDK licenses
+        (2>/dev/null yes || true) | briefcase create android gradle
         briefcase build android gradle
         briefcase package android gradle --adhoc-sign
 
