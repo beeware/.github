@@ -115,6 +115,8 @@ jobs:
       - name: Add changenote
         if: (inputs.create-changenote == true) && (steps.created-pr.outputs.pull-request-number != '')
         run: |
+          BRANCH_NAME="${{ env.BRANCH_PREFIX }}/${{ steps.pr.outputs.hook-name }}"
+
           git fetch origin
           git checkout ${{ env.BRANCH_NAME }}
 
