@@ -82,6 +82,7 @@ jobs:
         run: |
           pre-commit autoupdate --repo ${{ matrix.hook-repo }} | tee update.log
           echo "vers-bump-str=$(grep -ohE '([^ ]+ -> [^ ]+)' update.log | sed 's/->/to/')" >> ${GITHUB_OUTPUT}
+          rm -f update.log
           pre-commit install-hooks
 
       - name: Run pre-commit
@@ -120,11 +121,11 @@ jobs:
           BRANCH_NAME="${{ env.BRANCH_PREFIX }}/${{ steps.pr.outputs.hook-name }}"
 
           git fetch origin
-          git checkout ${{ env.BRANCH_NAME }}
+          git checkout "${BRANCH_NAME}"
 
           FILENAME="${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.rst"
           printf 'The ``pre-commit`` hook for ``${{ steps.pr.outputs.hook-name }}`` was updated to its latest version.\n' > "${FILENAME}"
 
           git add "${FILENAME}"
           git commit -m "Add changenote."
-          git push --set-upstream origin ${{ env.BRANCH_NAME }}
+          git push --set-upstream origin "${BRANCH_NAME}"
