@@ -108,7 +108,7 @@ jobs:
 
     - name: Set up Python
       if: inputs.python-source == 'github'
-      uses: actions/setup-python@v4.6.1
+      uses: actions/setup-python@v4.7.0
       with:
         python-version: ${{ inputs.python-version }}
 
