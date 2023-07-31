@@ -25,6 +25,9 @@ inputs:
     required: false
 
 outputs:
+  installed-repo:
+    value: ${{ steps.install.outputs.repo }}
+    description: "The source repo of Briefcase that was installed."
   installed-version:
     value: ${{ steps.install.outputs.version }}
     description: "The version or branch of Briefcase that was installed."
@@ -144,4 +147,5 @@ runs:
         python -m pip install -U "git+${REPO}@${REF}"
 
         echo "Installed version: $(briefcase --version)"
+        echo "repo=${REPO}" >> ${GITHUB_OUTPUT}
         echo "version=${REF}" >> ${GITHUB_OUTPUT}
