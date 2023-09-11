@@ -81,7 +81,7 @@ jobs:
         run: tox -e package -- ${{ inputs.build-subdirectory }}
 
       - name: Upload Package
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v3.1.3
         with:
           name: packages-${{ steps.package.outputs.name }}
           path: ${{ inputs.distribution-path }}
