@@ -245,16 +245,28 @@ jobs:
         briefcase build linux system --target archlinux:latest
         briefcase package linux system --target archlinux:latest --adhoc-sign
 
-    - name: Build AppImage project
-      if: >
-        startsWith(inputs.runner-os, 'ubuntu')
-        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-        && contains(fromJSON('["", "AppImage"]'), inputs.target-format)
-      run: |
-        cd tests/apps/verify-${{ inputs.framework }}
-        briefcase create linux AppImage
-        briefcase build linux AppImage
-        briefcase package linux AppImage --adhoc-sign
+    # 2023-09-11 AppImage dropped to "best effort" support.
+    #
+    # AppImage builds are the slowest, because they're incompatible with binary wheels;
+    # and installing Linux GUI toolkits (which are on a constant "install the latest"
+    # push) is fundamentally incompatible with using an old base image. As of today,
+    # it's impossible to install Toga on *any* manylinux image (
+    # https://gitlab.gnome.org/GNOME/pygobject/-/issues/590); PySide2 can't be
+    # installed on any *supported* manylinux image, and PySide6 only works on 2_28.
+    # Even when the install *does* work, there are so many incompatibility and
+    # binary dependency issues that it's just not worth the oxygen to keep this thing
+    # alive.
+    #
+    # - name: Build AppImage project
+    #   if: >
+    #     startsWith(inputs.runner-os, 'ubuntu')
+    #     && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+    #     && contains(fromJSON('["", "AppImage"]'), inputs.target-format)
+    #   run: |
+    #     cd tests/apps/verify-${{ inputs.framework }}
+    #     briefcase create linux AppImage
+    #     briefcase build linux AppImage
+    #     briefcase package linux AppImage --adhoc-sign
 
     - name: Build Flatpak project
       if: >
