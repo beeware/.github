@@ -23,7 +23,7 @@ jobs:
       - name: Configure git
         run: |
           git config --local user.email "$(git log --pretty='%ae' -1)"
-          git config --local user.name "Dependabot[bot]"
+          git config --local user.name "dependabot[bot]"
 
       - name: Commit Change Note
         env:
