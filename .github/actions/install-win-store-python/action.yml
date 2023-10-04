@@ -4,7 +4,7 @@ description: Installs Python from the Windows Store
 inputs:
   python-version:
     description: "Python version to install"
-    default: "3.11"  # should default to the latest Python
+    default: "3.12"  # should default to the latest Python
     required: false
 
 runs:
@@ -16,6 +16,11 @@ runs:
       shell: powershell
       run: |
         switch ( "${{ inputs.python-version }}" ) {
+          "3.12" {
+            $StoreURL = "https://apps.microsoft.com/store/detail/python-312/9NCVDN91XZQP"
+            $ExeDir = Join-Path "$env:LOCALAPPDATA" "\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0"
+            $ScriptsDir = Join-Path "$env:LOCALAPPDATA" "\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts"
+          }
           "3.11" {
             $StoreURL = "https://apps.microsoft.com/store/detail/python-311/9NRWMJP3717K"
             $ExeDir = Join-Path "$env:LOCALAPPDATA" "\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0"
