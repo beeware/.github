@@ -39,14 +39,14 @@ jobs:
     steps:
 
     - name: Checkout Default Branch
-      uses: actions/checkout@v4.1.0
+      uses: actions/checkout@v4.1.1
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ github.event.repository.default_branch }}
         fetch-depth: 0
 
     - name: Checkout Current Branch
-      uses: actions/checkout@v4.1.0
+      uses: actions/checkout@v4.1.1
       with:
         repository: ${{ inputs.repository }}
         fetch-depth: 0

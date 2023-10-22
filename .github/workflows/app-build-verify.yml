@@ -55,13 +55,13 @@ jobs:
     steps:
 
     - name: Checkout ${{ inputs.repository }}
-      uses: actions/checkout@v4.1.0
+      uses: actions/checkout@v4.1.1
       with:
         repository: ${{ inputs.repository }}
         fetch-depth: 0
 
     - name: Checkout beeware/.github
-      uses: actions/checkout@v4.1.0
+      uses: actions/checkout@v4.1.1
       with:
         repository: "beeware/.github"
         path: "beeware-.github"
