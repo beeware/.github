@@ -273,7 +273,7 @@ jobs:
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "Flatpak"]'), inputs.target-format)
-        && startsWith(inputs.framework, 'toga')
+        && contains(fromJSON('["Toga", "PyGame"]'), inputs.framework)
       run: |
         sudo apt-get update -y
         sudo apt-get install -y flatpak flatpak-builder
