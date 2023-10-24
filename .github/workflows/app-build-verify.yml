@@ -257,16 +257,17 @@ jobs:
     # binary dependency issues that it's just not worth the oxygen to keep this thing
     # alive.
     #
-    # - name: Build AppImage project
-    #   if: >
-    #     startsWith(inputs.runner-os, 'ubuntu')
-    #     && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-    #     && contains(fromJSON('["", "AppImage"]'), inputs.target-format)
-    #   run: |
-    #     cd tests/apps/verify-${{ inputs.framework }}
-    #     briefcase create linux AppImage
-    #     briefcase build linux AppImage
-    #     briefcase package linux AppImage --adhoc-sign
+    # Only runs when target platform and format are explicitly Linux and AppImage.
+    - name: Build AppImage project
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["AppImage"]'), inputs.target-format)
+      run: |
+        cd tests/apps/verify-${{ inputs.framework }}
+        briefcase create linux AppImage
+        briefcase build linux AppImage
+        briefcase package linux AppImage --adhoc-sign
 
     - name: Build Flatpak project
       if: >
