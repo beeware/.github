@@ -292,21 +292,17 @@ jobs:
       matrix:
         framework: [ "toga", "ppb", "pyside2" ]
 
-  # test-verify-apps-appimage-templates:
-  #   name: Test Verify AppImage App
-  #   needs: pre-commit
-  #   uses: ./.github/workflows/app-build-verify.yml
-  #   with:
-  #     python-version: "3.11"
-  #     repository: beeware/briefcase-linux-appimage-template
-  #     runner-os: ubuntu-latest
-  #     target-platform: linux
-  #     target-format: appimage
-  #     framework: ${{ matrix.framework }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       framework: [ "toga", "ppb" ]
+  test-verify-apps-appimage-templates:
+    name: Test Verify AppImage App
+    needs: pre-commit
+    uses: ./.github/workflows/app-build-verify.yml
+    with:
+      python-version: "3.11"
+      repository: beeware/briefcase-linux-appimage-template
+      runner-os: ubuntu-latest
+      target-platform: linux
+      target-format: appimage
+      framework: toga
 
   test-verify-apps-flatpak-templates:
     name: Test Verify Flatpak App
