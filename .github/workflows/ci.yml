@@ -73,10 +73,10 @@ jobs:
           expected: "main"
         # Test PR body override
         - test-case: "PR Repo & Ref"
-          testing-pr-body: "sadf asdf BRIEFCASE_REPO: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFCASE_REF: 3470d95 xczvb"
+          testing-pr-body: "sadf asdf BRIEFCASE_REPO: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFCASE_REF: 3470d95 xczvb https://example.com/asdf?q=repo%3Aindygreg%2"
           expected: "3470d95"
         - test-case: "PR Repo & Ref (irregular)"
-          testing-pr-body: "sadf asdf BrIeFcAsE__REpo: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFcaseREF:3470d95 xczvb"
+          testing-pr-body: "sadf asdf BrIeFcAsE__REpo: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFcaseREF:3470d95 xczvb https://example.com/asdf?q=repo%3Aindygreg%2"
           expected: "3470d95"
         - test-case: "PR Ref"
           testing-pr-body: "sadf asdf BRIEFcaseREF: v0.3.12"
