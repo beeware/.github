@@ -95,7 +95,8 @@ jobs:
       with:
         key: briefcase-${{ runner.os }}-${{ inputs.repository }}-${{ inputs.framework }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
         path: |
-          ${{ steps.dirs.outputs.cookiecutters-data-dir }}
+          # TODO:PR: disabling cookiecutter cache since I need a different git origin remote
+          # ${{ steps.dirs.outputs.cookiecutters-data-dir }}
           ${{ steps.dirs.outputs.briefcase-data-dir }}
           ${{ steps.dirs.outputs.pip-cache-dir }}
           ${{ steps.dirs.outputs.docker-cache-dir }}
@@ -106,10 +107,11 @@ jobs:
         echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
         echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" >> ${GITHUB_OUTPUT}
 
-    - name: Set up Python
-      uses: actions/setup-python@v4.7.1
-      with:
-        python-version: ${{ inputs.python-version }}
+#    - name: Set up Python
+#      if: inputs.python-source == 'github'
+#      uses: actions/setup-python@v4.7.1
+#      with:
+#        python-version: ${{ inputs.python-version }}
 
     - name: Get packages
       # Briefcase will build and package itself in a previous step in its CI.
@@ -137,6 +139,10 @@ jobs:
         if [[ "${{ inputs.briefcase-template-branch }}" != "" ]]; then
           TEMPLATE_BRANCH=$(printf -- "--template-branch %q" "${{ inputs.briefcase-template-branch }}")
         fi
+
+        # install the framework plugin so the app can be ran
+        python -m pip install git+https://github.com/rmartin16/briefcase-plugin-test
+
         cd tests/apps
         cat verify-${{ inputs.framework }}.config | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
 
@@ -198,10 +204,13 @@ jobs:
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       run: |
-        sudo apt-get update -y && sudo apt-get install -y python3-dev python3-pip libcairo2-dev libgirepository1.0-dev
+        sudo apt-get update -y && sudo apt-get install -y python3-dev python3-pip libcairo2-dev libgirepository1.0-dev gir1.2-gtk-3.0
         cd tests/apps/verify-${{ inputs.framework }}
         briefcase create linux system
         briefcase build linux system
+        if [ "${{ inputs.framework }}" == "toga" ]; then
+          xvfb-run briefcase run linux system
+        fi
         briefcase package linux system --adhoc-sign
 
     - name: Build Linux System project (Debian, Dockerized)
