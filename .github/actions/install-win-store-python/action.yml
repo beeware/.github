@@ -7,6 +7,11 @@ inputs:
     default: "3.12"  # should default to the latest Python
     required: false
 
+outputs:
+  win-store-install-outcome:
+    description: "Outcome of the Windows Store Python install"
+    value: ${{ steps.install.outcome }}
+
 runs:
   using: composite
   steps:
@@ -63,21 +68,29 @@ runs:
         key: python-${{ steps.python.outputs.version }}-appx-bundle-${{ steps.python.outputs.current-year }}-${{ steps.python.outputs.current-month }}
 
     - name: Install Windows Store Python ${{ steps.python.outputs.version }}
+      id: install
       shell: powershell
+      # Cloudflare started blocking access to the rg-adguard API...fallback to GitHub Python for now
+      continue-on-error: true
       run: |
         if (-not (Test-Path -Path "${{ steps.python.outputs.appx-path }}" -PathType Leaf)) {
           # The Appx download URL must be resolved each time since the URL expires after a few hours
           echo "Downloading Python ${{ steps.python.outputs.version }}..."
-          $WebResponse = Invoke-WebRequest -UseBasicParsing -Method 'POST' -Uri 'https://store.rg-adguard.net/api/GetFiles' -Body "type=url&url=${{ steps.python.outputs.store-url }}&ring=Retail" -ContentType 'application/x-www-form-urlencoded'
-          $DownloadURL = ($WebResponse.Links | where {$_ -like '*.msix*'} | where {$_ -like '*_neutral_*' -or $_ -like "*_"+$env:PROCESSOR_ARCHITECTURE.Replace("AMD","X").Replace("IA","X")+"_*"} | Select-String -Pattern '(?<=a href=").+(?=" r)').matches.value
+          try {
+            $WebResponse = Invoke-WebRequest -UseBasicParsing -Method 'POST' -Uri 'https://store.rg-adguard.net/api/GetFiles' -Body "type=url&url=${{ steps.python.outputs.store-url }}&ring=Retail" -ContentType 'application/x-www-form-urlencoded'
+            $DownloadURL = ($WebResponse.Links | where {$_ -like '*.msix*'} | where {$_ -like '*_neutral_*' -or $_ -like "*_"+$env:PROCESSOR_ARCHITECTURE.Replace("AMD","X").Replace("IA","X")+"_*"} | Select-String -Pattern '(?<=a href=").+(?=" r)').matches.value
 
-          echo "Appx download URL: $DownloadURL"
-          if (($DownloadURL -eq $null) -or ((([uri]$DownloadURL).Host.split('.')[-2..-1] -join '.') -ne "microsoft.com")) {
-            echo $WebResponse
-            echo " >>> Download URL must resolve to microsoft.com. Aborting. <<< "
-            exit 1
+            echo "Appx download URL: $DownloadURL"
+            if (($DownloadURL -eq $null) -or ((([uri]$DownloadURL).Host.split('.')[-2..-1] -join '.') -ne "microsoft.com")) {
+              echo $WebResponse
+              echo " >>> Download URL must resolve to microsoft.com. Aborting. <<< "
+              exit 1
+            }
+            Invoke-WebRequest -Uri $DownloadURL -UseBasicParsing -OutFile ${{ steps.python.outputs.appx-path }}
+          } catch {
+            echo "::error::Downloading Windows Store Python failed; falling back to installing GitHub Python ($_)"
+            throw $_.Exception
           }
-          Invoke-WebRequest -Uri $DownloadURL -UseBasicParsing -OutFile ${{ steps.python.outputs.appx-path }}
         }
 
         echo "Installing Python ${{ steps.python.outputs.version }}..."
@@ -86,3 +99,9 @@ runs:
         echo "Updating `$PATH..."
         echo "${{ steps.python.outputs.exe-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "${{ steps.python.outputs.scripts-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Python Install Fallback
+      if: always() && steps.install.outcome == 'failure'
+      uses: actions/setup-python@v4.7.1
+      with:
+       python-version: ${{ inputs.python-version }}
