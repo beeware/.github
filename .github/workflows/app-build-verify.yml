@@ -12,10 +12,6 @@ on:
         description: "Python version to use; defaults to latest Python release."
         default: "3.X"
         type: string
-      python-source:
-        description: "Where to install python from; i.e. github or winstore."
-        default: "github"
-        type: string
       runner-os:
         description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
         required: true
@@ -107,14 +103,7 @@ jobs:
         echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" >> ${GITHUB_OUTPUT}
 
     - name: Set up Python
-      if: inputs.python-source == 'github'
       uses: actions/setup-python@v4.7.1
-      with:
-        python-version: ${{ inputs.python-version }}
-
-    - name: Install Windows Store Python
-      if: inputs.python-source == 'winstore'
-      uses: ./beeware-.github/.github/actions/install-win-store-python
       with:
         python-version: ${{ inputs.python-version }}
 
