@@ -225,6 +225,8 @@ jobs:
       target-platform: android
       target-format: gradle
       framework: toga
+      briefcase-template-source: https://github.com/rmartin16/briefcase-template
+      briefcase-template-branch: gui-plugin-support
     strategy:
       fail-fast: false
       matrix:
@@ -241,6 +243,8 @@ jobs:
       target-platform: iOS
       target-format: xcode
       framework: toga
+      briefcase-template-source: https://github.com/rmartin16/briefcase-template
+      briefcase-template-branch: gui-plugin-support
 
   test-verify-apps-linux-system-templates:
     name: Test Verify Linux System App
@@ -255,10 +259,12 @@ jobs:
       target-platform: linux
       target-format: system
       framework: ${{ matrix.framework }}
+      briefcase-template-source: https://github.com/rmartin16/briefcase-template
+      briefcase-template-branch: gui-plugin-support
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb", "pyside2" ]
+        framework: [ "toga", "ppb", "pyside6" ]
 
   test-verify-apps-appimage-templates:
     name: Test Verify AppImage App
@@ -283,6 +289,8 @@ jobs:
       target-platform: linux
       target-format: flatpak
       framework: ${{ matrix.framework }}
+      briefcase-template-source: https://github.com/rmartin16/briefcase-template
+      briefcase-template-branch: gui-plugin-support
     strategy:
       fail-fast: false
       matrix:
@@ -299,6 +307,8 @@ jobs:
       target-platform: macOS
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
+      briefcase-template-source: https://github.com/rmartin16/briefcase-template
+      briefcase-template-branch: gui-plugin-support
     strategy:
       fail-fast: false
       matrix:
@@ -328,6 +338,8 @@ jobs:
       target-platform: windows
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
+      briefcase-template-source: https://github.com/rmartin16/briefcase-template
+      briefcase-template-branch: gui-plugin-support
     strategy:
       fail-fast: false
       matrix:
