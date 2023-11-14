@@ -36,6 +36,10 @@ on:
         description: "Path to use for --template for `briefcase new` to create app."
         default: ""
         type: string
+      briefcase-template-branch:
+        description: "Git branch to use for --template-branch for `briefcase new` to create app."
+        default: ""
+        type: string
 
 defaults:
   run:
@@ -130,8 +134,11 @@ jobs:
         if [[ "${{ inputs.briefcase-template-source }}" != "" ]]; then
           TEMPLATE=$(printf -- "--template %q" "${{ inputs.briefcase-template-source }}")
         fi
+        if [[ "${{ inputs.briefcase-template-branch }}" != "" ]]; then
+          TEMPLATE_BRANCH=$(printf -- "--template-branch %q" "${{ inputs.briefcase-template-branch }}")
+        fi
         cd tests/apps
-        cat verify-${{ inputs.framework }}.config | briefcase new ${TEMPLATE}
+        cat verify-${{ inputs.framework }}.config | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
 
     # In the steps below, using the builtin functions for comparison (instead of ==)
     # allows for case-insensitivity to the inputs for the workflow.
