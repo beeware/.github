@@ -1,0 +1,129 @@
+name: Verify Project
+
+#######
+# Verify creating a project for a target framework on a particular OS.
+#######
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version to use; defaults to latest Python release."
+        default: "3.X"
+        type: string
+      runner-os:
+        description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
+        required: true
+        type: string
+      framework:
+        description: "Framework to use to build the App, e.g. toga."
+        required: true
+        type: string
+      briefcase-template-source:
+        description: "Path to use for --template for `briefcase new` to create app."
+        default: ""
+        type: string
+      briefcase-template-branch:
+        description: "Git branch to use for --template-branch for `briefcase new` to create app."
+        default: ""
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  FORCE_COLOR: "1"
+
+jobs:
+  verify-app:
+    name: Verify App Create
+    runs-on: ${{ inputs.runner-os }}
+    steps:
+
+    - name: Checkout beeware/.github
+      uses: actions/checkout@v4.1.1
+      with:
+        repository: rmartin16/.github-beeware  # !!!! TODO:PR: REPLACE ME WITH beeware/.github !!!!
+        ref: create-new-project  # !!!! TODO:PR: REMOVE ME !!!!
+        path: beeware-.github
+
+    - name: Checkout beeware/briefcase-template
+      uses: actions/checkout@v4.1.1
+      with:
+        repository: rmartin16/briefcase-template  # !!!!! TODO:PR: REPLACE ME WITH beeware/briefcase-template !!!!!
+        ref: gui-plugin-support  # !!!!! TODO:PR REMOVE ME !!!!!
+        path: briefcase-template
+
+    - name: Package Name
+      id: package
+      run: echo "name=$(basename '${{ inputs.repository }}')" >> ${GITHUB_OUTPUT}
+
+    - name: Cache Briefcase Tools
+      uses: actions/cache@v3.3.2
+      with:
+        key: briefcase-${{ runner.os }}-${{ inputs.framework }}
+        path: ~/.cookiecutters
+
+    - name: Set up Python
+      uses: actions/setup-python@v4.7.1
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Get Packages
+      # Briefcase will build and package itself in a previous step in its CI
+      if: endsWith(inputs.repository, 'briefcase')
+      uses: actions/download-artifact@v3.0.2
+      with:
+        name: packages-${{ steps.package.outputs.name }}
+        path: dist
+
+    - name: Install Dependencies
+      run: python -m pip install -Ur ./briefcase-template/requirements.txt
+
+    - name: Install Briefcase Artefact
+      if: endsWith(inputs.repository, 'briefcase')
+      run: python -m pip install dist/briefcase-*.whl
+
+    - name: Install Briefcase
+      if: ${{ !endsWith(inputs.repository, 'briefcase') }}
+      uses: ./beeware-.github/.github/actions/install-briefcase
+
+    - name: Create Briefcase project
+      id: create
+      uses: ./beeware-.github/.github/actions/app-create
+      with:
+        framework: ${{ inputs.framework }}
+        briefcase-template-source: ${{ inputs.briefcase-template-source }}
+        briefcase-template-branch: ${{ inputs.briefcase-template-branch }}
+
+    - name: Run Flake8
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: flake8 --select=E
+
+    - name: Validate pyproject.toml
+      working-directory: ${{ steps.create.outputs.project-path }}
+      shell: python
+      run: |
+        import toml
+        from pathlib import Path
+        from pprint import pprint
+
+        pyproject_toml = Path().cwd() / "pyproject.toml"
+        assert pyproject_toml.is_file()
+        pprint(toml.load(pyproject_toml))
+
+    - name: Install Dependencies (Ubuntu)
+      if: startsWith(inputs.runner-os, 'ubuntu')
+      run: sudo apt update -y && sudo apt install -y --no-install-recommends libgirepository1.0-dev
+
+    - name: Test Project Build
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: briefcase build
+
+    - name: Upload failure logs
+      uses: actions/upload-artifact@v3.1.3
+      if: failure()
+      with:
+        name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}
+        path: ${{ steps.create.outputs.project-path }}/logs/*
