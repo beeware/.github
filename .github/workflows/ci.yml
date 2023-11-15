@@ -183,12 +183,26 @@ jobs:
           dist-path: "*/dist/*"
           build-subdir: "core"
 
+  test-create-apps-briefcase:
+    name: Test Create Apps
+    needs: [ pre-commit, test-package-python ]
+    uses: ./.github/workflows/app-create-verify.yml
+    with:
+      python-version: "3.10"  # must match system python for ubuntu version
+      runner-os: ${{ matrix.runner-os }}
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ "toga", "pyside6" ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-22.04" ]
+
   test-verify-apps-briefcase:
     name: Test Verify Apps
-    needs: [pre-commit, test-package-python]
+    needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
+      python-version: "3.10"
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -196,7 +210,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ "toga", "ppb" ]
-        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-22.04" ]
 
   test-verify-apps-briefcase-template:
     name: Test Briefcase Template Verify Apps
@@ -258,7 +272,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb", "pyside2" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-appimage-templates:
     name: Test Verify AppImage App

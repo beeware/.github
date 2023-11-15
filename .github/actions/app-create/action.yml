@@ -1,0 +1,84 @@
+name: Create a Briefcase Project
+description: Creates a new Briefcase project using a particular GUI toolkit and template.
+
+inputs:
+  framework:
+    description: "The GUI toolkit to use to create the project."
+    default: "Toga"
+  briefcase-template-source:
+    description: "The template to use to roll out the project."
+    required: false
+  briefcase-template-branch:
+    description: "The git branch for the template to use to roll out the project."
+    required: false
+  testing-pr-body:
+    description: "Override value for body of PR; only for testing."
+    required: false
+
+outputs:
+  project-path:
+    value: ${{ steps.create.outputs.path }}
+    description: "The file path to the root of the created project."
+
+runs:
+  using: composite
+  steps:
+    - name: Briefcase Template Override
+      id: template-override
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      shell: bash
+      run: |
+        # Check Body of PR for template to use
+        # (only PRs will have a value for github.event.pull_request.number)
+        PR_BODY="${{ inputs.testing-pr-body }}"
+        if [[ -z "${PR_BODY}" && -n "${{ github.event.pull_request.number }}" ]]; then
+          PR_BODY=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.body')
+        fi
+        printf "::group::Retrieved PR Body\n%s\n::endgroup::\n" "${PR_BODY}"
+
+        TEMPLATE_REPO=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REPO:\s*\K\S+/i and print $&')
+        TEMPLATE_REF=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REF:\s*\K\S+/i and print $&')
+
+        # Expose template repo and branch via outputs
+        echo "Template Repo: ${TEMPLATE_REPO}"
+        echo "Template Ref: ${TEMPLATE_REF}"
+        echo "repo=${TEMPLATE_REPO}" >> ${GITHUB_OUTPUT}
+        echo "ref=${TEMPLATE_REF}" >> ${GITHUB_OUTPUT}
+
+    - name: Create Briefcase Project
+      id: create
+      shell: bash
+      run: |
+        if [[ "${{ steps.template-override.outputs.repo }}" != "" ]]; then
+          TEMPLATE=$(printf -- "--template %q" "${{ steps.template-override.outputs.repo }}")
+        fi
+        if [[ "${{ steps.template-override.outputs.ref }}" != "" ]]; then
+          TEMPLATE_BRANCH=$(printf -- "--template-branch %q" "${{ steps.template-override.outputs.ref }}")
+        fi
+
+        # Map the requested GUI toolkit to the input that Briefcase expects
+        # Default to the input to accommodate arbitrary toolkits installed as plugins
+        case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
+          toga    ) GUI_INPUT=1 ;;
+          pyside6 ) GUI_INPUT=2 ;;
+          ppb     ) GUI_INPUT=3 ;;
+          pygame  ) GUI_INPUT=4 ;;
+          *       ) GUI_INPUT=${{ inputs.framework }} ;;
+        esac
+
+        ROOT_DIR="apps"
+        APP_DIR="verify-app"
+        APP_PATH="${ROOT_DIR}/${APP_DIR}"
+
+        # Prepare to create the project in APP_DIR
+        mkdir -p "${ROOT_DIR}"
+        cd "${ROOT_DIR}"
+        rm -rf "${APP_DIR}"
+
+        # Roll out the project
+        printf "Verify App\n%s\n\n\n\n\n\n\n\n%s\n" "${APP_DIR}" "${GUI_INPUT}" \
+          | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
+
+        echo "Rolled out project to ${APP_PATH}"
+        echo "path=${APP_PATH}" >> ${GITHUB_OUTPUT}
