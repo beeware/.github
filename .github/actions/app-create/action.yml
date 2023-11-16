@@ -60,11 +60,15 @@ runs:
         # Map the requested GUI toolkit to the input that Briefcase expects
         # Default to the input to accommodate arbitrary toolkits installed as plugins
         case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
-          toga    ) GUI_INPUT=1 ;;
-          pyside6 ) GUI_INPUT=2 ;;
-          ppb     ) GUI_INPUT=3 ;;
-          pygame  ) GUI_INPUT=4 ;;
-          *       ) GUI_INPUT=${{ inputs.framework }} ;;
+          toga         ) GUI_INPUT=1 ;;
+          toga-auto    ) GUI_INPUT=8 ;;
+          pyside6      ) GUI_INPUT=2 ;;
+          pyside6-auto ) GUI_INPUT=6 ;;
+          ppb          ) GUI_INPUT=3 ;;
+          ppb-auto     ) GUI_INPUT=5 ;;
+          pygame       ) GUI_INPUT=4 ;;
+          pygame-auto  ) GUI_INPUT=7 ;;
+          *            ) GUI_INPUT=${{ inputs.framework }} ;;
         esac
 
         ROOT_DIR="apps"
@@ -80,5 +84,5 @@ runs:
         printf "Verify App\n%s\n\n\n\n\n\n\n\n%s\n" "${APP_DIR}" "${GUI_INPUT}" \
           | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
 
-        echo "Rolled out project to ${APP_PATH}"
+        echo "Rolled out project to ${APP_PATH} (${{ inputs.framework }}->${GUI_INPUT})"
         echo "path=${APP_PATH}" >> ${GITHUB_OUTPUT}

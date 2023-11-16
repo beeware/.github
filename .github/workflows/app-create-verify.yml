@@ -113,6 +113,10 @@ jobs:
         assert pyproject_toml.is_file()
         pprint(toml.load(pyproject_toml))
 
+    - name: Install Dependencies (Ubuntu)
+      if: startsWith(inputs.runner-os, 'ubuntu')
+      run: sudo apt update -y && sudo apt install -y --no-install-recommends libgirepository1.0-dev
+
     - name: Test Project Build
       working-directory: ${{ steps.create.outputs.project-path }}
       run: briefcase build
