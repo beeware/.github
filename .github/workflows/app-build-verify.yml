@@ -66,7 +66,7 @@ jobs:
         repository: "beeware/.github"
         path: "beeware-.github"
 
-    - name: Package name
+    - name: Package Name
       id: package
       run: echo "name=$(basename '${{ inputs.repository }}')" >> ${GITHUB_OUTPUT}
 
@@ -115,7 +115,7 @@ jobs:
         #python-version: ${{ inputs.python-version }}
         python-version: "3.10"
 
-    - name: Fetch Package Artefacts
+    - name: Get Packages
       # Briefcase will build and package itself in a previous step in its CI.
       if: endsWith(inputs.repository, 'briefcase')
       uses: actions/download-artifact@v3.0.2
@@ -136,39 +136,22 @@ jobs:
         python3 -m pip install git+https://github.com/rmartin16/briefcase-plugin-test
 
     - name: Create Briefcase Project
-      # Don't run for template repos since they already contain a created app.
-#      if: ${{ !endsWith(inputs.repository, '-template') || inputs.repository == 'beeware/briefcase-template' }}
-      run: |
-        if [[ "${{ inputs.briefcase-template-source }}" != "" ]]; then
-          TEMPLATE=$(printf -- "--template %q" "${{ inputs.briefcase-template-source }}")
-        fi
-        if [[ "${{ inputs.briefcase-template-branch }}" != "" ]]; then
-          TEMPLATE_BRANCH=$(printf -- "--template-branch %q" "${{ inputs.briefcase-template-branch }}")
-        fi
-
-        case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
-          toga)    GUI_INPUT=8 ;;
-          pyside6) GUI_INPUT=6 ;;
-          ppb)     GUI_INPUT=5 ;;
-          pygame)  GUI_INPUT=7 ;;
-        esac
-
-        # cd tests/apps
-        mkdir -p apps
-        cd apps
-        printf "Verify App\nverify-app\n\n\n\n\n\n\n\n%s\n" ${GUI_INPUT} | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
-
-        cat verify-app/src/verify_app/app.py
+      id: create
+      uses: ./beeware-.github/.github/actions/app-create
+      with:
+        framework: ${{ inputs.framework }}
+        briefcase-template-source: ${{ inputs.briefcase-template-source }}
+        briefcase-template-branch: ${{ inputs.briefcase-template-branch }}
 
     # In the steps below, using the builtin functions for comparison (instead of ==)
     # allows for case-insensitivity to the inputs for the workflow.
 
-    - name: Build macOS app
+    - name: Build macOS App
       if: >
         startsWith(inputs.runner-os, 'macOS')
         && contains(fromJSON('["", "macOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "app"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       env:
         SDL_VIDEODRIVER: dummy
       run: |
@@ -177,12 +160,12 @@ jobs:
         briefcase run macOS app
         briefcase package macOS app --adhoc-sign
 
-    - name: Build macOS Xcode project
+    - name: Build macOS Xcode Project
       if: >
         startsWith(inputs.runner-os, 'macOS')
         && contains(fromJSON('["", "macOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       env:
         SDL_VIDEODRIVER: dummy
       run: |
@@ -191,12 +174,12 @@ jobs:
         briefcase run macOS Xcode
         briefcase package macOS Xcode --adhoc-sign
 
-    - name: Build Windows app
+    - name: Build Windows App
       if: >
         startsWith(inputs.runner-os, 'Windows')
         && contains(fromJSON('["", "Windows"]'), inputs.target-platform)
         && contains(fromJSON('["", "app"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       env:
         WIX: ""  # force Briefcase to install and use its own version of WiX
       run: |
@@ -205,12 +188,12 @@ jobs:
         briefcase run windows app
         briefcase package windows app --adhoc-sign
 
-    - name: Build Windows Visual Studio project
+    - name: Build Windows Visual Studio Project
       if: >
         startsWith(inputs.runner-os, 'Windows')
         && contains(fromJSON('["", "Windows"]'), inputs.target-platform)
         && contains(fromJSON('["", "VisualStudio"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       env:
         WIX: ""  # force Briefcase to install and use its own version of WiX
       run: |
@@ -219,13 +202,13 @@ jobs:
         briefcase run windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
 
-    - name: Build Linux System project (Ubuntu, local)
+    - name: Build Linux System Project (Ubuntu, local)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && startsWith(inputs.python-version, steps.system-python.outputs.python-version)
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       env:
         QT_QPA_PLATFORM: offscreen
       run: |
@@ -244,42 +227,38 @@ jobs:
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
 
-#    - name: Build Linux System project (Debian, Dockerized)
-#      if: >
-#        startsWith(inputs.runner-os, 'ubuntu')
-#        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-#        && contains(fromJSON('["", "system"]'), inputs.target-format)
-#      working-directory: apps/verify-app
-#      run: |
-#        briefcase create linux system --target debian:bullseye
-#        briefcase build linux system --target debian:bullseye
-#        briefcase package linux system --target debian:bullseye --adhoc-sign
-#
-#    - name: Build Linux System project (RPM, Dockerized)
-#      # fedora:37 ships with Python 3.11 and PySide2 cannot be installed
-#      if: >
-#        startsWith(inputs.runner-os, 'ubuntu')
-#        && !contains(fromJSON('["PySide2"]'), inputs.framework)
-#        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-#        && contains(fromJSON('["", "system"]'), inputs.target-format)
-#      working-directory: apps/verify-app
-#      run: |
-#        briefcase create linux system --target fedora:37
-#        briefcase build linux system --target fedora:37
-#        briefcase package linux system --target fedora:37 --adhoc-sign
-#
-#    - name: Build Linux System project (Arch, Dockerized)
-#      # arch started shipping Python 3.11 on 3 may 2023 and PySide2 cannot be installed
-#      if: >
-#        startsWith(inputs.runner-os, 'ubuntu')
-#        && !contains(fromJSON('["PySide2"]'), inputs.framework)
-#        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-#        && contains(fromJSON('["", "system"]'), inputs.target-format)
-#      working-directory: apps/verify-app
-#      run: |
-#        briefcase create linux system --target archlinux:latest
-#        briefcase build linux system --target archlinux:latest
-#        briefcase package linux system --target archlinux:latest --adhoc-sign
+    - name: Build Linux System Project (Debian, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target debian:bullseye
+        briefcase build linux system --target debian:bullseye
+        briefcase package linux system --target debian:bullseye --adhoc-sign
+
+    - name: Build Linux System Project (RPM, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target fedora:37
+        briefcase build linux system --target fedora:37
+        briefcase package linux system --target fedora:37 --adhoc-sign
+
+    - name: Build Linux System Project (Arch, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target archlinux:latest
+        briefcase build linux system --target archlinux:latest
+        briefcase package linux system --target archlinux:latest --adhoc-sign
 
     # 2023-09-11 AppImage dropped to "best effort" support.
     #
@@ -294,12 +273,12 @@ jobs:
     # alive.
     #
     # Only runs when target platform and format are explicitly Linux and AppImage.
-    - name: Build AppImage project
+    - name: Build AppImage Project
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["Linux"]'), inputs.target-platform)
         && contains(fromJSON('["AppImage"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       run: |
         sudo apt update -y
         sudo apt install libfuse2
@@ -311,13 +290,12 @@ jobs:
         xvfb-run briefcase run linux AppImage
         briefcase package linux AppImage --adhoc-sign
 
-    - name: Build Flatpak project
-      # && contains(fromJSON('["Toga", "PyGame"]'), inputs.framework)
+    - name: Build Flatpak Project
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "Flatpak"]'), inputs.target-format)
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       run: |
         sudo apt --assume-yes update
         sudo apt --assume-yes install --no-install-recommends flatpak flatpak-builder elfutils
@@ -332,7 +310,7 @@ jobs:
         contains(fromJSON('["", "Android"]'), inputs.target-platform)
         && contains(fromJSON('["", "Gradle"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       run: |
         briefcase create android gradle
         briefcase build android gradle
@@ -367,7 +345,7 @@ jobs:
         && contains(fromJSON('["", "iOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       run: |
         briefcase create iOS xcode
         briefcase build iOS xcode
@@ -379,13 +357,13 @@ jobs:
         contains(fromJSON('["", "web"]'), inputs.target-platform)
         && contains(fromJSON('["", "static"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
-      working-directory: apps/verify-app
+      working-directory: ${{ steps.create.outputs.project-path }}
       run: |
         briefcase create web static
         briefcase build web static
         briefcase package web static
 
-    - name: Upload failure logs
+    - name: Upload Failure Logs
       uses: actions/upload-artifact@v3.1.3
       if: failure()
       with:
