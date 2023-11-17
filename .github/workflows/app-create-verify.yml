@@ -73,6 +73,7 @@ jobs:
         cache-dependency-path: |
           **/setup.cfg
           **/pyproject.toml
+          .pre-commit-config.yaml
 
     - name: Get Packages
       # Briefcase will build and package itself in a previous step in its CI

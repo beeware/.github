@@ -77,6 +77,7 @@ jobs:
           cache-dependency-path: |
             **/setup.cfg
             **/pyproject.toml
+            .pre-commit-config.yaml
 
       - name: Install pre-commit
         run: python -m pip install ${{ inputs.pre-commit-source || 'pre-commit' }}
