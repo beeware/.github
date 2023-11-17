@@ -101,19 +101,19 @@ jobs:
           ${{ steps.dirs.outputs.pip-cache-dir }}
           ${{ steps.dirs.outputs.docker-cache-dir }}
 
-    - name: Determine system python3 version
+    - name: Determine System python3 Version
       id: system-python
       run: |
         SYSTEM_PYTHON_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
         echo "version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
 
-    - name: Set up Python
+    - name: Set Up Python
       uses: actions/setup-python@v4.7.1
       with:
         python-version: ${{ inputs.python-version }}
 
     - name: Get Packages
-      # Briefcase will build and package itself in a previous step in its CI.
+      # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(inputs.repository, 'briefcase')
       uses: actions/download-artifact@v3.0.2
       with:
@@ -138,6 +138,8 @@ jobs:
         briefcase-template-branch: ${{ inputs.briefcase-template-branch }}
 
     - name: Determine Output Format Configuration
+      # only used for the template repos so apps are built with the PR version of the template;
+      # other repos will fetch the latest template version during `create` as normal.
       if: endsWith(inputs.repository, '-template') && inputs.repository != 'beeware/briefcase-template'
       id: output-format
       run: |
@@ -155,7 +157,7 @@ jobs:
         && contains(fromJSON('["", "app"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create macOS app
+        briefcase create macOS app ${{ steps.output-format.outputs.template-override }}
         briefcase build macOS app
         briefcase package macOS app --adhoc-sign
 
@@ -166,7 +168,7 @@ jobs:
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create macOS Xcode
+        briefcase create macOS Xcode ${{ steps.output-format.outputs.template-override }}
         briefcase build macOS Xcode
         briefcase package macOS Xcode --adhoc-sign
 
@@ -179,7 +181,7 @@ jobs:
         WIX: ""  # force Briefcase to install and use its own version of WiX
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create windows app
+        briefcase create windows app ${{ steps.output-format.outputs.template-override }}
         briefcase build windows app
         briefcase package windows app --adhoc-sign
 
@@ -192,7 +194,7 @@ jobs:
         WIX: ""  # force Briefcase to install and use its own version of WiX
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create windows VisualStudio
+        briefcase create windows VisualStudio ${{ steps.output-format.outputs.template-override }}
         briefcase build windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
 
@@ -207,7 +209,7 @@ jobs:
         sudo apt update -y
         sudo apt install -y --no-install-recommends python3-dev python3-pip libcairo2-dev libgirepository1.0-dev
 
-        briefcase create linux system
+        briefcase create linux system ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system
         briefcase package linux system --adhoc-sign
 
@@ -218,7 +220,7 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create linux system --target debian:bullseye
+        briefcase create linux system --target debian:bullseye ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target debian:bullseye
         briefcase package linux system --target debian:bullseye --adhoc-sign
 
@@ -229,7 +231,7 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create linux system --target fedora:37
+        briefcase create linux system --target fedora:37 ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target fedora:37
         briefcase package linux system --target fedora:37 --adhoc-sign
 
@@ -240,7 +242,7 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create linux system --target archlinux:latest
+        briefcase create linux system --target archlinux:latest ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target archlinux:latest
         briefcase package linux system --target archlinux:latest --adhoc-sign
 
@@ -264,9 +266,16 @@ jobs:
         && contains(fromJSON('["AppImage"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
+        # PyGObject>=3.46.0 requires a version of glibc that isn't available in manylinux images;
+        # so, the version will need to be constrained to successfully build an AppImage with Toga.
+        # Furthermore, Toga>0.3.1 requires PyGObject>=3.46.0 so its version is constrained as well.
+        if [ "${{ startsWith(inputs.framework, 'toga') }}" = "true" ]; then
+          CONFIG_OVERRIDE_REQUIRES='requires=["toga-gtk==0.3.1", "PyGobject<3.46.0"]'
+        fi
+
         briefcase create linux AppImage \
           ${{ steps.output-format.outputs.template-override }} \
-          --config 'requires=["toga-gtk==0.3.1", "PyGobject<3.46.0"]'
+          --config $(printf '%s' $CONFIG_OVERRIDE_REQUIRES)
         briefcase build linux AppImage
         briefcase package linux AppImage --adhoc-sign
 
@@ -281,7 +290,7 @@ jobs:
         sudo apt update -y
         sudo apt install -y --no-install-recommends flatpak flatpak-builder elfutils
 
-        briefcase create linux flatpak
+        briefcase create linux flatpak ${{ steps.output-format.outputs.template-override }}
         briefcase build linux flatpak
         briefcase package linux flatpak --adhoc-sign
 
@@ -292,7 +301,7 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create android gradle
+        briefcase create android gradle ${{ steps.output-format.outputs.template-override }}
         briefcase build android gradle
         briefcase package android gradle --adhoc-sign
 
@@ -304,7 +313,7 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create iOS xcode
+        briefcase create iOS xcode ${{ steps.output-format.outputs.template-override }}
         briefcase build iOS xcode
         briefcase package iOS xcode --adhoc-sign
 
@@ -315,7 +324,7 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create web static
+        briefcase create web static ${{ steps.output-format.outputs.template-override }}
         briefcase build web static
         briefcase package web static
 
