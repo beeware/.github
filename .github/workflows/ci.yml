@@ -25,7 +25,7 @@ jobs:
       pre-commit-source: pre-commit
 
   test-docs-build-verify:
-    name: Verify Docs Build Check
+    name: Verify Docs Build
     needs: pre-commit
     # inheriting secrets does not work for forked repos
     if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
