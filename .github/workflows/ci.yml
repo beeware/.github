@@ -196,6 +196,7 @@ jobs:
       python-version: "3.10"  # must match system python for ubuntu version
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
+      briefcase-template-source: ${{ github.workspace }}
     strategy:
       fail-fast: false
       matrix:
@@ -224,9 +225,9 @@ jobs:
     with:
       python-version: "3.11"
       repository: beeware/briefcase-template
-      briefcase-template-source: "../../"
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
+      briefcase-template-source: ${{ github.workspace }}
     strategy:
       fail-fast: false
       matrix:

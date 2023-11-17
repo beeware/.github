@@ -40,6 +40,14 @@ runs:
         TEMPLATE_REPO=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REPO:\s*\K\S+/i and print $&')
         TEMPLATE_REF=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REF:\s*\K\S+/i and print $&')
 
+        # If a template is not in the PR, use inputs specified in CI workflow
+        if [ -z "${TEMPLATE_REPO}" ]; then
+          TEMPLATE_REPO="${{ inputs.briefcase-template-source }}"
+        fi
+        if [ -z "${TEMPLATE_REF}" ]; then
+          TEMPLATE_REF="${{ inputs.briefcase-template-branch }}"
+        fi
+
         # Expose template repo and branch via outputs
         echo "repo=${TEMPLATE_REPO}" | tee -a ${GITHUB_OUTPUT}
         echo "ref=${TEMPLATE_REF}" | tee -a ${GITHUB_OUTPUT}
