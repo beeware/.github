@@ -59,16 +59,14 @@ jobs:
       id: package
       run: echo "name=$(basename '${{ inputs.repository }}')" >> ${GITHUB_OUTPUT}
 
-    - name: Cache Briefcase Tools
-      uses: actions/cache@v3.3.2
-      with:
-        key: briefcase-${{ runner.os }}-${{ inputs.framework }}
-        path: ~/.cookiecutters
-
     - name: Set up Python
       uses: actions/setup-python@v4.7.1
       with:
         python-version: ${{ inputs.python-version }}
+        cache: "pip"
+        cache-dependency-path: |
+          **/setup.cfg
+          **/pyproject.toml
 
     - name: Get Packages
       # Briefcase will build and package itself in a previous step in its CI

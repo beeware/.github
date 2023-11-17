@@ -69,37 +69,24 @@ jobs:
 
     - name: Package Name
       id: package
-      run: echo "name=$(basename '${{ inputs.repository }}')" >> ${GITHUB_OUTPUT}
+      run: echo "name=$(basename '${{ inputs.repository }}')" | tee -a ${GITHUB_OUTPUT}
 
-    - name: Determine Cache Directories
+    - name: Determine Cache Directory
       id: dirs
       run: |
-        echo "cookiecutters-data-dir=~/.cookiecutters" >> ${GITHUB_OUTPUT}
-
-        if [[ "${{ startsWith(inputs.runner-os, 'ubuntu') }}" == "true" ]]; then
-          echo "briefcase-data-dir=~/.cache/briefcase" >> ${GITHUB_OUTPUT}
-          echo "pip-cache-dir=~/.cache/pip" >> ${GITHUB_OUTPUT}
-
-        elif [[ "${{ startsWith(inputs.runner-os, 'macos') }}" == "true" ]]; then
-          echo "briefcase-data-dir=~/Library/Caches/org.beeware.briefcase" >> ${GITHUB_OUTPUT}
-          echo "pip-cache-dir=~/Library/Caches/pip" >> ${GITHUB_OUTPUT}
-          echo "docker-cache-dir=~/Library/Containers/com.docker.docker/Data/vms/0/" >> ${GITHUB_OUTPUT}
-
-        elif [[ "${{ startsWith(inputs.runner-os, 'windows') }}" == "true" ]]; then
-          echo "briefcase-data-dir=~/AppData/Local/BeeWare/briefcase/Cache" >> ${GITHUB_OUTPUT}
-          echo "pip-cache-dir=~/AppData/Local/pip/Cache" >> ${GITHUB_OUTPUT}
-          echo "docker-cache-dir=C:/ProgramData/DockerDesktop" >> ${GITHUB_OUTPUT}
-        fi
+        case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.runner-os }}')" in
+          ubuntu*  ) BRIEFCASE_DIR="~/.cache/briefcase" ;;
+          macos*   ) BRIEFCASE_DIR="~/Library/Caches/org.beeware.briefcase" ;;
+          windows* ) BRIEFCASE_DIR="~/AppData/Local/BeeWare/briefcase/Cache" ;;
+          *        ) echo "::error::Failed to determine the Briefcase data directory path" ;;
+        esac
+        echo "briefcase-data-dir=${BRIEFCASE_DIR}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Cache Briefcase Tools
       uses: actions/cache@v3.3.2
       with:
-        key: briefcase-${{ runner.os }}-${{ inputs.repository }}-${{ inputs.framework }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
-        path: |
-          ${{ steps.dirs.outputs.cookiecutters-data-dir }}
-          ${{ steps.dirs.outputs.briefcase-data-dir }}
-          ${{ steps.dirs.outputs.pip-cache-dir }}
-          ${{ steps.dirs.outputs.docker-cache-dir }}
+        key: briefcase-data|${{ inputs.runner-os }}|${{ inputs.repository }}|${{ inputs.framework }}|${{ inputs.target-platform }}|${{ inputs.target-format }}
+        path: ${{ steps.dirs.outputs.briefcase-data-dir }}
 
     - name: Determine System python3 Version
       id: system-python
@@ -111,6 +98,10 @@ jobs:
       uses: actions/setup-python@v4.7.1
       with:
         python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: |
+          **/setup.cfg
+          **/pyproject.toml
 
     - name: Get Packages
       # Briefcase will build and package itself in a previous step in its CI

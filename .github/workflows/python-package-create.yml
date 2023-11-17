@@ -61,7 +61,7 @@ jobs:
         uses: actions/setup-python@v4.7.1
         with:
           python-version: ${{ inputs.python-version }}
-          cache: "pip"
+          cache: pip
           cache-dependency-path: |
             **/setup.cfg
             **/pyproject.toml
