@@ -50,15 +50,13 @@ jobs:
     - name: Checkout beeware/.github
       uses: actions/checkout@v4.1.1
       with:
-        repository: rmartin16/.github-beeware  # !!!! TODO:PR: REPLACE ME WITH beeware/.github !!!!
-        ref: create-new-project  # !!!! TODO:PR: REMOVE ME !!!!
+        repository: beeware/.github
         path: beeware-.github
 
     - name: Checkout beeware/briefcase-template
       uses: actions/checkout@v4.1.1
       with:
-        repository: rmartin16/briefcase-template  # !!!!! TODO:PR: REPLACE ME WITH beeware/briefcase-template !!!!!
-        ref: gui-plugin-support  # !!!!! TODO:PR REMOVE ME !!!!!
+        repository: beeware/briefcase-template
         path: briefcase-template
 
     - name: Package Name

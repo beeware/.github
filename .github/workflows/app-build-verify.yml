@@ -63,8 +63,7 @@ jobs:
     - name: Checkout beeware/.github
       uses: actions/checkout@v4.1.1
       with:
-        repository: rmartin16/.github-beeware  # !!!! TODO:PR: REPLACE ME WITH beeware/.github !!!!
-        ref: create-new-project  # !!!! TODO:PR: REMOVE ME !!!!
+        repository: beeware/.github
         path: beeware-.github
 
     - name: Package Name
@@ -112,13 +111,12 @@ jobs:
         name: packages-${{ steps.package.outputs.name }}
         path: dist
 
-    # !!!!!  TODO:PR: RESTORE INSTALLING BRIEFCASE ARTEFACT - INSTALL FROM PR BODY ALWAYS FOR TESTING !!!!!
-    # - name: Install Briefcase Artefact
-    #   if: endsWith(inputs.repository, 'briefcase')
-    #   run: python -m pip install dist/briefcase-*.whl
+    - name: Install Briefcase Artefact
+      if: endsWith(inputs.repository, 'briefcase')
+      run: python -m pip install dist/briefcase-*.whl
 
     - name: Install Briefcase
-      # if: ${{ !endsWith(inputs.repository, 'briefcase') }}
+      if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
 
     - name: Determine Briefcase Template Path
