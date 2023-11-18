@@ -19,13 +19,13 @@ env:
 
 jobs:
   pre-commit:
-    name: Pre-commit checks
+    name: Pre-commit Checks
     uses: ./.github/workflows/pre-commit-run.yml
     with:
-      pre-commit-source: "pre-commit"
+      pre-commit-source: pre-commit
 
   test-docs-build-verify:
-    name: Test Verify Docs Build
+    name: Verify Docs Build
     needs: pre-commit
     # inheriting secrets does not work for forked repos
     if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
@@ -44,7 +44,7 @@ jobs:
           version: "v0.3.1"
 
   test-install-briefcase:
-    name: Test Install Briefcase
+    name: Install Briefcase
     needs: pre-commit
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -112,13 +112,18 @@ jobs:
           testing-pr-ref: "v40.0.5"
           expected: "main"
     steps:
-    - name: Checkout .github repo
+    - name: Checkout beeware/.github
       uses: actions/checkout@v4.1.1
 
     - name: Set up Python
       uses: actions/setup-python@v4.7.1
       with:
-        python-version: "3.X"
+        python-version: 3.X
+        cache: pip
+        cache-dependency-path: |
+          **/setup.cfg
+          **/pyproject.toml
+          .pre-commit-config.yaml
 
     - name: Install Briefcase
       id: briefcase
@@ -130,7 +135,7 @@ jobs:
         testing-pr-ref: ${{ matrix.testing-pr-ref }}
         testing-ref-name: ${{ matrix.testing-ref-name }}
 
-    - name: Test Briefcase @ ${{ matrix.test-case }}
+    - name: Briefcase @ ${{ matrix.test-case }}
       run: |
         if [[ "${{ matrix.expected }}" != "${{ steps.briefcase.outputs.installed-version }}" ]]; then
           echo "installed-version: ${{ steps.briefcase.outputs.installed-version }}"
@@ -140,7 +145,7 @@ jobs:
         fi
 
   test-pre-commit-run:
-    name: Test Pre-commit
+    name: Pre-commit
     needs: pre-commit
     uses: ./.github/workflows/pre-commit-run.yml
     with:
@@ -160,7 +165,7 @@ jobs:
           pre-commit-source: "./core[dev]"
 
   test-package-python:
-    name: Test Python Package Create
+    name: Create Package
     needs: pre-commit
     uses: ./.github/workflows/python-package-create.yml
     with:
@@ -183,12 +188,26 @@ jobs:
           dist-path: "*/dist/*"
           build-subdir: "core"
 
+  test-create-apps-briefcase:
+    name: Create Apps
+    needs: [ pre-commit, test-package-python ]
+    uses: ./.github/workflows/app-create-verify.yml
+    with:
+      python-version: "3.10"  # must match system python for ubuntu version
+      runner-os: ${{ matrix.runner-os }}
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ "toga", "pyside6" ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-22.04" ]
+
   test-verify-apps-briefcase:
-    name: Test Verify Apps
-    needs: [pre-commit, test-package-python]
+    name: Verify Briefcase
+    needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
+      python-version: "3.10"  # must match system python for ubuntu version
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -196,16 +215,15 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ "toga", "ppb" ]
-        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
+        runner-os: [ "macos-latest", "windows-latest", "ubuntu-22.04" ]
 
   test-verify-apps-briefcase-template:
-    name: Test Briefcase Template Verify Apps
+    name: Verify Briefcase Template
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
       python-version: "3.11"
       repository: beeware/briefcase-template
-      briefcase-template-source: "../../"
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
     strategy:
@@ -215,7 +233,7 @@ jobs:
         runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-android-templates:
-    name: Test Verify Android App
+    name: Verify Android
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -231,7 +249,7 @@ jobs:
         runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
 
   test-verify-apps-iOS-templates:
-    name: Test Verify iOS App
+    name: Verify iOS
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -243,7 +261,7 @@ jobs:
       framework: toga
 
   test-verify-apps-linux-system-templates:
-    name: Test Verify Linux System App
+    name: Verify Linux System
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -258,10 +276,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb", "pyside2" ]
+        framework: [ "toga", "ppb" ]
 
   test-verify-apps-appimage-templates:
-    name: Test Verify AppImage App
+    name: Verify AppImage
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -273,7 +291,7 @@ jobs:
       framework: toga
 
   test-verify-apps-flatpak-templates:
-    name: Test Verify Flatpak App
+    name: Verify Flatpak
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -289,7 +307,7 @@ jobs:
         framework: [ "toga", "pygame" ]
 
   test-verify-apps-macOS-templates:
-    name: Test Verify macOS App
+    name: Verify macOS
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -306,7 +324,7 @@ jobs:
         framework: [ "toga", "ppb" ]
 
   test-verify-apps-web-templates:
-    name: Test Verify Web App
+    name: Verify Web
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -318,7 +336,7 @@ jobs:
       framework: toga
 
   test-verify-apps-windows-templates:
-    name: Test Verify Windows App
+    name: Verify Windows
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:

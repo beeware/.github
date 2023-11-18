@@ -38,8 +38,8 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        # Source version from Body of PR (if there is one; if there isn't,
-        # github.event.pull_request.number will be empty)
+        # Check Body of PR for Briefcase version to use
+        # (only PRs will have a value for github.event.pull_request.number)
         PR_BODY="${{ inputs.testing-pr-body }}"
         if [[ -z "${PR_BODY}" && -n "${{ github.event.pull_request.number }}" ]]; then
           PR_BODY=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.body')
@@ -58,10 +58,8 @@ runs:
         fi
 
         # Expose repo and version via outputs
-        echo "Briefcase Repo: ${BRIEFCASE_REPO}"
-        echo "Briefcase Ref: ${BRIEFCASE_REF}"
-        echo "repo=${BRIEFCASE_REPO}" >> ${GITHUB_OUTPUT}
-        echo "ref=${BRIEFCASE_REF}" >> ${GITHUB_OUTPUT}
+        echo "repo=${BRIEFCASE_REPO}" | tee -a ${GITHUB_OUTPUT}
+        echo "ref=${BRIEFCASE_REF}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Derive Target Briefcase Version
       id: briefcase-derived
