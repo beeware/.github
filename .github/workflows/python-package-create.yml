@@ -19,6 +19,10 @@ on:
         description: "The arguments for `pip install` to install tox; use ./path/to/package[dev] for the repo's pinned version."
         default: ".[dev]"
         type: string
+      tox-factors:
+        description: "The tox factors to append to the package command."
+        default: ""
+        type: string
       build-subdirectory:
         description: "The subdirectory to build as a wheel."
         default: ""
@@ -74,11 +78,11 @@ jobs:
 
       - name: Build wheels
         if: inputs.build-subdirectory == ''
-        run: tox -e package
+        run: tox -e package${{ inputs.tox-factors }}
 
       - name: Build wheels from subdirectory
         if: inputs.build-subdirectory != ''
-        run: tox -e package -- ${{ inputs.build-subdirectory }}
+        run: tox -e package${{ inputs.tox-factors }} -- ${{ inputs.build-subdirectory }}
 
       - name: Upload Package
         uses: actions/upload-artifact@v3.1.3

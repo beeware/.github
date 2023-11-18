@@ -140,7 +140,11 @@ runs:
         REF="${{ steps.briefcase-override.outputs.ref || steps.briefcase-derived.outputs.version }}"
 
         echo "Installing ${REPO}@${REF}"
-        python -m pip install -U "git+${REPO}@${REF}"
+        python -m pip install \
+          --upgrade \
+          --upgrade-strategy eager \
+          "git+${REPO}@${REF}" \
+          "git+${REPO}@${REF}#subdirectory=automation"
 
         echo "Installed version: $(briefcase --version)"
         echo "version=${REF}" >> ${GITHUB_OUTPUT}

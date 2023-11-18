@@ -27,7 +27,7 @@ jobs:
   test-docs-build-verify:
     name: Verify Docs Build
     needs: pre-commit
-    # inheriting secrets does not work for forked repos
+    # inherited secrets are not exposed to forked repos
     if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
     uses: ./.github/workflows/docs-build-verify.yml
     secrets: inherit
@@ -36,12 +36,12 @@ jobs:
       project-version: ${{ matrix.version }}
     strategy:
       matrix:
-        name: [ "briefcase", "toga" ]
+        name: [ briefcase, toga ]
         include:
-        - name: "briefcase"
-          version: "v0.3.13"
-        - name: "toga"
-          version: "v0.3.1"
+        - name: briefcase
+          version: v0.3.13
+        - name: toga
+          version: v0.3.1
 
   test-install-briefcase:
     name: Install Briefcase
@@ -154,15 +154,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ "briefcase", "gbulb", "Python-support-testbed", "rubicon-objc", "toga" ]
+        repo: [ briefcase, gbulb, Python-support-testbed, rubicon-objc, toga ]
         include:
-        - pre-commit-source: ".[dev]"
+        - pre-commit-source: .[dev]
         - repo: gbulb
-          pre-commit-source: "pre-commit"
+          pre-commit-source: pre-commit
         - repo: Python-support-testbed
-          pre-commit-source: "pre-commit"
+          pre-commit-source: pre-commit
         - repo: toga
-          pre-commit-source: "./core[dev]"
+          pre-commit-source: ./core[dev]
 
   test-package-python:
     name: Create Package
@@ -171,22 +171,27 @@ jobs:
     with:
       repository: beeware/${{ matrix.repo }}
       tox-source: ${{ matrix.tox-source }}
+      tox-factors: ${{ matrix.tox-factors }}
       distribution-path: ${{ matrix.dist-path }}
       build-subdirectory: ${{ matrix.build-subdir }}
     strategy:
       fail-fast: false
       matrix:
-        repo: [ "briefcase", "gbulb", "rubicon-objc", "toga" ]
+        repo: [ briefcase, gbulb, rubicon-objc, toga ]
         include:
-        - tox-source: ".[dev]"
-        - dist-path: "dist"
-        - repo: "gbulb"
-          tox-source: "tox"
-          dist-path: "dist"
-        - repo: "toga"
-          tox-source: "./core[dev]"
+        - tox-source: .[dev]
+        - dist-path: dist
+        - repo: briefcase
+          tox-source: .[dev]
+          tox-factors: -with-automation
+          dist-path: dist
+        - repo: gbulb
+          tox-source: tox
+          dist-path: dist
+        - repo: toga
+          tox-source: ./core[dev]
           dist-path: "*/dist/*"
-          build-subdir: "core"
+          build-subdir: core
 
   test-verify-projects-briefcase:
     name: Verify Project
@@ -199,8 +204,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pyside6" ]
-        runner-os: [ "macos-latest", "windows-latest", "ubuntu-22.04" ]
+        framework: [ toga, pyside6 ]
+        runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
 
   test-verify-apps-briefcase:
     name: Verify Briefcase
@@ -214,8 +219,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb" ]
-        runner-os: [ "macos-latest", "windows-latest", "ubuntu-22.04" ]
+        framework: [ toga, ppb ]
+        runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
 
   test-verify-apps-briefcase-template:
     name: Verify Briefcase Template
@@ -229,8 +234,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb" ]
-        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
+        framework: [ toga, ppb ]
+        runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
 
   test-verify-apps-android-templates:
     name: Verify Android
@@ -242,11 +247,12 @@ jobs:
       runner-os: ${{ matrix.runner-os }}
       target-platform: android
       target-format: gradle
-      framework: toga
+      framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
       matrix:
-        runner-os: [ "macos-latest", "windows-latest", "ubuntu-latest" ]
+        framework: [ toga ]  # toga only
+        runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
 
   test-verify-apps-iOS-templates:
     name: Verify iOS
@@ -258,16 +264,18 @@ jobs:
       runner-os: macos-latest
       target-platform: iOS
       target-format: xcode
-      framework: toga
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ toga ]  # toga only
 
   test-verify-apps-linux-system-templates:
-    name: Verify Linux System
+    name: Verify Linux
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      # This *must* be the version of Python that is the system Python on ubuntu-22.04.
-      # Otherwise native system package builds won't be included.
-      python-version: "3.10"
+      python-version: "3.10"  # must match system python for ubuntu version
       repository: beeware/briefcase-linux-system-template
       runner-os: ubuntu-22.04
       target-platform: linux
@@ -276,7 +284,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "ppb" ]
+        framework: [ toga, pyside6, ppb, pygame ]
 
   test-verify-apps-appimage-templates:
     name: Verify AppImage
@@ -288,7 +296,11 @@ jobs:
       runner-os: ubuntu-latest
       target-platform: linux
       target-format: appimage
-      framework: toga
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ toga, pyside6, ppb, pygame ]
 
   test-verify-apps-flatpak-templates:
     name: Verify Flatpak
@@ -304,7 +316,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ "toga", "pygame" ]
+        framework: [ toga, pyside6, ppb, pygame ]
 
   test-verify-apps-macOS-templates:
     name: Verify macOS
@@ -320,8 +332,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        format: [ "app", "Xcode" ]
-        framework: [ "toga", "ppb" ]
+        framework: [ toga, pyside6, ppb, pygame ]
+        format: [ app, Xcode ]
 
   test-verify-apps-web-templates:
     name: Verify Web
@@ -333,7 +345,11 @@ jobs:
       runner-os: ubuntu-latest
       target-platform: web
       target-format: static
-      framework: toga
+      framework: ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ toga ]  # toga only
 
   test-verify-apps-windows-templates:
     name: Verify Windows
@@ -349,5 +365,5 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        format: [ "app", "VisualStudio" ]
-        framework: [ "toga", "ppb" ]
+        framework: [ toga, pyside6, ppb, pygame ]
+        format: [ app, VisualStudio ]
