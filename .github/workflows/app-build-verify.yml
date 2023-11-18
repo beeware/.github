@@ -65,60 +65,51 @@ jobs:
     - name: Checkout beeware/.github
       uses: actions/checkout@v4.1.1
       with:
-        repository: "beeware/.github"
-        path: "beeware-.github"
+        repository: beeware/.github
+        path: beeware-.github
 
     - name: Package Name
       id: package
-      run: echo "name=$(basename '${{ inputs.repository }}')" >> ${GITHUB_OUTPUT}
+      run: echo "name=$(basename '${{ inputs.repository }}')" | tee -a ${GITHUB_OUTPUT}
 
-    - name: Determine Cache Directories
+    - name: Determine Cache Directory
       id: dirs
       run: |
-        echo "cookiecutters-data-dir=~/.cookiecutters" >> ${GITHUB_OUTPUT}
-
-        if [[ "${{ startsWith(inputs.runner-os, 'ubuntu') }}" == "true" ]]; then
-          echo "briefcase-data-dir=~/.cache/briefcase" >> ${GITHUB_OUTPUT}
-          echo "pip-cache-dir=~/.cache/pip" >> ${GITHUB_OUTPUT}
-
-        elif [[ "${{ startsWith(inputs.runner-os, 'macos') }}" == "true" ]]; then
-          echo "briefcase-data-dir=~/Library/Caches/org.beeware.briefcase" >> ${GITHUB_OUTPUT}
-          echo "pip-cache-dir=~/Library/Caches/pip" >> ${GITHUB_OUTPUT}
-          echo "docker-cache-dir=~/Library/Containers/com.docker.docker/Data/vms/0/" >> ${GITHUB_OUTPUT}
-
-        elif [[ "${{ startsWith(inputs.runner-os, 'windows') }}" == "true" ]]; then
-          echo "briefcase-data-dir=~/AppData/Local/BeeWare/briefcase/Cache" >> ${GITHUB_OUTPUT}
-          echo "pip-cache-dir=~/AppData/Local/pip/Cache" >> ${GITHUB_OUTPUT}
-          echo "docker-cache-dir=C:/ProgramData/DockerDesktop" >> ${GITHUB_OUTPUT}
-        fi
+        case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.runner-os }}')" in
+          ubuntu*  ) BRIEFCASE_DIR="~/.cache/briefcase" ;;
+          macos*   ) BRIEFCASE_DIR="~/Library/Caches/org.beeware.briefcase" ;;
+          windows* ) BRIEFCASE_DIR="~/AppData/Local/BeeWare/briefcase/Cache" ;;
+          *        ) echo "::error::Failed to determine the Briefcase data directory path" ;;
+        esac
+        echo "briefcase-data-dir=${BRIEFCASE_DIR}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Cache Briefcase Tools
       uses: actions/cache@v3.3.2
       with:
-        key: briefcase-${{ runner.os }}-${{ inputs.repository }}-${{ inputs.framework }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
-        path: |
-          ${{ steps.dirs.outputs.cookiecutters-data-dir }}
-          ${{ steps.dirs.outputs.briefcase-data-dir }}
-          ${{ steps.dirs.outputs.pip-cache-dir }}
-          ${{ steps.dirs.outputs.docker-cache-dir }}
+        key: briefcase-data|${{ inputs.runner-os }}|${{ inputs.repository }}|${{ inputs.framework }}|${{ inputs.target-platform }}|${{ inputs.target-format }}
+        path: ${{ steps.dirs.outputs.briefcase-data-dir }}
 
     - name: Determine System python3 Version
       id: system-python
       run: |
-        echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-        echo "python-version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" >> ${GITHUB_OUTPUT}
+        SYSTEM_PYTHON_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+        echo "version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
 
-    # TODO:PR: need to avoid installing Python for Linux System builds
-    - name: Set up Python
+    - name: Set Up Python
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') }}
       uses: actions/setup-python@v4.7.1
       with:
         # TODO:PR: need python 3.10 for ppb
         #python-version: ${{ inputs.python-version }}
         python-version: "3.10"
+        cache: pip
+        cache-dependency-path: |
+          **/setup.cfg
+          **/pyproject.toml
+          .pre-commit-config.yaml
 
     - name: Get Packages
-      # Briefcase will build and package itself in a previous step in its CI.
+      # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(inputs.repository, 'briefcase')
       uses: actions/download-artifact@v3.0.2
       with:
@@ -136,19 +127,28 @@ jobs:
     - name: Install Briefcase Automation Plugin
       run: python -m pip install git+https://github.com/rmartin16/briefcase-plugin-test
 
+    - name: Determine Briefcase Template Path
+      # If the briefcase-template repo is being tested, use the current checkout
+      id: template
+      if: endsWith(inputs.repository, 'briefcase-template')
+      run: echo "path=${{ github.workspace }}" | tee -a ${GITHUB_OUTPUT}
+
     - name: Create Briefcase Project
       id: create
       uses: ./beeware-.github/.github/actions/app-create
       with:
         framework: ${{ inputs.framework }}
-        briefcase-template-source: ${{ inputs.briefcase-template-source }}
+        briefcase-template-source: ${{ inputs.briefcase-template-source || steps.template.outputs.path }}
         briefcase-template-branch: ${{ inputs.briefcase-template-branch }}
 
-    - name: Project Details
-      continue-on-error: true
-      working-directory: ${{ steps.create.outputs.project-path }}
+    - name: Determine Output Format Configuration
+      # only used for the template repos so apps are built with the PR version of the template;
+      # other repos will fetch the latest template version during `create` as normal.
+      if: endsWith(inputs.repository, '-template') && inputs.repository != 'beeware/briefcase-template'
+      id: output-format
       run: |
-        cat pyproject.toml src/verify_app/app.py
+        # Since the current repo is cloned in to the workspace, use it for the template
+        echo "template-override=$(printf -- "--config template=%q" "'${{ github.workspace }}'")" | tee -a ${GITHUB_OUTPUT}
 
     # In the steps below, using the builtin functions for comparison (instead of ==)
     # allows for case-insensitivity to the inputs for the workflow.
@@ -162,7 +162,8 @@ jobs:
       env:
         SDL_VIDEODRIVER: dummy
       run: |
-        briefcase create macOS app
+        briefcase create macOS app \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build macOS app
         briefcase run macOS app
         briefcase package macOS app --adhoc-sign
@@ -176,7 +177,8 @@ jobs:
       env:
         SDL_VIDEODRIVER: dummy
       run: |
-        briefcase create macOS Xcode
+        briefcase create macOS Xcode \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build macOS Xcode
         briefcase run macOS Xcode
         briefcase package macOS Xcode --adhoc-sign
@@ -190,7 +192,8 @@ jobs:
       env:
         WIX: ""  # force Briefcase to install and use its own version of WiX
       run: |
-        briefcase create windows app
+        briefcase create windows app \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build windows app
         briefcase run windows app
         briefcase package windows app --adhoc-sign
@@ -204,7 +207,8 @@ jobs:
       env:
         WIX: ""  # force Briefcase to install and use its own version of WiX
       run: |
-        briefcase create windows VisualStudio
+        briefcase create windows VisualStudio \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build windows VisualStudio
         if [ "${{ contains(fromJSON('["ppb"]'), inputs.target-format) }}" = "false" ]; then
           briefcase run windows VisualStudio
@@ -214,7 +218,7 @@ jobs:
     - name: Build Linux System Project (Ubuntu, local)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
-        && startsWith(inputs.python-version, steps.system-python.outputs.python-version)
+        && startsWith(inputs.python-version, steps.system-python.outputs.version)
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
@@ -231,7 +235,8 @@ jobs:
           libgl1 \
           libegl1-mesa
 
-        briefcase create linux system
+        briefcase create linux system \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
@@ -243,7 +248,8 @@ jobs:
 #        && contains(fromJSON('["", "system"]'), inputs.target-format)
 #      working-directory: ${{ steps.create.outputs.project-path }}
 #      run: |
-#        briefcase create linux system --target debian:bullseye
+#        briefcase create linux system --target debian:bullseye \
+#          ${{ steps.output-format.outputs.template-override }}
 #        briefcase build linux system --target debian:bullseye
 #        briefcase package linux system --target debian:bullseye --adhoc-sign
 #
@@ -254,7 +260,8 @@ jobs:
 #        && contains(fromJSON('["", "system"]'), inputs.target-format)
 #      working-directory: ${{ steps.create.outputs.project-path }}
 #      run: |
-#        briefcase create linux system --target fedora:37
+#        briefcase create linux system --target fedora:37 \
+#          ${{ steps.output-format.outputs.template-override }}
 #        briefcase build linux system --target fedora:37
 #        briefcase package linux system --target fedora:37 --adhoc-sign
 #
@@ -265,7 +272,8 @@ jobs:
 #        && contains(fromJSON('["", "system"]'), inputs.target-format)
 #      working-directory: ${{ steps.create.outputs.project-path }}
 #      run: |
-#        briefcase create linux system --target archlinux:latest
+#        briefcase create linux system --target archlinux:latest \
+#          ${{ steps.output-format.outputs.template-override }}
 #        briefcase build linux system --target archlinux:latest
 #        briefcase package linux system --target archlinux:latest --adhoc-sign
 
@@ -289,8 +297,8 @@ jobs:
         && contains(fromJSON('["AppImage"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        sudo apt update -y
-        sudo apt install -y \
+        sudo apt --assume-yes update
+        sudo apt --assume-yes install --no-install-recommends \
           libfuse2 \
           libthai-dev \
           libfribidi0 \
@@ -300,11 +308,16 @@ jobs:
           libgl1 \
           libharfbuzz0b
 
-        briefcase upgrade
+        # PyGObject>=3.46.0 requires a version of glibc that isn't available in manylinux images;
+        # so, the version will need to be constrained to successfully build an AppImage with Toga.
+        # Furthermore, Toga>0.3.1 requires PyGObject>=3.46.0 so its version is constrained as well.
+        if [ "${{ startsWith(inputs.framework, 'toga') }}" = "true" ]; then
+          CONFIG_OVERRIDE_REQUIRES='--config requires=["toga-gtk==0.3.1","PyGobject<3.46.0"]'
+        fi
 
         briefcase create linux AppImage \
-          --config 'template="../../"' \
-          --config 'requires=["toga-gtk==0.3.1", "PyGobject<3.46.0"]'
+          ${{ steps.output-format.outputs.template-override }} \
+          ${CONFIG_OVERRIDE_REQUIRES}
         briefcase build linux AppImage
         xvfb-run briefcase run linux AppImage
         briefcase package linux AppImage --adhoc-sign
@@ -319,7 +332,8 @@ jobs:
         sudo apt --assume-yes update
         sudo apt --assume-yes install --no-install-recommends flatpak flatpak-builder elfutils
 
-        briefcase create linux flatpak
+        briefcase create linux flatpak \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build linux flatpak
         xvfb-run briefcase run linux flatpak
         briefcase package linux flatpak --adhoc-sign
@@ -331,12 +345,13 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create android gradle
+        briefcase create android gradle \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build android gradle
 
         if [ "${{ startsWith(inputs.runner-os, 'ubuntu') }}" = "true" ]; then
           # check if virtualization is supported...
-          sudo apt install -y --no-install-recommends cpu-checker coreutils && echo "CPUs=$(nproc --all)" && kvm-ok
+          sudo apt --assume-yes install --no-install-recommends cpu-checker coreutils && echo "CPUs=$(nproc --all)" && kvm-ok
           # allow access to KVM to run the emulator
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
             | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -365,7 +380,8 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create iOS xcode
+        briefcase create iOS xcode \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build iOS xcode
         briefcase run iOS xcode -d "iPhone SE (3rd generation)"
         briefcase package iOS xcode --adhoc-sign
@@ -377,7 +393,8 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create web static
+        briefcase create web static \
+          ${{ steps.output-format.outputs.template-override }}
         briefcase build web static
         briefcase package web static
 
@@ -385,5 +402,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.3
       if: failure()
       with:
-        name: build-failure-logs-${{ inputs.framework }}-${{ inputs.python-version }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
-        path: verify-app/logs/*
+        name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
+        path: ${{ steps.create.outputs.project-path }}/logs/*

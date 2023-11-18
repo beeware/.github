@@ -58,10 +58,8 @@ runs:
         fi
 
         # Expose repo and version via outputs
-        echo "Briefcase Repo: ${BRIEFCASE_REPO}"
-        echo "Briefcase Ref: ${BRIEFCASE_REF}"
-        echo "repo=${BRIEFCASE_REPO}" >> ${GITHUB_OUTPUT}
-        echo "ref=${BRIEFCASE_REF}" >> ${GITHUB_OUTPUT}
+        echo "repo=${BRIEFCASE_REPO}" | tee -a ${GITHUB_OUTPUT}
+        echo "ref=${BRIEFCASE_REF}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Derive Target Briefcase Version
       id: briefcase-derived

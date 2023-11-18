@@ -73,6 +73,11 @@ jobs:
         uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.X
+          cache: pip
+          cache-dependency-path: |
+            **/setup.cfg
+            **/pyproject.toml
+            .pre-commit-config.yaml
 
       - name: Install pre-commit
         run: python -m pip install ${{ inputs.pre-commit-source || 'pre-commit' }}

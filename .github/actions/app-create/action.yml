@@ -40,11 +40,17 @@ runs:
         TEMPLATE_REPO=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REPO:\s*\K\S+/i and print $&')
         TEMPLATE_REF=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REF:\s*\K\S+/i and print $&')
 
+        # If a template is not in the PR, use inputs specified in CI workflow
+        if [ -z "${TEMPLATE_REPO}" ]; then
+          TEMPLATE_REPO="${{ inputs.briefcase-template-source }}"
+        fi
+        if [ -z "${TEMPLATE_REF}" ]; then
+          TEMPLATE_REF="${{ inputs.briefcase-template-branch }}"
+        fi
+
         # Expose template repo and branch via outputs
-        echo "Template Repo: ${TEMPLATE_REPO}"
-        echo "Template Ref: ${TEMPLATE_REF}"
-        echo "repo=${TEMPLATE_REPO}" >> ${GITHUB_OUTPUT}
-        echo "ref=${TEMPLATE_REF}" >> ${GITHUB_OUTPUT}
+        echo "repo=${TEMPLATE_REPO}" | tee -a ${GITHUB_OUTPUT}
+        echo "ref=${TEMPLATE_REF}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Create Briefcase Project
       id: create
@@ -72,7 +78,8 @@ runs:
         esac
 
         ROOT_DIR="apps"
-        APP_DIR="verify-app"
+        APP_NAME="Verify App"
+        APP_DIR="verifyapp"
         APP_PATH="${ROOT_DIR}/${APP_DIR}"
 
         # Prepare to create the project in APP_DIR
@@ -81,8 +88,10 @@ runs:
         rm -rf "${APP_DIR}"
 
         # Roll out the project
-        printf "Verify App\n%s\n\n\n\n\n\n\n\n%s\n" "${APP_DIR}" "${GUI_INPUT}" \
+        printf "%s\n%s\n\n\n\n\n\n\n\n%s\n" "${APP_NAME}" "${APP_DIR}" "${GUI_INPUT}" \
           | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
 
         echo "Rolled out project to ${APP_PATH} (${{ inputs.framework }}->${GUI_INPUT})"
+        printf "::group::pyproject.toml\n%s\n::endgroup::\n" "$(cat "${APP_DIR}/pyproject.toml")"
+        printf "::group::app.py\n%s\n::endgroup::\n" "$(cat "${APP_DIR}/src/${APP_DIR}/app.py")"
         echo "path=${APP_PATH}" >> ${GITHUB_OUTPUT}
