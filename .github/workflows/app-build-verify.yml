@@ -47,7 +47,6 @@ defaults:
 
 env:
   FORCE_COLOR: "1"
-  DO_RUN: ${{ !contains(fromJSON('["ppb"]'), inputs.framework) }}
 
 jobs:
   verify-app:
@@ -96,12 +95,11 @@ jobs:
         echo "version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Set Up Python
+      # TODO:PR: linux system requires System Python is python...
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') }}
       uses: actions/setup-python@v4.7.1
       with:
-        # TODO:PR: need python 3.10 for ppb
-        #python-version: ${{ inputs.python-version }}
-        python-version: "3.10"
+        python-version: ${{ inputs.python-version }}
         cache: pip
         cache-dependency-path: |
           **/setup.cfg
@@ -123,9 +121,6 @@ jobs:
     - name: Install Briefcase
       if: ${{ !endsWith(inputs.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
-
-    - name: Install Briefcase Automation Plugin
-      run: python -m pip install git+https://github.com/rmartin16/briefcase-plugin-test
 
     - name: Determine Briefcase Template Path
       # If the briefcase-template repo is being tested, use the current checkout
@@ -191,6 +186,7 @@ jobs:
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
         WIX: ""  # force Briefcase to install and use its own version of WiX
+        SDL_AUDIODRIVER: dummy
       run: |
         briefcase create windows app \
           ${{ steps.output-format.outputs.template-override }}
@@ -206,13 +202,12 @@ jobs:
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
         WIX: ""  # force Briefcase to install and use its own version of WiX
+        SDL_AUDIODRIVER: dummy
       run: |
         briefcase create windows VisualStudio \
           ${{ steps.output-format.outputs.template-override }}
         briefcase build windows VisualStudio
-        if [ "${{ contains(fromJSON('["ppb"]'), inputs.target-format) }}" = "false" ]; then
-          briefcase run windows VisualStudio
-        fi
+        briefcase run windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
 
     - name: Build Linux System Project (Ubuntu, local)
@@ -224,16 +219,14 @@ jobs:
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
         QT_QPA_PLATFORM: offscreen
+        SDL_AUDIODRIVER: dummy
       run: |
         sudo apt --assume-yes update
         sudo apt --assume-yes install --no-install-recommends \
-          python3-dev \
-          python3-pip \
-          libcairo2-dev \
-          libgirepository1.0-dev \
-          gir1.2-gtk-3.0 \
-          libgl1 \
-          libegl1-mesa
+          python3-dev python3-pip \
+          libcairo2-dev libgirepository1.0-dev gir1.2-gtk-3.0 \
+          libgl1 libegl1-mesa \
+          libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-gfx-1.0-0 libsdl2-ttf-2.0-0
 
         briefcase create linux system \
           ${{ steps.output-format.outputs.template-override }}
@@ -241,41 +234,41 @@ jobs:
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
 
-#    - name: Build Linux System Project (Debian, Dockerized)
-#      if: >
-#        startsWith(inputs.runner-os, 'ubuntu')
-#        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-#        && contains(fromJSON('["", "system"]'), inputs.target-format)
-#      working-directory: ${{ steps.create.outputs.project-path }}
-#      run: |
-#        briefcase create linux system --target debian:bullseye \
-#          ${{ steps.output-format.outputs.template-override }}
-#        briefcase build linux system --target debian:bullseye
-#        briefcase package linux system --target debian:bullseye --adhoc-sign
-#
-#    - name: Build Linux System Project (RPM, Dockerized)
-#      if: >
-#        startsWith(inputs.runner-os, 'ubuntu')
-#        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-#        && contains(fromJSON('["", "system"]'), inputs.target-format)
-#      working-directory: ${{ steps.create.outputs.project-path }}
-#      run: |
-#        briefcase create linux system --target fedora:37 \
-#          ${{ steps.output-format.outputs.template-override }}
-#        briefcase build linux system --target fedora:37
-#        briefcase package linux system --target fedora:37 --adhoc-sign
-#
-#    - name: Build Linux System Project (Arch, Dockerized)
-#      if: >
-#        startsWith(inputs.runner-os, 'ubuntu')
-#        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-#        && contains(fromJSON('["", "system"]'), inputs.target-format)
-#      working-directory: ${{ steps.create.outputs.project-path }}
-#      run: |
-#        briefcase create linux system --target archlinux:latest \
-#          ${{ steps.output-format.outputs.template-override }}
-#        briefcase build linux system --target archlinux:latest
-#        briefcase package linux system --target archlinux:latest --adhoc-sign
+    - name: Build Linux System Project (Debian, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target debian:bullseye \
+          ${{ steps.output-format.outputs.template-override }}
+        briefcase build linux system --target debian:bullseye
+        briefcase package linux system --target debian:bullseye --adhoc-sign
+
+    - name: Build Linux System Project (RPM, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target fedora:37 \
+          ${{ steps.output-format.outputs.template-override }}
+        briefcase build linux system --target fedora:37
+        briefcase package linux system --target fedora:37 --adhoc-sign
+
+    - name: Build Linux System Project (Arch, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target archlinux:latest \
+          ${{ steps.output-format.outputs.template-override }}
+        briefcase build linux system --target archlinux:latest
+        briefcase package linux system --target archlinux:latest --adhoc-sign
 
     # 2023-09-11 AppImage dropped to "best effort" support.
     #
@@ -296,17 +289,14 @@ jobs:
         && contains(fromJSON('["Linux"]'), inputs.target-platform)
         && contains(fromJSON('["AppImage"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
+      env:
+        SDL_AUDIODRIVER: dummy
+        QT_QPA_PLATFORM: offscreen
       run: |
         sudo apt --assume-yes update
         sudo apt --assume-yes install --no-install-recommends \
-          libfuse2 \
-          libthai-dev \
-          libfribidi0 \
-          libfontconfig1 \
-          libx11-6 \
-          libegl1 \
-          libgl1 \
-          libharfbuzz0b
+          libfuse2 libthai-dev libfribidi0 libfontconfig1 libx11-6 libegl1 libgl1 libharfbuzz0b \
+          libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-gfx-1.0-0 libsdl2-ttf-2.0-0
 
         # PyGObject>=3.46.0 requires a version of glibc that isn't available in manylinux images;
         # so, the version will need to be constrained to successfully build an AppImage with Toga.
@@ -328,12 +318,17 @@ jobs:
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "Flatpak"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
+      env:
+        SDL_AUDIODRIVER: dummy
       run: |
         sudo apt --assume-yes update
         sudo apt --assume-yes install --no-install-recommends flatpak flatpak-builder elfutils
 
         briefcase create linux flatpak \
           ${{ steps.output-format.outputs.template-override }}
+        # enable GPU acceleration
+        sed -i 's/  - --socket=session-bus/  - --socket=session-bus\n  - --device=dri/g' \
+          build/verifyapp/linux/flatpak/manifest.yml
         briefcase build linux flatpak
         xvfb-run briefcase run linux flatpak
         briefcase package linux flatpak --adhoc-sign

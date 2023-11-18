@@ -52,6 +52,10 @@ runs:
         echo "repo=${TEMPLATE_REPO}" | tee -a ${GITHUB_OUTPUT}
         echo "ref=${TEMPLATE_REF}" | tee -a ${GITHUB_OUTPUT}
 
+    - name: Install Briefcase Automation Plugin
+      shell: bash
+      run: python -m pip install git+https://github.com/rmartin16/briefcase-plugin-test
+
     - name: Create Briefcase Project
       id: create
       shell: bash
