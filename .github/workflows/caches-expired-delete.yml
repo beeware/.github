@@ -1,0 +1,59 @@
+name: Delete Expired Caches
+
+#######
+# Deletes caches that were created more than 30 days ago.
+#######
+
+on:
+  schedule:
+    - cron: "0 20 * * *"  # each day @ 2000 UTC
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 1
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  delete-expired-caches:
+    name: Delete Expired Caches
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - .github
+          - beeware
+          - briefcase
+          - briefcase-android-gradle-template
+          - briefcase-iOS-Xcode-template
+          - briefcase-linux-appimage-template
+          - briefcase-linux-flatpak-template
+          - briefcase-linux-system-template
+          - briefcase-macOS-app-template
+          - briefcase-macOS-Xcode-template
+          - briefcase-template
+          - briefcase-web-static-template
+          - briefcase-windows-app-template
+          - briefcase-windows-VisualStudio-template
+    steps:
+      - name: Delete Expired Caches
+        run: |
+          EXPIRATION_AGE_DAYS=30
+          EXPIRED_AT="$(date -d "${EXPIRATION_AGE_DAYS} days ago" +%s)"
+
+          REPO="beeware/${{ matrix.repo }}"
+          CACHES=$(gh cache list --repo "$REPO" --limit 1000 --sort created_at --order asc --json id,createdAt,key | jq -cr '.[]')
+          printf "::group::Caches\n%s\n::endgroup::" "$(jq -rj <<< "${CACHES}")"
+
+          for ENTRY in ${CACHES[@]}; do
+              CREATED_AT=$(date -d "$(jq --raw-output '.createdAt' <<< "${ENTRY}")" +%s)
+              if (( ${CREATED_AT} < ${EXPIRED_AT} )); then
+                  ID=$(jq --raw-output '.id' <<< "${ENTRY}")
+                  echo "Deleting ${ID} - ${ENTRY}"
+                  gh cache delete --repo "${REPO}" "${ID}"
+              fi
+          done
