@@ -81,10 +81,17 @@ jobs:
         esac
         echo "briefcase-data-dir=${BRIEFCASE_DIR}" | tee -a ${GITHUB_OUTPUT}
 
+        CACHE_KEY="${{ inputs.runner-os }}|${{ inputs.repository }}|${{ inputs.framework }}|${{ inputs.target-platform }}"
+        # For Linux builds, the cache varies by the output format
+        if [ "${{ startsWith(inputs.runner-os, 'ubuntu') }}" = "true" ]; then
+          CACHE_KEY="$CACHE_KEY|${{ inputs.target-format }}"
+        fi
+        echo "cache-key=$(date +%Y-%m)|${CACHE_KEY}" | tee -a ${GITHUB_OUTPUT}
+
     - name: Cache Briefcase Tools
       uses: actions/cache@v3.3.2
       with:
-        key: briefcase-data|${{ inputs.runner-os }}|${{ inputs.repository }}|${{ inputs.framework }}|${{ inputs.target-platform }}|${{ inputs.target-format }}
+        key: briefcase-data|${{ steps.dirs.outputs.cache-key }}
         path: ${{ steps.dirs.outputs.briefcase-data-dir }}
 
     - name: Determine System python3 Version
