@@ -188,8 +188,8 @@ jobs:
           dist-path: "*/dist/*"
           build-subdir: "core"
 
-  test-create-apps-briefcase:
-    name: Create Apps
+  test-verify-projects-briefcase:
+    name: Verify Project
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-create-verify.yml
     with:

@@ -36,8 +36,8 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
-  verify-app:
-    name: Verify App Create
+  verify-project:
+    name: Verify Project
     runs-on: ${{ inputs.runner-os }}
     steps:
 
@@ -98,7 +98,7 @@ jobs:
       if: endsWith(github.repository, 'briefcase-template')
       run: echo "path=${{ github.workspace }}" | tee -a ${GITHUB_OUTPUT}
 
-    - name: Create Briefcase project
+    - name: Create Briefcase Project
       id: create
       uses: ./beeware-.github/.github/actions/app-create
       with:
@@ -109,6 +109,10 @@ jobs:
     - name: Run Flake8
       working-directory: ${{ steps.create.outputs.project-path }}
       run: flake8 --select=E
+
+    - name: Run Black
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: black --check --diff --color src/
 
     - name: Validate pyproject.toml
       working-directory: ${{ steps.create.outputs.project-path }}
