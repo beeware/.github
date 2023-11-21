@@ -56,9 +56,7 @@ jobs:
     - name: Checkout beeware/briefcase-template
       uses: actions/checkout@v4.1.1
       with:
-#        repository: beeware/briefcase-template  # TODO:PR: uncomment
-        repository: rmartin16/briefcase-template  # TODO:PR: remove me
-        ref: black  # TODO:PR: remove me
+        repository: beeware/briefcase-template
         path: briefcase-template
 
     - name: Package Name
