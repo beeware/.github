@@ -108,7 +108,7 @@ jobs:
 
     - name: Run Flake8
       working-directory: ${{ steps.create.outputs.project-path }}
-      run: flake8 --select=E
+      run: flake8 --isolated --select=E --max-line-length 119
 
     - name: Run Black
       working-directory: ${{ steps.create.outputs.project-path }}
