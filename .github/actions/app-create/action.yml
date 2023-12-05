@@ -11,6 +11,9 @@ inputs:
   briefcase-template-branch:
     description: "The git branch for the template to use to roll out the project."
     required: false
+  enable-automation:
+    description: "Whether to create a project using the Briefcase Automation plugin."
+    default: "false"  # all composite workflow inputs are of type string
   testing-pr-body:
     description: "Override value for body of PR; only for testing."
     required: false
@@ -63,15 +66,17 @@ runs:
           TEMPLATE_BRANCH=$(printf -- "--template-branch %q" "${{ steps.template-override.outputs.ref }}")
         fi
 
-        # Map the requested GUI toolkit to the input that Briefcase expects
-        # Default to the input to accommodate arbitrary toolkits installed as plugins
-        case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
-          toga    ) GUI_INPUT=1 ;;
-          pyside6 ) GUI_INPUT=2 ;;
-          ppb     ) GUI_INPUT=3 ;;
-          pygame  ) GUI_INPUT=4 ;;
-          *       ) GUI_INPUT=${{ inputs.framework }} ;;
+        # Map GUI toolkit through case insensitivity
+        case "$(tr '[:upper:]' '[:lower:]' <<< "${{ inputs.framework }}")" in
+          toga    ) BOOTSTRAP=Toga ;;
+          pyside6 ) BOOTSTRAP=PySide6 ;;
+          ppb     ) BOOTSTRAP=PursuedPyBear ;;
+          pygame  ) BOOTSTRAP=Pygame ;;
+          *       ) BOOTSTRAP=${{ inputs.framework }} ;;
         esac
+
+        # If enabled, use the Automation bootstrap
+        [ "${{ inputs.enable-automation }}" != "false" ] && BOOTSTRAP="${BOOTSTRAP} Automation"
 
         ROOT_DIR="apps"
         APP_NAME="Verify App"
@@ -84,10 +89,14 @@ runs:
         rm -rf "${APP_DIR}"
 
         # Roll out the project
-        printf "%s\n%s\n\n\n\n\n\n\n\n%s\n" "${APP_NAME}" "${APP_DIR}" "${GUI_INPUT}" \
-          | briefcase new ${TEMPLATE} ${TEMPLATE_BRANCH}
+        briefcase new --no-input ${TEMPLATE} ${TEMPLATE_BRANCH} \
+          -Q "formal_name=${APP_NAME}" \
+          -Q "app_name=${APP_DIR}" \
+          -Q "bootstrap=${BOOTSTRAP}"
 
-        echo "Rolled out project to ${APP_PATH} (${{ inputs.framework }}->${GUI_INPUT})"
+        echo "Rolled out project to ${APP_PATH}"
+        echo " > GUI Toolkit: ${{ inputs.framework }}"
+        echo " > Bootstrap: ${BOOTSTRAP}"
         printf "::group::pyproject.toml\n%s\n::endgroup::\n" "$(cat "${APP_DIR}/pyproject.toml")"
         printf "::group::app.py\n%s\n::endgroup::\n" "$(cat "${APP_DIR}/src/${APP_DIR}/app.py")"
         echo "path=${APP_PATH}" >> ${GITHUB_OUTPUT}

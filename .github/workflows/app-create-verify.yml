@@ -19,12 +19,14 @@ on:
         description: "Framework to use to build the App, e.g. toga."
         required: true
         type: string
-      briefcase-template-source:
-        description: "Path to use for --template for `briefcase new` to create app."
-        default: ""
+      workflow-repo:
+        # Only needed for PRs in other repos wanting to test new workflow changes before they are merged.
+        # These inputs should not be specified by another repo on their main branch.
+        description: "The repo to use to run additional workflows and actions."
+        default: "beeware/.github"
         type: string
-      briefcase-template-branch:
-        description: "Git branch to use for --template-branch for `briefcase new` to create app."
+      workflow-repo-ref:
+        description: "The repo ref to use to run additional workflows and actions."
         default: ""
         type: string
 
@@ -39,6 +41,7 @@ jobs:
   verify-project:
     name: Verify Project
     runs-on: ${{ inputs.runner-os }}
+    timeout-minutes: 30
     steps:
 
     - name: Checkout ${{ github.repository }}
@@ -47,10 +50,11 @@ jobs:
         repository: ${{ github.repository }}
         fetch-depth: 0
 
-    - name: Checkout beeware/.github
+    - name: Checkout ${{ inputs.workflow-repo }}${{ inputs.workflow-repo-ref && format('@{0}', inputs.workflow-repo-ref) || '' }}
       uses: actions/checkout@v4.1.1
       with:
-        repository: beeware/.github
+        repository: ${{ inputs.workflow-repo }}
+        ref: ${{ inputs.workflow-repo-ref }}
         path: beeware-.github
 
     - name: Checkout beeware/briefcase-template
@@ -58,10 +62,6 @@ jobs:
       with:
         repository: beeware/briefcase-template
         path: briefcase-template
-
-    - name: Package Name
-      id: package
-      run: echo "name=$(basename '${{ github.repository }}')" >> ${GITHUB_OUTPUT}
 
     - name: Set up Python
       uses: actions/setup-python@v4.7.1
@@ -73,38 +73,33 @@ jobs:
           **/pyproject.toml
           .pre-commit-config.yaml
 
-    - name: Get Packages
+    - name: Install Dependencies
+      # must install before Briefcase below since requirements.txt contains an entry for Briefcase
+      run: python -m pip install -Ur ./briefcase-template/requirements.txt
+
+    - name: Get Briefcase Package
       # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(github.repository, 'briefcase')
       uses: actions/download-artifact@v3.0.2
       with:
-        name: packages-${{ steps.package.outputs.name }}
+        name: packages-briefcase
         path: dist
-
-    - name: Install Dependencies
-      run: python -m pip install -Ur ./briefcase-template/requirements.txt
 
     - name: Install Briefcase Artefact
       if: endsWith(github.repository, 'briefcase')
-      run: python -m pip install dist/briefcase-*.whl
+      run: python -m pip install -U dist/briefcase-*.whl --upgrade-strategy eager
 
     - name: Install Briefcase
       if: ${{ !endsWith(github.repository, 'briefcase') }}
       uses: ./beeware-.github/.github/actions/install-briefcase
-
-    - name: Determine Briefcase Template Path
-      # If the briefcase-template repo is being tested, use the current checkout
-      id: template
-      if: endsWith(github.repository, 'briefcase-template')
-      run: echo "path=${{ github.workspace }}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Create Briefcase Project
       id: create
       uses: ./beeware-.github/.github/actions/app-create
       with:
         framework: ${{ inputs.framework }}
-        briefcase-template-source: ${{ inputs.briefcase-template-source || steps.template.outputs.path }}
-        briefcase-template-branch: ${{ inputs.briefcase-template-branch }}
+        # use the current repo checkout if briefcase-template is being tested
+        briefcase-template-source: ${{ endsWith(github.repository, 'briefcase-template') && github.workspace || '' }}
 
     - name: Run Flake8
       working-directory: ${{ steps.create.outputs.project-path }}
