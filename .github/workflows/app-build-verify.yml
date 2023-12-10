@@ -108,7 +108,7 @@ jobs:
     - name: Set Up Python
       # Linux System apps requires python is System Python to run the app
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') }}
-      uses: actions/setup-python@v4.7.1
+      uses: actions/setup-python@v5.0.0
       with:
         python-version: ${{ inputs.python-version }}
         cache: pip
