@@ -37,7 +37,13 @@ on:
         type: string
     outputs:
       artifact-name:
-        description: "Name of the uploaded artifact; use for artifact retrieval."
+        description: >
+          Name of the uploaded artifact; use for artifact retrieval.
+          Note that if a `build-subdirectory` is specified, this value will be the "base" of the artifact name.
+          For instance, if the `core` subdirectory of Toga is being built, then this value will be `packages-toga`
+          but the name of the uploaded artifact will be `packages-toga-core`.
+          Therefore, when a `build-subdirectory` is used with this workflow, the `pattern` input for the
+          `actions\download-artifact` should be used to specify `${ needs.package.outputs.artifact-name }-*`.
         value: ${{ jobs.package.outputs.artifact-name }}
 
 env:
@@ -51,7 +57,7 @@ jobs:
       artifact-name: packages-${{ steps.package.outputs.name }}
     steps:
 
-      - name: Determine Package name
+      - name: Determine Package Name
         id: package
         run: echo "name=$(basename '${{ inputs.repository }}')" >> ${GITHUB_OUTPUT}
 
@@ -76,17 +82,17 @@ jobs:
       - name: Install tox
         run: python -m pip install ${{ inputs.tox-source }}
 
-      - name: Build wheels
+      - name: Build Wheels
         if: inputs.build-subdirectory == ''
         run: tox -e package${{ inputs.tox-factors }}
 
-      - name: Build wheels from subdirectory
+      - name: Build Wheels from Subdirectory
         if: inputs.build-subdirectory != ''
         run: tox -e package${{ inputs.tox-factors }} -- ${{ inputs.build-subdirectory }}
 
       - name: Upload Package
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v4.0.0
         with:
-          name: packages-${{ steps.package.outputs.name }}
+          name: packages-${{ steps.package.outputs.name }}${{ inputs.build-subdirectory && format('-{0}', inputs.build-subdirectory) || '' }}
           path: ${{ inputs.distribution-path }}
           if-no-files-found: error
