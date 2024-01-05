@@ -80,7 +80,7 @@ jobs:
     - name: Get Briefcase Package
       # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(github.repository, 'briefcase')
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.1.0
       with:
         name: packages-briefcase
         path: dist
@@ -121,8 +121,8 @@ jobs:
         assert pyproject_toml.is_file()
         pprint(toml.load(pyproject_toml))
 
-    - name: Upload failure logs
-      uses: actions/upload-artifact@v3.1.3
+    - name: Upload Failure Logs
+      uses: actions/upload-artifact@v4.0.0
       if: failure()
       with:
         name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}
