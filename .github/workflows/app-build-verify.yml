@@ -120,7 +120,7 @@ jobs:
     - name: Get Briefcase Packages
       # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(inputs.repository, 'briefcase')
-      uses: actions/download-artifact@v4.1.0
+      uses: actions/download-artifact@v4.1.1
       with:
         name: packages-briefcase
         path: dist
