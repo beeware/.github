@@ -240,7 +240,7 @@ jobs:
         briefcase build linux system --target debian:bullseye
         briefcase package linux system --target debian:bullseye --adhoc-sign
 
-    - name: Build Linux System Project (RPM, Dockerized)
+    - name: Build Linux System Project (Fedora, Dockerized)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
@@ -263,6 +263,18 @@ jobs:
           ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target archlinux:latest
         briefcase package linux system --target archlinux:latest --adhoc-sign
+
+    - name: Build Linux System Project (openSUSE, Dockerized)
+      if: >
+        startsWith(inputs.runner-os, 'ubuntu')
+        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+        && contains(fromJSON('["", "system"]'), inputs.target-format)
+      working-directory: ${{ steps.create.outputs.project-path }}
+      run: |
+        briefcase create linux system --target opensuse/tumbleweed:latest \
+          ${{ steps.output-format.outputs.template-override }}
+        briefcase build linux system --target opensuse/tumbleweed:latest
+        briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
 
     - name: Build AppImage Project
       # 2023-09-11 AppImage dropped to "best effort" support.
