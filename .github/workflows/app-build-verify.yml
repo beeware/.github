@@ -228,6 +228,8 @@ jobs:
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
 
+        bash -c "sudo apt -y install ./dist/*_0.0.1-1~ubuntu-*_amd64.deb"
+
     - name: Build Linux System Project (Debian, Dockerized)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
@@ -235,10 +237,13 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        briefcase create linux system --target debian:bullseye \
+        briefcase create linux system --target debian:bookworm \
           ${{ steps.output-format.outputs.template-override }}
-        briefcase build linux system --target debian:bullseye
-        briefcase package linux system --target debian:bullseye --adhoc-sign
+        briefcase build linux system --target debian:bookworm
+        briefcase package linux system --target debian:bookworm --adhoc-sign
+
+        docker run --volume $(pwd)/dist:/dist debian:bookworm \
+          sh -c "apt update && apt -y install /dist/*_0.0.1-1~debian-*_amd64.deb"
 
     - name: Build Linux System Project (Fedora, Dockerized)
       if: >
@@ -252,6 +257,9 @@ jobs:
         briefcase build linux system --target fedora:39
         briefcase package linux system --target fedora:39 --adhoc-sign
 
+        docker run --volume $(pwd)/dist:/dist fedora:39 \
+          sh -c "dnf -y install /dist/*-0.0.1-1.fc*.x86_64.rpm"
+
     - name: Build Linux System Project (Arch, Dockerized)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
@@ -264,6 +272,9 @@ jobs:
         briefcase build linux system --target archlinux:latest
         briefcase package linux system --target archlinux:latest --adhoc-sign
 
+        docker run --volume $(pwd)/dist:/dist archlinux \
+          sh -c "pacman -Sy && pacman --noconfirm -U /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
+
     - name: Build Linux System Project (openSUSE, Dockerized)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
@@ -275,6 +286,9 @@ jobs:
           ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target opensuse/tumbleweed:latest
         briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
+
+        docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
+          sh -c "zypper --non-interactive --no-gpg-checks install /dist/*-0.0.1-1.x86_64.rpm"
 
     - name: Build AppImage Project
       # 2023-09-11 AppImage dropped to "best effort" support.
