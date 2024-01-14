@@ -100,7 +100,7 @@ jobs:
       run: sudo apt update -y
 
     - name: Cache Briefcase Tools
-      uses: actions/cache@v3.3.2
+      uses: actions/cache@v3.3.3
       with:
         key: briefcase-data|${{ steps.config.outputs.cache-key }}
         path: ${{ steps.config.outputs.briefcase-data-dir }}
