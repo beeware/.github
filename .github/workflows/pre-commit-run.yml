@@ -63,4 +63,22 @@ jobs:
       run: python -m pip install ${{ inputs.pre-commit-source }}
 
     - name: Run pre-commit
+      id: pre-commit
       run: pre-commit run --show-diff-on-failure --color=always --all-files
+
+    - name: Pre-commit Resolution Instructions
+      if: always() && steps.pre-commit.outcome == 'failure'
+      run: |
+        echo
+        echo '::error::*************************************************************************'
+        echo '::error::** Pre-commit checks failed                                            **'
+        echo '::error::*************************************************************************'
+        echo '::error:: '
+        echo '::error::The Pre-commit checks found issues with the changes in this PR.'
+        echo '::error:: '
+        echo '::error::Visit the docs below to configure pre-commit in your dev environment:'
+        echo '::error:: '
+        echo '::error::    https://beeware.org/contributing/how/process/'
+        echo '::error:: '
+        echo '::error::*************************************************************************'
+        exit 1
