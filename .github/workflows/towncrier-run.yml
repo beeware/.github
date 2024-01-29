@@ -82,7 +82,7 @@ jobs:
         echo '::error:: '
         echo '::error::Visit the docs below to learn how to add a change note:'
         echo '::error:: '
-        echo '::error::    https://beeware.org/contributing/how/process/'
+        echo '::error::    https://beeware.org/contributing/how/process#change-notes'
         echo '::error:: '
         echo '::error::*************************************************************************'
         exit 1

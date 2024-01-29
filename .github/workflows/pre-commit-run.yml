@@ -78,7 +78,7 @@ jobs:
         echo '::error:: '
         echo '::error::Visit the docs below to configure pre-commit in your dev environment:'
         echo '::error:: '
-        echo '::error::    https://beeware.org/contributing/how/process/'
+        echo '::error::    https://beeware.org/contributing/how/process#code-style'
         echo '::error:: '
         echo '::error::*************************************************************************'
         exit 1
