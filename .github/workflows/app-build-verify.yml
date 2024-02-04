@@ -290,6 +290,11 @@ jobs:
         docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
           sh -c "zypper --non-interactive --no-gpg-checks install /dist/*-0.0.1-1.x86_64.rpm"
 
+    - name: Delete Docker Images
+      # the GitHub runners come with limited disk space; these images take ~8GB
+      if: startsWith(inputs.runner-os, 'ubuntu')
+      run: docker system prune --all --force
+
     - name: Build AppImage Project
       # 2023-09-11 AppImage dropped to "best effort" support.
       #
