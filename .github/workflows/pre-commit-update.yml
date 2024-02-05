@@ -18,6 +18,9 @@ on:
         description: "Defaults 'true' to create a misc changenote in the './changes' directory."
         default: true
         type: boolean
+    secrets:
+      BRUTUS_PAT_TOKEN:
+        required: true
 
 permissions:
   pull-requests: write
