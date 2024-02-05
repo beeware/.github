@@ -2,6 +2,9 @@ name: Dependabot Change Note
 
 on:
   workflow_call:
+    secrets:
+      BRUTUS_PAT_TOKEN:
+        required: true
 
 permissions:
   pull-requests: write
