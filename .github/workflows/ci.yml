@@ -44,7 +44,6 @@ jobs:
           version: v0.3.1
 
   test-install-briefcase:
-    # TODO: restore commented tests once Briefcase v0.3.17 is released
     name: Install Briefcase
     needs: pre-commit
     runs-on: ubuntu-latest
@@ -56,12 +55,12 @@ jobs:
         - "main"
         - "PR Repo & Ref"
         - "PR Repo & Ref (irregular)"
-        #- "PR Ref"
-        #- "refs/tags/v0.3.17"
+        - "PR Ref"
+        - "refs/tags/v0.3.17"
         - "refs/tags/v40.0.5"
-        #- "refs/heads/v0.3.17"
+        - "refs/heads/v0.3.17"
         - "refs/heads/v40.0.5"
-        #- "refs/pull/v0.3.17"
+        - "refs/pull/v0.3.17"
         - "refs/pull/v40.0.5"
         include:
         # Test override logic
@@ -75,31 +74,31 @@ jobs:
         - test-case: "PR Repo & Ref (irregular)"
           testing-pr-body: "sadf asdf BrIeFcAsE__REpo: https://github.com/freakboy3742/briefcase.git xcvbwer BRIEFcaseREF:19215d9 xczvb https://example.com/asdf?q=repo%3Aindygreg%2"
           expected: "19215d9"
-        #- test-case: "PR Ref"
-        #   testing-pr-body: "sadf asdf BRIEFcaseREF: v0.3.17"
-        #  expected: "v0.3.17"
+        - test-case: "PR Ref"
+          testing-pr-body: "sadf asdf BRIEFcaseREF: v0.3.17"
+          expected: "v0.3.17"
         # Test version derivation for Releases
-        #- test-case: "refs/tags/v0.3.17"
-        #  testing-trigger-ref: "refs/tags/v0.3.17"
-        #  testing-ref-name: "v0.3.17"
-        #  expected: "v0.3.11"
+        - test-case: "refs/tags/v0.3.17"
+          testing-trigger-ref: "refs/tags/v0.3.17"
+          testing-ref-name: "v0.3.17"
+          expected: "v0.3.17"
         - test-case: "refs/tags/v40.0.5"
           testing-trigger-ref: "refs/tags/v40.0.5"
           testing-ref-name: "v40.0.5"
           expected: "main"
-        #- test-case: "refs/heads/v0.3.17"
-        #  testing-trigger-ref: "refs/heads/v0.3.17"
-        #  testing-ref-name: "v0.3.17"
-        #  expected: "v0.3.17"
+        - test-case: "refs/heads/v0.3.17"
+          testing-trigger-ref: "refs/heads/v0.3.17"
+          testing-ref-name: "v0.3.17"
+          expected: "v0.3.17"
         - test-case: "refs/heads/v40.0.5"
           testing-trigger-ref: "refs/heads/v40.0.5"
           testing-ref-name: "v40.0.5"
           expected: "main"
         # Test version derivation for PRs
-        #- test-case: "refs/pull/v0.3.17"
-        #  testing-trigger-ref: "refs/pull/18/merge"
-        #  testing-pr-ref: "refs/heads/v0.3.17"
-        #  expected: "v0.3.17"
+        - test-case: "refs/pull/v0.3.17"
+          testing-trigger-ref: "refs/pull/18/merge"
+          testing-pr-ref: "refs/heads/v0.3.17"
+          expected: "v0.3.17"
         - test-case: "refs/pull/v40.0.5"
           testing-trigger-ref: "refs/pull/25/merge"
           testing-pr-ref: "v40.0.5"
