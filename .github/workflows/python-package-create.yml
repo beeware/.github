@@ -91,7 +91,7 @@ jobs:
         run: tox -e package${{ inputs.tox-factors }} -- ${{ inputs.build-subdirectory }}
 
       - name: Upload Package
-        uses: actions/upload-artifact@v4.3.0
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: packages-${{ steps.package.outputs.name }}${{ inputs.build-subdirectory && format('-{0}', inputs.build-subdirectory) || '' }}
           path: ${{ inputs.distribution-path }}
