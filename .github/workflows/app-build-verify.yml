@@ -56,9 +56,10 @@ jobs:
     runs-on: ${{ inputs.runner-os }}
     timeout-minutes: 30
     env:
-      QT_QPA_PLATFORM: offscreen  # disable display for Qt
       SDL_AUDIODRIVER: dummy  # disable audio for SDL
-      SDL_VIDEODRIVER: dummy  # disable display for SDL
+      TOGA_SYSTEM_REQUIRES: libthai-dev libegl1 libcairo2-dev libgirepository1.0-dev gir1.2-gtk-3.0
+      PYSIDE6_SYSTEM_REQUIRES: libx11-xcb1 libxkbcommon-x11-0 libxcb-image0 libxcb-cursor0 libxcb-shape0 libxcb-icccm4 libxcb-keysyms1 libgl1 libegl1
+      PPB_SYSTEM_REQUIRES: libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-gfx-1.0-0 libsdl2-ttf-2.0-0
     steps:
 
     - name: Workflow Configuration
@@ -95,9 +96,11 @@ jobs:
         ref: ${{ inputs.workflow-repo-ref }}
         path: beeware-.github
 
-    - name: Update Package Manager
+    - name: Prepare Linux
       if: startsWith(inputs.runner-os, 'ubuntu')
-      run: sudo apt update -y
+      run: |
+        sudo apt -y update
+        sudo apt -y install --no-install-recommends socat xauth
 
     - name: Cache Briefcase Tools
       uses: actions/cache@v4.0.0
@@ -160,6 +163,9 @@ jobs:
         && contains(fromJSON('["", "macOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "app"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
+      env:
+        # SDL cannot always find hardware acceleration on macOS in CI
+        SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
       run: |
         briefcase create macOS app \
           ${{ steps.output-format.outputs.template-override }}
@@ -173,6 +179,9 @@ jobs:
         && contains(fromJSON('["", "macOS"]'), inputs.target-platform)
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
+      env:
+        # SDL cannot always find hardware acceleration on macOS in CI
+        SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
       run: |
         briefcase create macOS Xcode \
           ${{ steps.output-format.outputs.template-override }}
@@ -216,9 +225,9 @@ jobs:
       run: |
         PACKAGES="python3-dev python3-pip"
         case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
-          toga    ) PACKAGES="${PACKAGES} libcairo2-dev libgirepository1.0-dev gir1.2-gtk-3.0" ;;
-          pyside6 ) PACKAGES="${PACKAGES} libegl1 libxcb-cursor0 libxcb-render-util0 libxcb-shape0 libxcb-xkb1 libxcb-icccm4 libxcb-keysyms1 libxcb-image0 libxcb-util1 libxkbcommon-x11-0 libegl1-mesa" ;;
-          ppb     ) PACKAGES="${PACKAGES} libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-gfx-1.0-0 libsdl2-ttf-2.0-0" ;;
+          toga    ) PACKAGES="${PACKAGES} ${{ env.TOGA_SYSTEM_REQUIRES }}" ;;
+          pyside6 ) PACKAGES="${PACKAGES} ${{ env.PYSIDE6_SYSTEM_REQUIRES }}" ;;
+          ppb     ) PACKAGES="${PACKAGES} ${{ env.PPB_SYSTEM_REQUIRES }}" ;;
         esac
 
         sudo apt install -y --no-install-recommends ${PACKAGES}
@@ -241,6 +250,7 @@ jobs:
         briefcase create linux system --target debian:bookworm \
           ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target debian:bookworm
+        xvfb-run briefcase run linux system --target debian:bookworm
         briefcase package linux system --target debian:bookworm --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist debian:bookworm \
@@ -256,6 +266,7 @@ jobs:
         briefcase create linux system --target fedora:39 \
           ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target fedora:39
+        xvfb-run briefcase run linux system --target fedora:39
         briefcase package linux system --target fedora:39 --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist fedora:39 \
@@ -271,6 +282,7 @@ jobs:
         briefcase create linux system --target archlinux:latest \
           ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target archlinux:latest
+        xvfb-run briefcase run linux system --target archlinux:latest
         briefcase package linux system --target archlinux:latest --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist archlinux \
@@ -286,6 +298,7 @@ jobs:
         briefcase create linux system --target opensuse/tumbleweed:latest \
           ${{ steps.output-format.outputs.template-override }}
         briefcase build linux system --target opensuse/tumbleweed:latest
+        xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
         briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
@@ -318,8 +331,8 @@ jobs:
       run: |
         PACKAGES="libfuse2"
         case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
-          toga    ) PACKAGES="${PACKAGES} libthai-dev libegl1" ;;
-          pyside6 ) PACKAGES="${PACKAGES} libegl1 libxcb-cursor0 libxcb-render-util0 libxcb-shape0 libxcb-xkb1 libxcb-icccm4 libxcb-keysyms1 libxcb-image0 libxcb-util1 libxkbcommon-x11-0 libegl1-mesa" ;;
+          toga    ) PACKAGES="${PACKAGES} ${{ env.TOGA_SYSTEM_REQUIRES }}" ;;
+          pyside6 ) PACKAGES="${PACKAGES} ${{ env.PYSIDE6_SYSTEM_REQUIRES }}" ;;
         esac
 
         sudo apt install -y --no-install-recommends ${PACKAGES}
