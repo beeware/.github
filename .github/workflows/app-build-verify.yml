@@ -45,7 +45,7 @@ on:
 
 defaults:
   run:
-    shell: bash
+    shell: bash --noprofile --norc -x -e -o pipefail {0}
 
 env:
   FORCE_COLOR: "1"
