@@ -238,7 +238,7 @@ jobs:
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
 
-        bash -c "sudo apt -y install ./dist/*_0.0.1-1~ubuntu-*_amd64.deb"
+        bash -c "sudo apt -y install --dry-run ./dist/*_0.0.1-1~ubuntu-*_amd64.deb"
 
     - name: Build Linux System Project (Debian, Dockerized)
       if: >
@@ -254,7 +254,7 @@ jobs:
         briefcase package linux system --target debian:bookworm --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist debian:bookworm \
-          sh -c "apt update && apt -y install /dist/*_0.0.1-1~debian-*_amd64.deb"
+          sh -c "apt update && apt -y install --dry-run /dist/*_0.0.1-1~debian-*_amd64.deb"
 
     - name: Build Linux System Project (Fedora, Dockerized)
       if: >
@@ -270,7 +270,7 @@ jobs:
         briefcase package linux system --target fedora:39 --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist fedora:39 \
-          sh -c "dnf -y install /dist/*-0.0.1-1.fc*.x86_64.rpm"
+          sh -c "yum -y install --downloadonly /dist/*-0.0.1-1.fc*.x86_64.rpm"
 
     - name: Build Linux System Project (Arch, Dockerized)
       if: >
@@ -286,7 +286,7 @@ jobs:
         briefcase package linux system --target archlinux:latest --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist archlinux \
-          sh -c "pacman -Sy && pacman --noconfirm -U /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
+          sh -c "pacman --sync --refresh && pacman --noconfirm --upgrade --print /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
 
     - name: Build Linux System Project (openSUSE, Dockerized)
       if: >
@@ -302,7 +302,7 @@ jobs:
         briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
-          sh -c "zypper --non-interactive --no-gpg-checks install /dist/*-0.0.1-1.x86_64.rpm"
+          sh -c "zypper --non-interactive --no-gpg-checks install --dry-run /dist/*-0.0.1-1.x86_64.rpm"
 
     - name: Delete Docker Images
       # the GitHub runners come with limited disk space; these images take ~8GB
