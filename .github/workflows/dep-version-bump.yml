@@ -73,10 +73,6 @@ jobs:
         uses: actions/setup-python@v5.0.0
         with:
           python-version: 3.X
-          cache: pip
-          cache-dependency-path: |
-            **/setup.cfg
-            **/pyproject.toml
 
       - name: Install Dependencies
         run: |
