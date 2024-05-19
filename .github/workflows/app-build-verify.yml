@@ -437,6 +437,11 @@ jobs:
         xvfb-run briefcase run linux flatpak
         briefcase package linux flatpak --adhoc-sign
 
+    - name: Setup Android Emulator
+      id: emulator-setup
+      if: startsWith(inputs.runner-os, 'ubuntu')
+      uses: ./beeware-.github/.github/actions/setup-android
+
     - name: Build Android App
       if: >
         contains(fromJSON('["", "Android"]'), inputs.target-platform)
@@ -452,19 +457,7 @@ jobs:
 
         # Only run Android app on Linux since it's duplicative (and slow) on other platforms
         if [ "${{ startsWith(inputs.runner-os, 'ubuntu') }}" = "true" ]; then
-          # allow access to KVM to run the emulator
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
-            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-          briefcase run android gradle \
-            --device '{"avd":"beePhone"}' \
-            --shutdown-on-exit \
-            --Xemulator=-no-window \
-            --Xemulator=-no-snapshot \
-            --Xemulator=-no-audio \
-            --Xemulator=-no-boot-anim
+          briefcase run android gradle ${{ steps.emulator-setup.outputs.briefcase-run-args }}
         fi
 
         briefcase package android gradle --adhoc-sign
