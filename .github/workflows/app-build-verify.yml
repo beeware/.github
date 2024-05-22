@@ -62,7 +62,6 @@ jobs:
       SDL_AUDIODRIVER: dummy  # disable audio for SDL
       TOGA_SYSTEM_REQUIRES: libthai-dev libegl1 libcairo2-dev libgirepository1.0-dev gir1.2-gtk-3.0
       PYSIDE6_SYSTEM_REQUIRES: libx11-xcb1 libxkbcommon-x11-0 libxcb-image0 libxcb-cursor0 libxcb-shape0 libxcb-icccm4 libxcb-keysyms1 libgl1 libegl1
-      PPB_SYSTEM_REQUIRES: libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-gfx-1.0-0 libsdl2-ttf-2.0-0
     steps:
 
     - name: Workflow Configuration
@@ -230,7 +229,6 @@ jobs:
         case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
           toga    ) PACKAGES="${PACKAGES} ${{ env.TOGA_SYSTEM_REQUIRES }}" ;;
           pyside6 ) PACKAGES="${PACKAGES} ${{ env.PYSIDE6_SYSTEM_REQUIRES }}" ;;
-          ppb     ) PACKAGES="${PACKAGES} ${{ env.PPB_SYSTEM_REQUIRES }}" ;;
         esac
 
         sudo apt install -y --no-install-recommends ${PACKAGES}

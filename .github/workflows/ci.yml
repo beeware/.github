@@ -211,7 +211,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, ppb ]
+        framework: [ toga ]
         runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
 
   test-verify-apps-briefcase-template:
@@ -226,7 +226,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, ppb ]
+        framework: [ toga ]
         runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
 
   test-verify-apps-android-templates:
@@ -276,7 +276,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, ppb, pygame ]
+        framework: [ toga, pyside6, pygame ]
 
   test-verify-apps-appimage-templates:
     name: Verify AppImage
@@ -292,7 +292,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, ppb, pygame ]
+        framework: [ toga, pyside6, pygame ]
 
   test-verify-apps-flatpak-templates:
     name: Verify Flatpak
@@ -308,7 +308,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, ppb, pygame ]
+        framework: [ toga, pyside6, pygame ]
 
   test-verify-apps-macOS-templates:
     name: Verify macOS
@@ -324,7 +324,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, ppb, pygame ]
+        framework: [ toga, pyside6, pygame ]
         format: [ app, Xcode ]
 
   test-verify-apps-web-templates:
@@ -357,5 +357,5 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, ppb, pygame ]
+        framework: [ toga, pyside6, pygame ]
         format: [ app, VisualStudio ]
