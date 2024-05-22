@@ -70,7 +70,6 @@ runs:
         case "$(tr '[:upper:]' '[:lower:]' <<< "${{ inputs.framework }}")" in
           toga    ) BOOTSTRAP=Toga ;;
           pyside6 ) BOOTSTRAP=PySide6 ;;
-          ppb     ) BOOTSTRAP=PursuedPyBear ;;
           pygame  ) BOOTSTRAP=Pygame ;;
           *       ) BOOTSTRAP=${{ inputs.framework }} ;;
         esac
