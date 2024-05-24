@@ -7,7 +7,7 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -161,29 +161,30 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/python-package-create.yml
     with:
-      repository: beeware/${{ matrix.repo }}
-      tox-source: ${{ matrix.tox-source }}
-      tox-factors: ${{ matrix.tox-factors }}
-      distribution-path: ${{ matrix.dist-path }}
+      repository: beeware/${{ matrix.repo || matrix.name }}
       build-subdirectory: ${{ matrix.build-subdir }}
+      attest: ${{ matrix.attest || 'false' }}
     strategy:
       fail-fast: false
       matrix:
-        repo: [ briefcase, gbulb, rubicon-objc, toga ]
+        name:
+        - beeware
+        - briefcase
+        - gbulb
+        - rubicon-objc
+        - toga
+        - toga-android
+        - toga-chart
+        - travertino
         include:
-        - tox-source: .[dev]
-        - dist-path: dist
-        - repo: briefcase
-          tox-source: .[dev]
-          tox-factors: -with-automation
-          dist-path: dist
-        - repo: gbulb
-          tox-source: tox
-          dist-path: dist
-        - repo: toga
-          tox-source: ./core[dev]
-          dist-path: "*/dist/*"
+        - name: briefcase
+          attest: "true"
+        - name: toga
           build-subdir: core
+          attest: "true"
+        - name: toga-android
+          repo: toga
+          build-subdir: android
 
   test-verify-projects-briefcase:
     name: Verify Project
