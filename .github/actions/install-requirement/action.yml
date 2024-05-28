@@ -47,5 +47,5 @@ runs:
       shell: bash
       run: |
         python -m install_requirement ${{ inputs.requirements }} \
-          --extra "${{ inputs.extra }}" \
+          ${{ inputs.extra && format('--extra "{0}"', inputs.extra) || '' }} \
           --project-root "$(printf -- "%q" "${{ steps.paths.outputs.project-root }}")"
