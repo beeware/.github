@@ -7,10 +7,7 @@
 # Install one or more PEP 517 project defined requirements
 #
 # positional arguments:
-#   requirements          List of project requirements to install. Any project
-#                         requirements that start with any of these values will
-#                         be installed. For instance, including 'pytest' in this
-#                         list would install both pytest and pytest-xdist.
+#   requirements          Whitespace-delimited list of project requirements to install.
 #
 # options:
 #   -h, --help            show this help message and exit
@@ -141,10 +138,11 @@ def gather_requirements(
 
 def install_requirements(requirements: list[Requirement]):
     """Install requirements from PyPI."""
+    installed_reqs = []
     for requirement in requirements:
         extras = f"[{','.join(requirement.extras)}]" if requirement.extras else ""
         requirement_str = f"{requirement.name}{extras}{requirement.specifier}"
-        print(f"Installing {requirement_str}...")
+        print(f"Installing {requirement_str}...", flush=True)
         subprocess.run(
             [
                 sys.executable,
@@ -156,6 +154,9 @@ def install_requirements(requirements: list[Requirement]):
             ],
             check=True,
         )
+        installed_reqs.append(requirement_str)
+
+    print(f"\nSuccessfully installed:\n {f'{chr(10)} '.join(installed_reqs)}")
 
 
 def main():
