@@ -185,6 +185,74 @@ jobs:
           dist-path: "*/dist/*"
           build-subdir: core
 
+  test-install-requirements:
+    name: Install Requirements
+    needs: pre-commit
+    runs-on: ${{ matrix.runner-os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
+    steps:
+      - name: Checkout beeware/briefcase
+        uses: actions/checkout@v4.1.6
+        with:
+          repository: beeware/briefcase
+
+      - name: Checkout beeware/briefcase to path
+        uses: actions/checkout@v4.1.6
+        with:
+          repository: beeware/briefcase
+          path: repos/briefcase
+
+      - name: Checkout beeware/.github
+        uses: actions/checkout@v4.1.6
+        with:
+          repository: beeware/.github
+          path: repos/.github-beeware
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.0
+        with:
+          python-version: "3.x"
+
+      - name: Test Install Requirements with Path
+        uses: ./repos/.github-beeware/.github/actions/install-requirement
+        with:
+          requirements: "pre-commit tox"
+          extra: "dev"
+          project-root: "repos/briefcase"
+
+      - name: Test Install Requirements with Extra
+        uses: ./repos/.github-beeware/.github/actions/install-requirement
+        with:
+          requirements: "coverage"
+          extra: "dev"
+
+      - name: Test Install Requirements
+        uses: ./repos/.github-beeware/.github/actions/install-requirement
+        with:
+          requirements: "cookiecutter"
+
+      - name: Verify Requirements Installed
+        run: |
+          if ! python -m pip list | grep tox; then
+            echo '::error::Failed to install tox'
+            exit 1
+          fi
+          if ! python -m pip list | grep pre-commit; then
+            echo '::error::Failed to install pre-commit'
+            exit 1
+          fi
+          if ! python -m pip list | grep coverage; then
+            echo '::error::Failed to install coverage'
+            exit 1
+          fi
+          if ! python -m pip list | grep cookiecutter; then
+            echo '::error::Failed to install cookiecutter'
+            exit 1
+          fi
+
   test-verify-projects-briefcase:
     name: Verify Project
     needs: [ pre-commit, test-package-python ]
