@@ -32,10 +32,6 @@ on:
         description: "The target format for the app, e.g. appimage, xcode, app, etc. Leave blank all supported formats."
         default: ""
         type: string
-      briefcase-artifact-name:
-        description: "Name of the GitHub artifact for the Briefcase package to install."
-        default: ""
-        type: string
       workflow-repo:
         # Only needed for PRs in other repos wanting to test new workflow changes before they are merged.
         # These inputs should not be specified by another repo on their main branch.
@@ -131,7 +127,8 @@ jobs:
       if: endsWith(inputs.repository, 'briefcase')
       uses: actions/download-artifact@v4.1.7
       with:
-        pattern: ${{ format('{0}*', inputs.briefcase-artifact-name) }}
+        # artifact name is derived in python-package-create.yml
+        pattern: "Packages-briefcase*"
         merge-multiple: true
         path: dist
 

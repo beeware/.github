@@ -23,10 +23,6 @@ on:
         description: "GitHub repository to checkout; defaults to repo running this workflow."
         default: ${{ github.repository }}
         type: string
-      briefcase-artifact-name:
-        description: "Name of the GitHub artifact for the Briefcase package to install."
-        default: ""
-        type: string
       workflow-repo:
         # Only needed for PRs in other repos wanting to test new workflow changes before they are merged.
         # These inputs should not be specified by another repo on their main branch.
@@ -90,7 +86,8 @@ jobs:
       if: endsWith(inputs.repository, 'briefcase')
       uses: actions/download-artifact@v4.1.7
       with:
-        name: ${{ inputs.briefcase-artifact-name }}
+        # artifact name is derived in python-package-create.yml
+        name: "Packages-briefcase"
         path: dist
 
     - name: Install Briefcase Artefact
