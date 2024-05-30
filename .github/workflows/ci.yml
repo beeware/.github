@@ -7,7 +7,7 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -161,29 +161,28 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/python-package-create.yml
     with:
-      repository: beeware/${{ matrix.repo }}
-      tox-source: ${{ matrix.tox-source }}
-      tox-factors: ${{ matrix.tox-factors }}
-      distribution-path: ${{ matrix.dist-path }}
+      repository: beeware/${{ matrix.repo || matrix.name }}
       build-subdirectory: ${{ matrix.build-subdir }}
     strategy:
       fail-fast: false
       matrix:
-        repo: [ briefcase, gbulb, rubicon-objc, toga ]
+        name:
+        - briefcase
+        - briefcase-automation
+        - gbulb
+        - rubicon-objc
+        - toga-core
+        - toga-android
         include:
-        - tox-source: .[dev]
-        - dist-path: dist
-        - repo: briefcase
-          tox-source: .[dev]
-          tox-factors: -with-automation
-          dist-path: dist
-        - repo: gbulb
-          tox-source: tox
-          dist-path: dist
-        - repo: toga
-          tox-source: ./core[dev]
-          dist-path: "*/dist/*"
+        - name: briefcase-automation
+          repo: briefcase
+          build-subdir: automation
+        - name: toga-core
+          repo: toga
           build-subdir: core
+        - name: toga-android
+          repo: toga
+          build-subdir: android
 
   test-install-requirements:
     name: Install Requirements
@@ -259,6 +258,7 @@ jobs:
     uses: ./.github/workflows/app-create-verify.yml
     with:
       python-version: "3.10"  # must match system python for ubuntu version
+      repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
     strategy:
