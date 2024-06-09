@@ -71,6 +71,7 @@ runs:
           toga    ) BOOTSTRAP=Toga ;;
           pyside6 ) BOOTSTRAP=PySide6 ;;
           pygame  ) BOOTSTRAP=Pygame ;;
+          console ) BOOTSTRAP=Console ;;
           *       ) BOOTSTRAP=${{ inputs.framework }} ;;
         esac
 
