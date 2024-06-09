@@ -344,7 +344,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame ]
+        framework: [ toga, pyside6, pygame, console ]
 
   test-verify-apps-appimage-templates:
     name: Verify AppImage
@@ -360,7 +360,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame ]
+        framework: [ toga, pyside6, pygame, console ]
 
   test-verify-apps-flatpak-templates:
     name: Verify Flatpak
@@ -376,7 +376,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame ]
+        framework: [ toga, pyside6, pygame, console ]
 
   test-verify-apps-macOS-templates:
     name: Verify macOS
@@ -392,7 +392,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame ]
+        framework: [ toga, pyside6, pygame, console ]
         format: [ app, Xcode ]
 
   test-verify-apps-web-templates:
@@ -425,5 +425,5 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame ]
+        framework: [ toga, pyside6, pygame, console ]
         format: [ app, VisualStudio ]
