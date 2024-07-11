@@ -378,7 +378,9 @@ jobs:
       # push) is fundamentally incompatible with using an old base image. As of today,
       # it's impossible to install Toga on *any* manylinux image (
       # https://gitlab.gnome.org/GNOME/pygobject/-/issues/590); PySide2 can't be
-      # installed on any *supported* manylinux image, and PySide6 only works on 2_28.
+      # installed on any *supported* manylinux image; PySide6 only publishes 2_28 wheels,
+      # but even then, it segfaults when the AppImage starts.
+      #
       # Even when the install *does* work, there are so many incompatibility and
       # binary dependency issues that it's just not worth the oxygen to keep this thing
       # alive.

@@ -360,7 +360,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        # 2024-07-11 (beeware/briefcase#1908): pyside6 segfaults on AppImage start.
+        framework: [ toga, pygame, console ]
 
   test-verify-apps-flatpak-templates:
     name: Verify Flatpak
