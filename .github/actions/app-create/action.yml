@@ -22,50 +22,56 @@ outputs:
   project-path:
     value: ${{ steps.create.outputs.path }}
     description: "The file path to the root of the created project."
+  briefcase-template-repo:
+    value: ${{ steps.template.outputs.repo }}
+    description: "Template repo used to create app."
+  briefcase-template-ref:
+    value: ${{ steps.template.outputs.ref }}
+    description: "Template ref used to create app."
+
 
 runs:
   using: composite
   steps:
-    - name: Briefcase Template Override
-      id: template-override
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: Checkout beeware/.github
+      uses: actions/checkout@v4.1.7
+      with:
+        path: beeware-app-create-.github
+
+    - name: Check for Briefcase Template Repo Override
+      id: template-repo-override
+      uses: ./beeware-app-create-.github/.github/actions/pr-body-parse
+      with:
+        key-regex: 'BRIEFCASE[-_]*TEMPLATE[-_]*REPO'
+        testing-pr-body: ${{ inputs.testing-pr-body }}
+
+    - name: Check for Briefcase Template Ref Override
+      id: template-ref-override
+      uses: ./beeware-app-create-.github/.github/actions/pr-body-parse
+      with:
+        key-regex: 'BRIEFCASE[-_]*TEMPLATE[-_]*REF'
+        testing-pr-body: ${{ inputs.testing-pr-body }}
+
+    - name: Declare Briefcase Template
+      id: template
       shell: bash
       run: |
-        # Check Body of PR for template to use
-        # (only PRs will have a value for github.event.pull_request.number)
-        PR_BODY="${{ inputs.testing-pr-body }}"
-        if [[ -z "${PR_BODY}" && -n "${{ github.event.pull_request.number }}" ]]; then
-          PR_BODY=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.body')
-        fi
-        printf "::group::Retrieved PR Body\n%s\n::endgroup::\n" "${PR_BODY}"
+        REPO="${{ steps.template-repo-override.outputs.extracted-value || inputs.briefcase-template-source }}"
+        REF="${{ steps.template-ref-override.outputs.extracted-value || inputs.briefcase-template-branch }}"
 
-        TEMPLATE_REPO=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REPO:\s*\K\S+/i and print $&')
-        TEMPLATE_REF=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*TEMPLATE[-_]*REF:\s*\K\S+/i and print $&')
-
-        # If a template is not in the PR, use inputs specified in CI workflow
-        if [ -z "${TEMPLATE_REPO}" ]; then
-          TEMPLATE_REPO="${{ inputs.briefcase-template-source }}"
+        if [ -n "${REPO}" ]; then
+          printf -- "repo=%q\n" "${REPO}" | tee -a ${GITHUB_OUTPUT}
+          printf -- "repo-cmdline=--template '%q'\n" "${REPO}" | tee -a ${GITHUB_OUTPUT}
         fi
-        if [ -z "${TEMPLATE_REF}" ]; then
-          TEMPLATE_REF="${{ inputs.briefcase-template-branch }}"
+        if [ -n "${REF}" ]; then
+          printf -- "ref=%q\n" "${REF}" | tee -a ${GITHUB_OUTPUT}
+          printf -- "ref-cmdline=--template-branch '%q'\n" "${REF}" | tee -a ${GITHUB_OUTPUT}
         fi
-
-        # Expose template repo and branch via outputs
-        echo "repo=${TEMPLATE_REPO}" | tee -a ${GITHUB_OUTPUT}
-        echo "ref=${TEMPLATE_REF}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Create Briefcase Project
       id: create
       shell: bash
       run: |
-        if [[ "${{ steps.template-override.outputs.repo }}" != "" ]]; then
-          TEMPLATE=$(printf -- "--template %q" "${{ steps.template-override.outputs.repo }}")
-        fi
-        if [[ "${{ steps.template-override.outputs.ref }}" != "" ]]; then
-          TEMPLATE_BRANCH=$(printf -- "--template-branch %q" "${{ steps.template-override.outputs.ref }}")
-        fi
-
         # Map GUI toolkit through case insensitivity
         case "$(tr '[:upper:]' '[:lower:]' <<< "${{ inputs.framework }}")" in
           toga    ) BOOTSTRAP=Toga ;;
@@ -89,7 +95,9 @@ runs:
         rm -rf "${APP_DIR}"
 
         # Roll out the project
-        briefcase new --no-input ${TEMPLATE} ${TEMPLATE_BRANCH} \
+        briefcase new --no-input \
+          ${{ steps.template.outputs.repo-cmdline }} \
+          ${{ steps.template.outputs.ref-cmdline }} \
           -Q "formal_name=${APP_NAME}" \
           -Q "app_name=${APP_DIR}" \
           -Q "bootstrap=${BOOTSTRAP}"

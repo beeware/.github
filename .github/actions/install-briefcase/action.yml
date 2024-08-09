@@ -32,38 +32,38 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Use Specified Briefcase Version
-      id: briefcase-override
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: Checkout beeware/.github
+      uses: actions/checkout@v4.1.7
+      with:
+        path: beeware-install-briefcase-.github
+
+    - name: Check for Briefcase Repo Override
+      id: briefcase-repo-override
+      uses: ./beeware-install-briefcase-.github/.github/actions/pr-body-parse
+      with:
+        key-regex: 'BRIEFCASE[-_]*REPO'
+        testing-pr-body: ${{ inputs.testing-pr-body }}
+
+    - name: Check for Briefcase Ref Override
+      id: briefcase-ref-override
+      uses: ./beeware-install-briefcase-.github/.github/actions/pr-body-parse
+      with:
+        key-regex: 'BRIEFCASE[-_]*REF'
+        testing-pr-body: ${{ inputs.testing-pr-body }}
+
+    - name: Declare Briefcase Source
+      id: briefcase
       shell: bash
       run: |
-        # Check Body of PR for Briefcase version to use
-        # (only PRs will have a value for github.event.pull_request.number)
-        PR_BODY="${{ inputs.testing-pr-body }}"
-        if [[ -z "${PR_BODY}" && -n "${{ github.event.pull_request.number }}" ]]; then
-          PR_BODY=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.body')
-        fi
-        printf "::group::Retrieved PR Body\n%s\n::endgroup::\n" "${PR_BODY}"
+        REPO="${{ steps.briefcase-repo-override.outputs.extracted-value || inputs.briefcase-url }}"
+        REF="${{ steps.briefcase-ref-override.outputs.extracted-value || inputs.briefcase-override-version }}"
 
-        BRIEFCASE_REPO=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*REPO:\s*\K\S+/i and print $&')
-        BRIEFCASE_REF=$(printf "%s" "${PR_BODY}" | perl -wlne '/BRIEFCASE[-_]*REF:\s*\K\S+/i and print $&')
-
-        # If a version is not in the PR, use inputs specified in CI workflow
-        if [ -z "${BRIEFCASE_REPO}" ]; then
-          BRIEFCASE_REPO="${{ inputs.briefcase-url }}"
-        fi
-        if [ -z "${BRIEFCASE_REF}" ]; then
-          BRIEFCASE_REF="${{ inputs.briefcase-override-version }}"
-        fi
-
-        # Expose repo and version via outputs
-        echo "repo=${BRIEFCASE_REPO}" | tee -a ${GITHUB_OUTPUT}
-        echo "ref=${BRIEFCASE_REF}" | tee -a ${GITHUB_OUTPUT}
+        printf -- "repo=%s\n" "${REPO}" | tee -a ${GITHUB_OUTPUT}
+        printf -- "ref=%s\n" "${REF}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Derive Target Briefcase Version
       id: briefcase-derived
-      if: steps.briefcase-override.outputs.ref == ''
+      if: steps.briefcase.outputs.ref == ''
       shell: bash
       run: |
         # Branch or tag that triggered the workflow.
@@ -136,8 +136,8 @@ runs:
       id: install
       shell: bash
       run: |
-        REPO="${{ steps.briefcase-override.outputs.repo || inputs.briefcase-url }}"
-        REF="${{ steps.briefcase-override.outputs.ref || steps.briefcase-derived.outputs.version }}"
+        REPO="${{ steps.briefcase.outputs.repo }}"
+        REF="${{ steps.briefcase.outputs.ref || steps.briefcase-derived.outputs.version }}"
 
         echo "Installing ${REPO}@${REF}"
         python -m pip install \

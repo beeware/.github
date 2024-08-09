@@ -136,6 +136,61 @@ jobs:
           exit 1
         fi
 
+  test-app-create:
+    name: App Create
+    needs: pre-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        test-case: [ "default", "override", "pr-body" ]
+        include:
+          - expected-repo: ""
+            expected-ref: ""
+            override-repo: ""
+            override-ref: ""
+            pr-body: ""
+          - test-case: "override"
+            override-repo: "https://github.com/beeware/briefcase-template"
+            override-ref: "main"
+            expected-repo: "https://github.com/beeware/briefcase-template"
+            expected-ref: "main"
+          - test-case: "pr-body"
+            pr-body: "sadf asdf Briefcase-Template-Repo: https://github.com/beeware/briefcase-template foo BRIEFCASE-template-REF: main"
+            expected-repo: "https://github.com/beeware/briefcase-template"
+            expected-ref: "main"
+    steps:
+    - name: Checkout beeware/.github
+      uses: actions/checkout@v4.1.7
+
+    - name: Set up Python
+      uses: actions/setup-python@v5.1.1
+      with:
+        python-version: 3.X
+        cache: pip
+        cache-dependency-path: |
+          **/setup.cfg
+          **/pyproject.toml
+          .pre-commit-config.yaml
+
+    - name: Install Briefcase
+      uses: ./.github/actions/install-briefcase
+
+    - name: Create Briefcase App
+      id: app
+      uses: ./.github/actions/app-create
+      with:
+        briefcase-template-source: ${{ matrix.override-repo }}
+        briefcase-template-branch: ${{ matrix.override-ref }}
+        testing-pr-body: ${{ matrix.pr-body }}
+
+    - name: Verify App
+      shell: python
+      run: |
+        assert "${{ steps.app.outputs.briefcase-template-repo }}" == "${{ matrix.expected-repo }}"
+        assert "${{ steps.app.outputs.briefcase-template-ref }}" == "${{ matrix.expected-ref }}"
+
   test-pre-commit-run:
     name: Pre-commit
     needs: pre-commit
