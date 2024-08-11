@@ -127,7 +127,7 @@ jobs:
         pprint(toml.load(pyproject_toml))
 
     - name: Upload Failure Logs
-      uses: actions/upload-artifact@v4.3.5
+      uses: actions/upload-artifact@v4.3.6
       if: failure()
       with:
         name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}
