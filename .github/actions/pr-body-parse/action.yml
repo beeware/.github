@@ -10,7 +10,7 @@ inputs:
     required: false
 
 outputs:
-  extracted-value:
+  value:
     value: ${{ steps.parse.outputs.extracted-value }}
     description: "The value extracted from the PR's body for the specified key."
 

@@ -56,8 +56,8 @@ runs:
       id: template
       shell: bash
       run: |
-        REPO="${{ steps.template-repo-override.outputs.extracted-value || inputs.briefcase-template-source }}"
-        REF="${{ steps.template-ref-override.outputs.extracted-value || inputs.briefcase-template-branch }}"
+        REPO="${{ steps.template-repo-override.outputs.value || inputs.briefcase-template-source }}"
+        REF="${{ steps.template-ref-override.outputs.value || inputs.briefcase-template-branch }}"
 
         if [ -n "${REPO}" ]; then
           printf -- "repo=%q\n" "${REPO}" | tee -a ${GITHUB_OUTPUT}

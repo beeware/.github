@@ -55,8 +55,8 @@ runs:
       id: briefcase
       shell: bash
       run: |
-        REPO="${{ steps.briefcase-repo-override.outputs.extracted-value || inputs.briefcase-url }}"
-        REF="${{ steps.briefcase-ref-override.outputs.extracted-value || inputs.briefcase-override-version }}"
+        REPO="${{ steps.briefcase-repo-override.outputs.value || inputs.briefcase-url }}"
+        REF="${{ steps.briefcase-ref-override.outputs.value || inputs.briefcase-override-version }}"
 
         printf -- "repo=%s\n" "${REPO}" | tee -a ${GITHUB_OUTPUT}
         printf -- "ref=%s\n" "${REF}" | tee -a ${GITHUB_OUTPUT}
