@@ -368,52 +368,61 @@ jobs:
         docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
           sh -c "zypper --non-interactive --no-gpg-checks install --dry-run /dist/*-0.0.1-1.x86_64.rpm"
 
-    - name: Build AppImage Project
-      # 2023-09-11 AppImage dropped to "best effort" support.
-      #
-      # AppImage builds are the slowest, because they're incompatible with binary wheels;
-      # and installing Linux GUI toolkits (which are on a constant "install the latest"
-      # push) is fundamentally incompatible with using an old base image. As of today,
-      # it's impossible to install Toga on *any* manylinux image (
-      # https://gitlab.gnome.org/GNOME/pygobject/-/issues/590); PySide2 can't be
-      # installed on any *supported* manylinux image; PySide6 only publishes 2_28 wheels,
-      # but even then, it segfaults when the AppImage starts.
-      #
-      # Even when the install *does* work, there are so many incompatibility and
-      # binary dependency issues that it's just not worth the oxygen to keep this thing
-      # alive.
-      #
-      # Only runs when target platform and format are explicitly Linux and AppImage.
-      if: >
-        startsWith(inputs.runner-os, 'ubuntu')
-        && contains(fromJSON('["Linux"]'), inputs.target-platform)
-        && contains(fromJSON('["AppImage"]'), inputs.target-format)
-      working-directory: ${{ steps.create.outputs.project-path }}
-      env:
-        PKG_TAG: ${{ steps.docker.outputs.tag-base }}-appimage
-      run: |
-        PACKAGES="libfuse2"
-        case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
-          toga    ) PACKAGES="${PACKAGES} ${{ env.TOGA_SYSTEM_REQUIRES }}" ;;
-          pyside6 ) PACKAGES="${PACKAGES} ${{ env.PYSIDE6_SYSTEM_REQUIRES }}" ;;
-        esac
+    # 2024-09-02 AppImage testing disabled entirely In Briefcase#1977, the
+    # Bootstrap app was updated to use a Toga API introduced in Toga 0.4.6. This
+    # is a problem because we're limited to Toga 0.3.1 for AppImage testing; we
+    # can't install the version of PyGObject we need on manylinux_2_28.
+    # manylinux_2_34 is in preparation (see pypa/manylinux#1585); but until that
+    # base image is available, we can't test AppImage without also making
+    # changes to Briefcase to support *very* old versions of Toga in testing.
+    #
+    # The configuration has been commented out for now, in the hope it might be
+    # able to be restored when manylinux_2_34 is finalized; however, it's
+    # essentially a race to see whether manylinux_2_34 is updated before we
+    # finally complete the deprecation of AppImage.
+    #
+    # - name: Build AppImage Project
+    #   # 2023-09-11 AppImage dropped to "best effort" support.
+    #   #
+    #   # AppImage builds are the slowest, because they're incompatible with binary wheels;
+    #   # and installing Linux GUI toolkits (which are on a constant "install the latest"
+    #   # push) is fundamentally incompatible with using an old base image. As of today,
+    #   # it's impossible to install Toga on *any* manylinux image (
+    #   # https://gitlab.gnome.org/GNOME/pygobject/-/issues/590); PySide2 can't be
+    #   # installed on any *supported* manylinux image; PySide6 only publishes 2_28 wheels,
+    #   # but even then, it segfaults when the AppImage starts.
+    #   #
+    #   # Even when the install *does* work, there are so many incompatibility and
+    #   # binary dependency issues that it's just not worth the oxygen to keep this thing
+    #   # alive.
+    #   #
+    #   # Only runs when target platform and format are explicitly Linux and AppImage.
+    #   if: > startsWith(inputs.runner-os, 'ubuntu') &&
+    #     contains(fromJSON('["Linux"]'), inputs.target-platform) &&
+    #     contains(fromJSON('["AppImage"]'), inputs.target-format)
+    #     working-directory: ${{ steps.create.outputs.project-path }} env:
+    #     PKG_TAG: ${{ steps.docker.outputs.tag-base }}-appimage run: |
+    #     PACKAGES="libfuse2" case "$(tr '[:upper:]' '[:lower:]' <<< '${{
+    #     inputs.framework }}')" in toga    ) PACKAGES="${PACKAGES} ${{
+    #     env.TOGA_SYSTEM_REQUIRES }}" ;; pyside6 ) PACKAGES="${PACKAGES} ${{
+    #     env.PYSIDE6_SYSTEM_REQUIRES }}" ;; esac
 
-        sudo apt install -y --no-install-recommends ${PACKAGES}
+    #     sudo apt install -y --no-install-recommends ${PACKAGES}
 
-        # PyGObject>=3.46.0 requires a version of glibc that isn't available in manylinux images;
-        # so, the version is constrained to successfully build an AppImage with Toga.
-        # Furthermore, Toga>0.3.1 requires PyGObject>=3.46.0 so its version is constrained as well.
-        if [ "${{ startsWith(inputs.framework, 'toga') }}" = "true" ]; then
-          CONFIG_OVERRIDE_REQUIRES='--config requires=["toga-gtk==0.3.1","PyGobject<3.46.0"]'
-        fi
+    #     # PyGObject>=3.46.0 requires a version of glibc that isn't available in manylinux images;
+    #     # so, the version is constrained to successfully build an AppImage with Toga.
+    #     # Furthermore, Toga>0.3.1 requires PyGObject>=3.46.0 so its version is constrained as well.
+    #     if [ "${{ startsWith(inputs.framework, 'toga') }}" = "true" ]; then
+    #       CONFIG_OVERRIDE_REQUIRES='--config requires=["toga-gtk==0.3.1","PyGobject<3.46.0"]'
+    #     fi
 
-        briefcase create linux AppImage \
-          ${{ steps.output-format.outputs.template-override }} \
-          ${CONFIG_OVERRIDE_REQUIRES} \
-          ${DOCKER_BUILDX_OPTIONS//__PKG_TAG__/${PKG_TAG}}
-        briefcase build linux AppImage
-        xvfb-run briefcase run linux AppImage
-        briefcase package linux AppImage --adhoc-sign
+    #     briefcase create linux AppImage \
+    #       ${{ steps.output-format.outputs.template-override }} \
+    #       ${CONFIG_OVERRIDE_REQUIRES} \
+    #       ${DOCKER_BUILDX_OPTIONS//__PKG_TAG__/${PKG_TAG}}
+    #     briefcase build linux AppImage
+    #     xvfb-run briefcase run linux AppImage
+    #     briefcase package linux AppImage --adhoc-sign
 
     - name: Delete Docker Images
       # the GitHub runners come with limited disk space; these images take ~8GB
