@@ -58,7 +58,7 @@ jobs:
           echo "differentiator=${DIFFERENTIATOR}" | tee -a ${GITHUB_OUTPUT}
 
       - name: Checkout
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
         with:
           repository: ${{ inputs.repository }}
           fetch-depth: 0  # Fetch all refs so setuptools_scm can generate the correct version number
