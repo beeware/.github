@@ -240,7 +240,7 @@ jobs:
             python -m pip list
             exit 1
           fi
-          if ! python -m pip list | grep pre-commit; then
+          if ! python -m pip list | grep pre_commit; then
             echo '::error::Failed to install pre-commit'
             python -m pip list
             exit 1
