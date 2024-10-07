@@ -18,11 +18,12 @@ repos:
     hooks:
       - id: isort
         args: [--profile=black, --split-on-trailing-comma, --combine-as]
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.5
-    hooks:
-      - id: docformatter
-        args: [--in-place, --black]
+  # Docformatter 1.7.5 isn't compatible with Pre-commit 4.0
+  # - repo: https://github.com/PyCQA/docformatter
+  #   rev: v1.7.5
+  #   hooks:
+  #     - id: docformatter
+  #       args: [--in-place, --black]
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.8.0
     hooks:
