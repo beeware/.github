@@ -237,18 +237,22 @@ jobs:
         run: |
           if ! python -m pip list | grep tox; then
             echo '::error::Failed to install tox'
+            python -m pip list
             exit 1
           fi
           if ! python -m pip list | grep pre-commit; then
             echo '::error::Failed to install pre-commit'
+            python -m pip list
             exit 1
           fi
           if ! python -m pip list | grep coverage; then
             echo '::error::Failed to install coverage'
+            python -m pip list
             exit 1
           fi
           if ! python -m pip list | grep cookiecutter; then
             echo '::error::Failed to install cookiecutter'
+            python -m pip list
             exit 1
           fi
 
