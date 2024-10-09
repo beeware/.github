@@ -9,7 +9,7 @@ on:
     inputs:
       python-version:
         description: "Python version to use; defaults to latest Python release."
-        default: "3.X"
+        default: "3.x"
         type: string
       runner-os:
         description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
@@ -72,6 +72,7 @@ jobs:
       with:
         python-version: ${{ inputs.python-version }}
         cache: pip
+        allow-prereleases: true
         cache-dependency-path: |
           **/setup.cfg
           **/pyproject.toml
