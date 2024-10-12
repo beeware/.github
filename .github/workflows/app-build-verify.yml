@@ -111,8 +111,7 @@ jobs:
         path: ${{ steps.config.outputs.briefcase-data-dir }}
 
     - name: Set Up Python
-      # Linux System apps can only use the system Python to run the app
-      if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
+      if: ${{ inputs.python-version != 'system' }}
       uses: actions/setup-python@v5.2.0
       with:
         python-version: ${{ inputs.python-version }}
