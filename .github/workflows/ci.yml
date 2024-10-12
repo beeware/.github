@@ -291,7 +291,7 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
+      python-version: "3.11"  # Explicitly test the python-version override
       repository: beeware/briefcase-template
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -306,7 +306,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-android-gradle-template
       runner-os: ${{ matrix.runner-os }}
       target-platform: android
@@ -323,7 +322,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-iOS-xcode-template
       runner-os: macos-latest
       target-platform: iOS
@@ -355,7 +353,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-linux-appimage-template
       runner-os: ubuntu-latest
       target-platform: linux
@@ -372,7 +369,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-linux-flatpak-template
       runner-os: ubuntu-latest
       target-platform: linux
@@ -388,7 +384,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-macos-${{ matrix.format }}-template
       runner-os: macos-latest
       target-platform: macOS
@@ -405,7 +400,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-web-static-template
       runner-os: ubuntu-latest
       target-platform: web
@@ -421,7 +415,6 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.11"
       repository: beeware/briefcase-windows-${{ matrix.format }}-template
       runner-os: windows-latest
       target-platform: windows
