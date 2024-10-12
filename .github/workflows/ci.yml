@@ -261,7 +261,7 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-create-verify.yml
     with:
-      python-version: "3.10"  # must match system python for ubuntu version
+      python-version: "system"  # must match system python for ubuntu version
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -276,7 +276,7 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.10"  # must match system python for ubuntu version
+      python-version: "system"  # must match system python for ubuntu version
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -337,7 +337,7 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "3.10"  # must match system python for ubuntu version
+      python-version: "system"  # must match system python for ubuntu version
       repository: beeware/briefcase-linux-system-template
       runner-os: ubuntu-22.04
       target-platform: linux
