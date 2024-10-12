@@ -223,7 +223,7 @@ jobs:
     - name: Build Linux System Project (Ubuntu, local)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
-        && inputs.python-version == "system"
+        && inputs.python-version == 'system'
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
