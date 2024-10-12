@@ -118,7 +118,7 @@ jobs:
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
       uses: actions/setup-python@v5.2.0
       with:
-        python-version: ${{ inputs.python-version == 'system' && steps.config.system-python-version || inputs.python-version }}
+        python-version: ${{ inputs.python-version == 'system' && steps.config.outputs.system-python-version || inputs.python-version }}
         allow-prereleases: true
         cache: pip
         cache-dependency-path: |
