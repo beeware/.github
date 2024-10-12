@@ -111,10 +111,14 @@ jobs:
         path: ${{ steps.config.outputs.briefcase-data-dir }}
 
     - name: Set Up Python
-      if: ${{ inputs.python-version != 'system' }}
+      # On Linux, we can use the system python as-is. On macOS/Windows, install
+      # a Python that matches the version provided as a system default. This is
+      # to avoid issues with trying to install packages into homebrew's python
+      # without requiring sudo.
+      if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
       uses: actions/setup-python@v5.2.0
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: ${{ inputs.python-version == 'system' && steps.config.system-python-version || inputs.python-version }}
         allow-prereleases: true
         cache: pip
         cache-dependency-path: |

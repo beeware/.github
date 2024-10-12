@@ -47,6 +47,11 @@ jobs:
     runs-on: ${{ inputs.runner-os }}
     timeout-minutes: 30
     steps:
+    - name: Workflow Configuration
+      id: config
+      run: |
+        SYSTEM_PYTHON_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+        echo "system-python-version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Checkout ${{ inputs.repository }}
       uses: actions/checkout@v4.2.0
@@ -68,10 +73,10 @@ jobs:
         path: briefcase-template
 
     - name: Set up Python
-      if: ${{ inputs.python-version != 'system' }}
+      # Always set up a Python, so that dependencies can be installed without sudo access
       uses: actions/setup-python@v5.2.0
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: ${{ inputs.python-version == 'system' && steps.config.system-python-version || inputs.python-version }}
         cache: pip
         allow-prereleases: true
         cache-dependency-path: |
