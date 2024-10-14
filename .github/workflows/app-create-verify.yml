@@ -73,10 +73,13 @@ jobs:
         path: briefcase-template
 
     - name: Set up Python
-      # Always set up a Python, so that dependencies can be installed without sudo access
+      # On Linux, accept a value of "system", which will install a version of
+      # Python matching the system version. We can't use the actual system
+      # install because we need to install dependencies, which would either
+      # require the use of sudo, or extra workarounds for user-space packages.
       uses: actions/setup-python@v5.2.0
       with:
-        python-version: ${{ inputs.python-version == 'system' && steps.config.outputs.system-python-version || inputs.python-version }}
+        python-version: ${{ startsWith(inputs.runner-os, 'ubuntu') && inputs.python-version == 'system' && steps.config.outputs.system-python-version || inputs.python-version }}
         cache: pip
         allow-prereleases: true
         cache-dependency-path: |

@@ -261,7 +261,6 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-create-verify.yml
     with:
-      python-version: "system"  # must match system python for ubuntu version
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -270,13 +269,16 @@ jobs:
       matrix:
         framework: [ toga, pyside6 ]
         runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
+        includes:
+          # Ubuntu apps need to run on the system Python
+          - runner-os: ubuntu-22.04
+            python-version: "system"
 
   test-verify-apps-briefcase:
     name: Verify Briefcase
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "system"  # must match system python for ubuntu version
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -285,6 +287,10 @@ jobs:
       matrix:
         framework: [ toga ]
         runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
+        includes:
+          # Ubuntu apps need to run on the system Python
+          - runner-os: ubuntu-22.04
+            python-version: "system"
 
   test-verify-apps-briefcase-template:
     name: Verify Briefcase Template
@@ -337,7 +343,8 @@ jobs:
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: "system"  # must match system python for ubuntu version
+      # Ubuntu apps need to run on the system Python
+      python-version: "system"
       repository: beeware/briefcase-linux-system-template
       runner-os: ubuntu-22.04
       target-platform: linux
