@@ -105,7 +105,7 @@ jobs:
           expected: "main"
     steps:
     - name: Checkout beeware/.github
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4.2.1
 
     - name: Set up Python
       uses: actions/setup-python@v5.2.0
@@ -194,18 +194,18 @@ jobs:
         runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
     steps:
       - name: Checkout beeware/briefcase
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           repository: beeware/briefcase
 
       - name: Checkout beeware/briefcase to path
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           repository: beeware/briefcase
           path: repos/briefcase
 
       - name: Checkout beeware/.github
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           repository: beeware/.github
           path: repos/.github-beeware
