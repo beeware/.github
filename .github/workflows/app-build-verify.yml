@@ -82,9 +82,6 @@ jobs:
         fi
         echo "cache-key=$(date +%Y-%m)|${CACHE_KEY}" | tee -a ${GITHUB_OUTPUT}
 
-        SYSTEM_PYTHON_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-        echo "system-python-version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
-
     - name: Checkout ${{ inputs.repository }}
       uses: actions/checkout@v4.2.0
       with:

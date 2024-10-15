@@ -261,6 +261,7 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-create-verify.yml
     with:
+      python-version: ${{ matrix.python-version}} # Falls back to 3.x if undefined
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -279,6 +280,7 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
+      python-version: ${{ matrix.python-version}} # Falls back to 3.x if undefined
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
