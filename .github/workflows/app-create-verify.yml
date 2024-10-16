@@ -9,7 +9,7 @@ on:
     inputs:
       python-version:
         description: "Python version to use; defaults to latest Python release."
-        default: "3.X"
+        default: "3.x"
         type: string
       runner-os:
         description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
@@ -47,6 +47,11 @@ jobs:
     runs-on: ${{ inputs.runner-os }}
     timeout-minutes: 30
     steps:
+    - name: Workflow Configuration
+      id: config
+      run: |
+        SYSTEM_PYTHON_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+        echo "system-python-version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Checkout ${{ inputs.repository }}
       uses: actions/checkout@v4.2.1
@@ -68,10 +73,15 @@ jobs:
         path: briefcase-template
 
     - name: Set up Python
+      # On Linux, accept a value of "system", which will install a version of
+      # Python matching the system version. We can't use the actual system
+      # install because we need to install dependencies, which would either
+      # require the use of sudo, or extra workarounds for user-space packages.
       uses: actions/setup-python@v5.2.0
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: ${{ startsWith(inputs.runner-os, 'ubuntu') && inputs.python-version == 'system' && steps.config.outputs.system-python-version || inputs.python-version || '3.x' }}
         cache: pip
+        allow-prereleases: true
         cache-dependency-path: |
           **/setup.cfg
           **/pyproject.toml

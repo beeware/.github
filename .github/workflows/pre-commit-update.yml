@@ -75,7 +75,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5.2.0
         with:
-          python-version: 3.X
+          python-version: "3.x"
           cache: pip
           cache-dependency-path: |
             **/setup.cfg

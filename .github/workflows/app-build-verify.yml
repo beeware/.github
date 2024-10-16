@@ -10,7 +10,7 @@ on:
     inputs:
       python-version:
         description: "Python version to use; defaults to latest Python release."
-        default: "3.X"
+        default: "3.x"
         type: string
       runner-os:
         description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
@@ -82,9 +82,6 @@ jobs:
         fi
         echo "cache-key=$(date +%Y-%m)|${CACHE_KEY}" | tee -a ${GITHUB_OUTPUT}
 
-        SYSTEM_PYTHON_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-        echo "system-python-version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
-
     - name: Checkout ${{ inputs.repository }}
       uses: actions/checkout@v4.2.1
       with:
@@ -111,11 +108,14 @@ jobs:
         path: ${{ steps.config.outputs.briefcase-data-dir }}
 
     - name: Set Up Python
-      # Linux System apps requires python is System Python to run the app
-      if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || !startsWith(inputs.python-version, steps.config.outputs.system-python-version) }}
+      # On Linux, accept "system" as a proxy for "don't install Python"; this will
+      # fall back to the system-provided Python package. Providing "system" as a value
+      # on macOS or Windows will cause an error.
+      if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
       uses: actions/setup-python@v5.2.0
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: ${{ inputs.python-version || '3.x' }}
+        allow-prereleases: true
         cache: pip
         cache-dependency-path: |
           **/setup.cfg
@@ -222,7 +222,7 @@ jobs:
     - name: Build Linux System Project (Ubuntu, local)
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
-        && startsWith(inputs.python-version, steps.config.outputs.system-python-version)
+        && inputs.python-version == 'system'
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
