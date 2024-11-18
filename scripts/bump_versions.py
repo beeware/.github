@@ -63,6 +63,16 @@ def parse_args():
             "defaults to current directory"
         ),
     )
+    parser.add_argument(
+        "--filenames",
+        default="",
+        nargs="+",
+        choices=["tox.ini", "pyproject.toml"],
+        help=(
+            "One or more filenames to evaluate. "
+            "All supported files are evaluated if not specified."
+        ),
+    )
 
     args = parser.parse_args()
     print(f"\nEvaluating {args.subdirectory}")
@@ -196,8 +206,10 @@ def main():
     ret_code = 0
     try:
         args = parse_args()
-        update_pyproject_toml(base_dir=args.subdirectory)
-        update_tox_ini(base_dir=args.subdirectory)
+        if not args.filenames or "pyproject.toml" in args.filenames:
+            update_pyproject_toml(base_dir=args.subdirectory)
+        if not args.filenames or "tox.ini" in args.filenames:
+            update_tox_ini(base_dir=args.subdirectory)
     except BumpVersionError as e:
         print(e.msg)
         ret_code = e.error_no
