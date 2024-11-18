@@ -14,6 +14,10 @@ on:
         description: "Whitespace-delimited list of directories containing pyproject.toml and tox.ini files; defaults to repo's base directory."
         default: ""
         type: string
+      filenames:
+        description: "Whitespace-delimited list of filenames to evaluate for dependency version bumps; defaults to only tox.ini."
+        default: "tox.ini"
+        type: string
       create-changenote:
         description: "Defaults 'true' to create a misc changenote in the './changes' directory."
         default: true
@@ -83,10 +87,10 @@ jobs:
         working-directory: "repo"
         run: |
           if [ "${{ inputs.subdirectory }}" == "" ]; then
-            python ../beeware-.github/scripts/bump_versions.py
+            python ../beeware-.github/scripts/bump_versions.py --filenames ${{ inputs.filenames }}
           else
             for SUBDIR in ${{ inputs.subdirectory }}; do
-              python ../beeware-.github/scripts/bump_versions.py ${SUBDIR}
+              python ../beeware-.github/scripts/bump_versions.py ${SUBDIR} --filenames ${{ inputs.filenames }}
             done
           fi
 
