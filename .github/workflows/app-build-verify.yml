@@ -227,7 +227,7 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       run: |
-        PACKAGES="python3-dev python3-pip"
+        PACKAGES="python3-dev python3-pip build-essential"
         case "$(tr '[:upper:]' '[:lower:]' <<< '${{ inputs.framework }}')" in
           toga    ) PACKAGES="${PACKAGES} ${{ env.TOGA_SYSTEM_REQUIRES }}" ;;
           pyside6 ) PACKAGES="${PACKAGES} ${{ env.PYSIDE6_SYSTEM_REQUIRES }}" ;;
