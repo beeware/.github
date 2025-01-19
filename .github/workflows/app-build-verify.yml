@@ -241,7 +241,7 @@ jobs:
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
 
-        bash -c "sudo apt -y install --dry-run ./dist/*_0.0.1-1~ubuntu-*_amd64.deb"
+        bash -c "sudo apt -y install --dry-run ./dist/*_0.0.1-1~ubuntu-*_$(dpkg --print-architecture).deb"
 
     - name: Log in to GitHub Container Registry
       if: >
@@ -309,7 +309,9 @@ jobs:
         briefcase package linux system --target debian:bookworm --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist debian:bookworm \
-          sh -c "apt update && apt -y install --dry-run /dist/*_0.0.1-1~debian-*_amd64.deb"
+          sh -c "\
+            apt update && \
+            apt -y install --dry-run /dist/*_0.0.1-1~debian-*_$(dpkg --print-architecture).deb"
 
     - name: Build Linux System Project (Fedora, Dockerized)
       if: >
@@ -318,21 +320,23 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        PKG_TAG: ${{ steps.docker.outputs.tag-base }}-system-fedora-39
+        PKG_TAG: ${{ steps.docker.outputs.tag-base }}-system-fedora-41
       run: |
-        briefcase create linux system --target fedora:39 \
+        briefcase create linux system --target fedora:41 \
           ${{ steps.output-format.outputs.template-override }} \
           ${DOCKER_BUILDX_OPTIONS//__PKG_TAG__/${PKG_TAG}}
-        briefcase build linux system --target fedora:39
-        xvfb-run briefcase run linux system --target fedora:39
-        briefcase package linux system --target fedora:39 --adhoc-sign
+        briefcase build linux system --target fedora:41
+        xvfb-run briefcase run linux system --target fedora:41
+        briefcase package linux system --target fedora:41 --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist fedora:39 \
-          sh -c "yum -y install --downloadonly /dist/*-0.0.1-1.fc*.x86_64.rpm"
+          sh -c "yum -y install --downloadonly /dist/*-0.0.1-1.fc*.$(rpm --eval '%_arch').rpm"
 
     - name: Build Linux System Project (Arch, Dockerized)
+      # Arch is not officially supported on ARM
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
+        && !endsWith(inputs.runner-os, '-arm')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
@@ -347,7 +351,9 @@ jobs:
         briefcase package linux system --target archlinux:latest --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist archlinux \
-          sh -c "pacman --sync --refresh && pacman --noconfirm --upgrade --print /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
+          sh -c "\
+            pacman --sync --refresh && \
+            pacman --noconfirm --upgrade --print /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
 
     - name: Build Linux System Project (openSUSE, Dockerized)
       if: >
@@ -366,7 +372,9 @@ jobs:
         briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
 
         docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
-          sh -c "zypper --non-interactive --no-gpg-checks install --dry-run /dist/*-0.0.1-1.x86_64.rpm"
+          sh -c "\
+            zypper --non-interactive --no-gpg-checks \
+              install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
 
     # 2024-09-02 AppImage testing disabled entirely In Briefcase#1977, the
     # Bootstrap app was updated to use a Toga API introduced in Toga 0.4.6. This
@@ -447,8 +455,10 @@ jobs:
         briefcase package linux flatpak --adhoc-sign
 
     - name: Build Android App
+      # Android SDK is not compatible with ARM
       if: >
         contains(fromJSON('["", "Android"]'), inputs.target-platform)
+        && !endsWith(inputs.runner-os, '-arm')
         && contains(fromJSON('["", "Gradle"]'), inputs.target-format)
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}

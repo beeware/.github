@@ -46,7 +46,7 @@ jobs:
   test-install-briefcase:
     name: Install Briefcase
     needs: pre-commit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -191,7 +191,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
+        runner-os: [ macos-latest, windows-latest, ubuntu-24.04 ]
     steps:
       - name: Checkout beeware/briefcase
         uses: actions/checkout@v4.2.2
@@ -261,7 +261,8 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-create-verify.yml
     with:
-      python-version: ${{ matrix.python-version }} # Falls back to 3.x if undefined
+      # Falls back to 3.x in called workflow if undefined
+      python-version: ${{ startsWith(matrix.runner-os, 'ubuntu') && 'system' || '' }}
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -269,18 +270,15 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga, pyside6 ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
-        includes:
-          # Ubuntu apps need to run on the system Python
-          - runner-os: ubuntu-22.04
-            python-version: "system"
+        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-briefcase:
     name: Verify Briefcase
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      python-version: ${{ matrix.python-version }} # Falls back to 3.x if undefined
+      # Falls back to 3.x in called workflow if undefined
+      python-version: ${{ startsWith(matrix.runner-os, 'ubuntu') && 'system' || '' }}
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -288,11 +286,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-22.04 ]
-        includes:
-          # Ubuntu apps need to run on the system Python
-          - runner-os: ubuntu-22.04
-            python-version: "system"
+        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-briefcase-template:
     name: Verify Briefcase Template
@@ -307,7 +301,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
+        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-android-templates:
     name: Verify Android
@@ -323,7 +317,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]  # toga only
-        runner-os: [ macos-latest, windows-latest, ubuntu-latest ]
+        runner-os: [ macos-latest, windows-latest, ubuntu-24.04 ]
 
   test-verify-apps-iOS-templates:
     name: Verify iOS
@@ -348,7 +342,7 @@ jobs:
       # Ubuntu apps need to run on the system Python
       python-version: "system"
       repository: beeware/briefcase-linux-system-template
-      runner-os: ubuntu-22.04
+      runner-os: ${{ matrix.runner-os }}
       target-platform: linux
       target-format: system
       framework: ${{ matrix.framework }}
@@ -356,22 +350,24 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga, pyside6, pygame, console ]
+        runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
-  test-verify-apps-appimage-templates:
-    name: Verify AppImage
-    needs: pre-commit
-    uses: ./.github/workflows/app-build-verify.yml
-    with:
-      repository: beeware/briefcase-linux-appimage-template
-      runner-os: ubuntu-latest
-      target-platform: linux
-      target-format: appimage
-      framework: ${{ matrix.framework }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # 2024-07-11 (beeware/briefcase#1908): pyside6 segfaults on AppImage start.
-        framework: [ toga, pygame, console ]
+# see app-build-verify.yml; AppImage testing was disabled sept 2024
+#  test-verify-apps-appimage-templates:
+#    name: Verify AppImage
+#    needs: pre-commit
+#    uses: ./.github/workflows/app-build-verify.yml
+#    with:
+#      repository: beeware/briefcase-linux-appimage-template
+#      runner-os: ${{ matrix.runner-os }}
+#      target-platform: linux
+#      target-format: appimage
+#      framework: ${{ matrix.framework }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        # 2024-07-11 (beeware/briefcase#1908): pyside6 segfaults on AppImage start.
+#        framework: [ toga, pygame, console ]
 
   test-verify-apps-flatpak-templates:
     name: Verify Flatpak
@@ -379,7 +375,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-linux-flatpak-template
-      runner-os: ubuntu-latest
+      runner-os: ${{ matrix.runner-os }}
       target-platform: linux
       target-format: flatpak
       framework: ${{ matrix.framework }}
@@ -387,6 +383,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga, pyside6, pygame, console ]
+        runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-macOS-templates:
     name: Verify macOS
@@ -410,7 +407,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-web-static-template
-      runner-os: ubuntu-latest
+      runner-os: ubuntu-24.04
       target-platform: web
       target-format: static
       framework: ${{ matrix.framework }}
