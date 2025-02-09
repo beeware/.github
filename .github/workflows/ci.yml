@@ -146,15 +146,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ briefcase, gbulb, Python-support-testbed, rubicon-objc, toga ]
+        repo: [ briefcase, Python-support-testbed, rubicon-objc, toga ]
         include:
         - pre-commit-source: .[dev]
-        - repo: gbulb
-          pre-commit-source: pre-commit
         - repo: Python-support-testbed
           pre-commit-source: pre-commit
         - repo: toga
-          pre-commit-source: ./core[dev]
+          pre-commit-source: ./travertino ./core[dev]
 
   test-package-python:
     name: Create Package
@@ -169,7 +167,6 @@ jobs:
         name:
         - briefcase
         - briefcase-automation
-        - gbulb
         - rubicon-objc
         - toga-core
         - toga-android
