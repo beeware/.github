@@ -94,7 +94,7 @@ jobs:
     - name: Get Briefcase Package
       # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(inputs.repository, 'briefcase')
-      uses: actions/download-artifact@v4.1.8
+      uses: actions/download-artifact@v4.1.9
       with:
         # artifact name is derived in python-package-create.yml
         name: "Packages-briefcase"
