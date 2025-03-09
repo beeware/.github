@@ -60,7 +60,7 @@ jobs:
       packages: write
     env:
       SDL_AUDIODRIVER: dummy  # disable audio for SDL
-      TOGA_SYSTEM_REQUIRES: libthai-dev libegl1 libcairo2-dev libgirepository1.0-dev libgirepository2.0-dev gir1.2-gtk-3.0
+      TOGA_SYSTEM_REQUIRES: libthai-dev libegl1 libcairo2-dev libgirepository1.0-dev libgirepository-2.0-dev gir1.2-gtk-3.0
       PYSIDE6_SYSTEM_REQUIRES: libx11-xcb1 libxkbcommon-x11-0 libxcb-image0 libxcb-cursor0 libxcb-shape0 libxcb-icccm4 libxcb-keysyms1 libgl1 libegl1
     steps:
 
