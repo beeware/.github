@@ -289,7 +289,7 @@ jobs:
         echo "DOCKER_BUILDX_OPTIONS=${BUILDX_OPTIONS[@]}" | tee -a ${GITHUB_ENV}
 
         # Tag format: app-build-<year>-<month>-<framework>-<python-version>-<format>-<format-differentiators>-<branch>
-        # For example: app-build-24-02-toga-3.11-system-debian-trixie-main
+        # For example: app-build-24-02-toga-3.11-system-debian-bookworm-main
         echo "tag-base=app-build-$(date +%Y-%m)-${{ inputs.framework }}-${{ inputs.python-version }}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Build Linux System Project (Debian, Dockerized)
@@ -299,16 +299,16 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        PKG_TAG: ${{ steps.docker.outputs.tag-base }}-system-debian-trixie
+        PKG_TAG: ${{ steps.docker.outputs.tag-base }}-system-debian-bookworm
       run: |
-        briefcase create linux system --target debian:trixie \
+        briefcase create linux system --target debian:bookworm \
           ${{ steps.output-format.outputs.template-override }} \
           ${DOCKER_BUILDX_OPTIONS//__PKG_TAG__/${PKG_TAG}}
-        briefcase build linux system --target debian:trixie
-        xvfb-run briefcase run linux system --target debian:trixie
-        briefcase package linux system --target debian:trixie --adhoc-sign
+        briefcase build linux system --target debian:bookworm
+        xvfb-run briefcase run linux system --target debian:bookworm
+        briefcase package linux system --target debian:bookworm --adhoc-sign
 
-        docker run --volume $(pwd)/dist:/dist debian:trixie \
+        docker run --volume $(pwd)/dist:/dist debian:bookworm \
           sh -c "\
             apt update && \
             apt -y install --dry-run /dist/*_0.0.1-1~debian-*_$(dpkg --print-architecture).deb"
