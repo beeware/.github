@@ -1,0 +1,39 @@
+name: Setup to Run Android Emulator
+description: Configures Linux for KVM access and returns Briefcase args to run the Android emulator.
+
+inputs:
+  emulator-config:
+    description: 'Configuration definition of emulator; defaults to {"avd":"beePhone"}.'
+    required: false
+    default: '{"avd":"beePhone"}'
+
+outputs:
+  briefcase-run-args:
+    value: ${{ steps.briefcase-run-args.outputs.run-args }}
+    description: "The briefcase arguments to use with `briefcase run android`."
+
+runs:
+  using: composite
+  steps:
+
+    - name: Enable KVM Access
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+          | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Briefcase Run Arguments for Emulator
+      id: briefcase-run-args
+      env:
+        RUN_ARGS: >
+          --Xemulator=-no-window
+          --Xemulator=-no-snapshot
+          --Xemulator=-no-audio
+          --Xemulator=-no-boot-anim
+          --shutdown-on-exit
+      shell: bash
+      run: |
+        DEVICE_CONFIG=$(printf -- "--device %q" '${{ inputs.emulator-config }}')
+        echo "run-args=${DEVICE_CONFIG} ${RUN_ARGS}" | tee -a ${GITHUB_OUTPUT}
