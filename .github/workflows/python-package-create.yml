@@ -65,7 +65,7 @@ jobs:
 
       - name: Build Package & Upload Artifact
         id: package
-        uses: hynek/build-and-inspect-python-package@v2.12.0
+        uses: hynek/build-and-inspect-python-package@v2.13.0
         with:
           path: ${{ inputs.build-subdirectory || '.' }}
           upload-name-suffix: ${{ format('-{0}{1}', steps.config.outputs.repo-name, steps.config.outputs.differentiator) }}
