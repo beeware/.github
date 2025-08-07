@@ -329,7 +329,7 @@ jobs:
         xvfb-run briefcase run linux system --target fedora:41
         briefcase package linux system --target fedora:41 --adhoc-sign
 
-        docker run --volume $(pwd)/dist:/dist fedora:39 \
+        docker run --volume $(pwd)/dist:/dist fedora:41 \
           sh -c "yum -y install --downloadonly /dist/*-0.0.1-1.fc*.$(rpm --eval '%_arch').rpm"
 
     - name: Build Linux System Project (Arch, Dockerized)
