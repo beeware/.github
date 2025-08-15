@@ -16,6 +16,14 @@ on:
         description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
         required: true
         type: string
+      xcode-version:
+        description: "The XCode version to use"
+        default: "16.4"
+        type: string
+      ios-simulator:
+        description: "The iOS simulator image to use"
+        default: "iPhone SE (3rd generation)::16.5"
+        type: string
       framework:
         description: "Framework to use to build the App, e.g. toga."
         required: true
@@ -100,6 +108,16 @@ jobs:
       run: |
         sudo apt -y update
         sudo apt -y install --no-install-recommends socat xauth
+
+    - name: Prepare macOS
+      # GitHub recommends explicitly selecting the desired Xcode version:
+      # https://github.com/actions/runner-images/issues/12541#issuecomment-3083850140
+      # This became a necessity as a result of
+      # https://github.com/actions/runner-images/issues/12541 and
+      # https://github.com/actions/runner-images/issues/12751.
+      if: startsWith(inputs.runner-os, 'macOS')
+      run: |
+        sudo xcode-select --switch /Applications/Xcode_${{ inputs.xcode-version }}.app
 
     - name: Cache Briefcase Tools
       uses: actions/cache@v4.2.4
@@ -499,7 +517,7 @@ jobs:
         briefcase create iOS xcode \
           ${{ steps.output-format.outputs.template-override }}
         briefcase build iOS xcode
-        briefcase run iOS xcode -d "iPhone SE (3rd generation)"
+        briefcase run iOS xcode -d "${{ inputs.ios-simulator }}"
         briefcase package iOS xcode --adhoc-sign
 
     - name: Build Web App
