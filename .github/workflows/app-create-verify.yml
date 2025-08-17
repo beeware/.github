@@ -54,20 +54,20 @@ jobs:
         echo "system-python-version=${SYSTEM_PYTHON_VER}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Checkout ${{ inputs.repository }}
-      uses: actions/checkout@v4.2.2
+      uses: actions/checkout@v5.0.0
       with:
         repository: ${{ inputs.repository }}
         fetch-depth: 0
 
     - name: Checkout ${{ inputs.workflow-repo }}${{ inputs.workflow-repo-ref && format('@{0}', inputs.workflow-repo-ref) || '' }}
-      uses: actions/checkout@v4.2.2
+      uses: actions/checkout@v5.0.0
       with:
         repository: ${{ inputs.workflow-repo }}
         ref: ${{ inputs.workflow-repo-ref }}
         path: beeware-.github
 
     - name: Checkout beeware/briefcase-template
-      uses: actions/checkout@v4.2.2
+      uses: actions/checkout@v5.0.0
       with:
         repository: beeware/briefcase-template
         path: briefcase-template
