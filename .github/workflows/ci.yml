@@ -279,11 +279,21 @@ jobs:
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
+      ios-simulator: ${{ matrix.ios-simulator }}
+      xcode-version: ${{ matrix.xcode-version }}
     strategy:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-13, macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        include:
+          - framework: toga
+            runner-os: macos-13
+            ios-simulator: "iPhone SE (3rd generation)::iOS 17.2"
+          - framework: toga
+            runner-os: macos-15
+            xcode-version: "16.4"
+            ios-simulator: "iPhone 16e::iOS 18.5"
 
   test-verify-apps-briefcase-template:
     name: Verify Briefcase Template
@@ -294,11 +304,18 @@ jobs:
       repository: beeware/briefcase-template
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
+      xcode-version: ${{ matrix.xcode-version }}
+      ios-simulator: ${{ matrix.ios-simulator }}
     strategy:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        include:
+          - framework: toga
+            runner-os: macos-15
+            xcode-version: 16.4
+            ios-simulator: "iPhone 16e::iOS 18.5"
 
   test-verify-apps-android-templates:
     name: Verify Android
@@ -322,7 +339,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-iOS-xcode-template
-      runner-os: macos-latest
+      runner-os: macos-14
       target-platform: iOS
       target-format: xcode
       framework: ${{ matrix.framework }}
