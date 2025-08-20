@@ -279,6 +279,8 @@ jobs:
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
+      ios-simulator: ${{ matrix.ios-simulator }}
+      xcode-version: ${{ matrix.xcode-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -301,6 +303,7 @@ jobs:
       repository: beeware/briefcase-template
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
+      xcode-version: ${{ matrix.xcode-version }}
     strategy:
       fail-fast: false
       matrix:
