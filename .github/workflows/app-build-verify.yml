@@ -18,11 +18,11 @@ on:
         type: string
       xcode-version:
         description: "The XCode version to use"
-        default: "16.4"
+        default: ""
         type: string
       ios-simulator:
         description: "The iOS simulator image to use"
-        default: "iPhone SE (3rd generation)::iOS 18.5"
+        default: "iPhone SE (3rd generation)"
         type: string
       framework:
         description: "Framework to use to build the App, e.g. toga."
@@ -115,7 +115,7 @@ jobs:
       # This became a necessity as a result of
       # https://github.com/actions/runner-images/issues/12541 and
       # https://github.com/actions/runner-images/issues/12751.
-      if: startsWith(inputs.runner-os, 'macOS')
+      if: ${{ startsWith(inputs.runner-os, 'macos') && inputs.xcode-version != '' }}
       run: |
         sudo xcode-select --switch /Applications/Xcode_${{ inputs.xcode-version }}.app
 
