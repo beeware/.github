@@ -77,7 +77,7 @@ jobs:
       # Python matching the system version. We can't use the actual system
       # install because we need to install dependencies, which would either
       # require the use of sudo, or extra workarounds for user-space packages.
-      uses: actions/setup-python@v5.6.0
+      uses: actions/setup-python@v6.0.0
       with:
         python-version: ${{ startsWith(inputs.runner-os, 'ubuntu') && inputs.python-version == 'system' && steps.config.outputs.system-python-version || inputs.python-version || '3.x' }}
         cache: pip
