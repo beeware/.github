@@ -120,7 +120,7 @@ jobs:
         sudo xcode-select --switch /Applications/Xcode_${{ inputs.xcode-version }}.app
 
     - name: Cache Briefcase Tools
-      uses: actions/cache@v4.2.4
+      uses: actions/cache@v4.3.0
       with:
         key: briefcase-data|${{ steps.config.outputs.cache-key }}
         path: ${{ steps.config.outputs.briefcase-data-dir }}
@@ -373,26 +373,29 @@ jobs:
             pacman --sync --refresh && \
             pacman --noconfirm --upgrade --print /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
 
-    - name: Build Linux System Project (openSUSE, Dockerized)
-      if: >
-        startsWith(inputs.runner-os, 'ubuntu')
-        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-        && contains(fromJSON('["", "system"]'), inputs.target-format)
-      working-directory: ${{ steps.create.outputs.project-path }}
-      env:
-        PKG_TAG: ${{ steps.docker.outputs.tag-base }}-system-opensuse
-      run: |
-        briefcase create linux system --target opensuse/tumbleweed:latest \
-          ${{ steps.output-format.outputs.template-override }} \
-          ${DOCKER_BUILDX_OPTIONS//__PKG_TAG__/${PKG_TAG}}
-        briefcase build linux system --target opensuse/tumbleweed:latest
-        xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
-        briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
+    # 2025-09-29 - OpenSUSE rolled out a change to GDK to use a new image loader
+    # (glycin) that is unable to load PNGs when used inside a Docker container.
+    # Disabling OpenSUSE testing until a fix can be found.
+    # - name: Build Linux System Project (openSUSE, Dockerized)
+    #   if: >
+    #     startsWith(inputs.runner-os, 'ubuntu')
+    #     && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+    #     && contains(fromJSON('["", "system"]'), inputs.target-format)
+    #   working-directory: ${{ steps.create.outputs.project-path }}
+    #   env:
+    #     PKG_TAG: ${{ steps.docker.outputs.tag-base }}-system-opensuse
+    #   run: |
+    #     briefcase create linux system --target opensuse/tumbleweed:latest \
+    #       ${{ steps.output-format.outputs.template-override }} \
+    #       ${DOCKER_BUILDX_OPTIONS//__PKG_TAG__/${PKG_TAG}}
+    #     briefcase build linux system --target opensuse/tumbleweed:latest
+    #     xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
+    #     briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
 
-        docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
-          sh -c "\
-            zypper --non-interactive --no-gpg-checks \
-              install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
+    #     docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
+    #       sh -c "\
+    #         zypper --non-interactive --no-gpg-checks \
+    #           install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
 
     # 2024-09-02 AppImage testing disabled entirely In Briefcase#1977, the
     # Bootstrap app was updated to use a Toga API introduced in Toga 0.4.6. This
