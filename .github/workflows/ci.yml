@@ -152,7 +152,7 @@ jobs:
         - repo: Python-support-testbed
           pre-commit-source: pre-commit
         - repo: toga
-          pre-commit-source: ./travertino ./core[dev]
+          pre-commit-source: "--group pre-commit"
 
   test-package-python:
     name: Create Package
@@ -398,6 +398,12 @@ jobs:
       matrix:
         framework: [ toga, pyside6, pygame, console ]
         runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
+
+        exclude:
+          # The Pyside6 6.10 series wheels for ARM64 are tagged manylinux_2_39,
+          # which is not compatible with 24.04.
+          - framework: pyside6
+            runner-os: ubuntu-24.04-arm
 
   test-verify-apps-macOS-templates:
     name: Verify macOS
