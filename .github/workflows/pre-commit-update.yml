@@ -18,6 +18,10 @@ on:
         description: "Defaults 'true' to create a misc changenote in the './changes' directory."
         default: true
         type: boolean
+      changenote-format:
+        description: "Markup format for the changenote."
+        default: "rst"
+        type: string
     secrets:
       BRUTUS_PAT_TOKEN:
         required: true
@@ -131,7 +135,7 @@ jobs:
           git fetch origin
           git checkout "${BRANCH_NAME}"
 
-          FILENAME="${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.rst"
+          FILENAME="${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.${{ inputs.changenote-format }}"
           printf 'The ``pre-commit`` hook for ``${{ steps.pr.outputs.hook-name }}`` was updated to its latest version.\n' > "${FILENAME}"
 
           git add "${FILENAME}"
