@@ -279,22 +279,11 @@ jobs:
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
-      ios-simulator: ${{ matrix.ios-simulator }}
-      xcode-version: ${{ matrix.xcode-version }}
     strategy:
       fail-fast: false
       matrix:
         framework: [ toga ]
         runner-os: [ macos-15-intel, macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
-        include:
-          - framework: toga
-            runner-os: macos-15-intel
-            xcode-version: "16.4"
-            ios-simulator: "iPhone 16e::iOS 18.5"
-          - framework: toga
-            runner-os: macos-15
-            xcode-version: "16.4"
-            ios-simulator: "iPhone 16e::iOS 18.5"
 
   test-verify-apps-briefcase-template:
     name: Verify Briefcase Template

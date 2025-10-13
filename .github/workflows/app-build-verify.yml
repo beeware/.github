@@ -22,7 +22,7 @@ on:
         type: string
       ios-simulator:
         description: "The iOS simulator image to use"
-        default: "iPhone SE (3rd generation)"
+        default: "iPhone 16e"
         type: string
       framework:
         description: "Framework to use to build the App, e.g. toga."
