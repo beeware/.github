@@ -2,6 +2,11 @@ name: Dependabot Change Note
 
 on:
   workflow_call:
+    inputs:
+      changenote-format:
+        description: "Markup format for the changenote."
+        default: "rst"
+        type: string
     secrets:
       BRUTUS_PAT_TOKEN:
         required: true
@@ -34,7 +39,7 @@ jobs:
         run: |
           # Retrieve PR number from GitHub API
           PR_NUM=$(gh api repos/{owner}/{repo}/commits/${{ github.event.head_commit.id }}/pulls --jq '.[].number')
-          CHANGENOTE_FILEPATH="./changes/${PR_NUM}.misc.rst"
+          CHANGENOTE_FILEPATH="./changes/${PR_NUM}.misc.${{ inputs.changenote-format }}"
 
           # Create change note from first line of dependabot commit
           NEWS=$(printf "%s" "${{ github.event.head_commit.message }}" | head -n1 | sed -e 's/Bump/Updated/')
