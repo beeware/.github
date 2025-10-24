@@ -311,8 +311,6 @@ jobs:
       runner-os: ${{ matrix.runner-os }}
       target-platform: android
       target-format: gradle
-      # Chaquopy doesn't support 3.14 yet, so we need to force a less recent version.
-      python-version: "3.13"
       framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
@@ -432,8 +430,6 @@ jobs:
       runner-os: windows-latest
       target-platform: windows
       target-format: ${{ matrix.format }}
-      # Python.net doesn't support 3.14, so we need to force a less recent version.
-      python-version: "3.13"
       framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
