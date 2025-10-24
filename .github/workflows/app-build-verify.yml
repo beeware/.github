@@ -12,6 +12,7 @@ on:
         description: "Python version to use; defaults to a recent Python release."
         # We can't use the very latest because binary packages don't always keep up,
         # (Chaquopy, Python.net) or aren't compatible with older releases.
+        # This needs to be kept aligned with the setup-python fallback value.
         default: "3.13"
         type: string
       runner-os:
@@ -134,7 +135,8 @@ jobs:
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
       uses: actions/setup-python@v6.0.0
       with:
-        python-version: ${{ inputs.python-version || '3.x' }}
+        # This needs to be kept aligned with the input default value
+        python-version: ${{ inputs.python-version || '3.13' }}
         allow-prereleases: true
         cache: pip
         cache-dependency-path: |
