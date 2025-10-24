@@ -146,6 +146,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Test one repository for each way of installing pre-commit.
         repo: [ Python-support-testbed, rubicon-objc, toga ]
         include:
         - repo: rubicon-objc
