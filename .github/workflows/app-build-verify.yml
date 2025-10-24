@@ -503,8 +503,6 @@ jobs:
             --device '{"avd":"beePhone"}' \
             --shutdown-on-exit \
             --Xemulator=-no-window \
-
-            --Xemulator=-no-snapshot \
             --Xemulator=-no-audio \
             --Xemulator=-no-boot-anim
         fi
