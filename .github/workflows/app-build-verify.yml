@@ -9,8 +9,10 @@ on:
   workflow_call:
     inputs:
       python-version:
-        description: "Python version to use; defaults to latest Python release."
-        default: "3.x"
+        description: "Python version to use; defaults to a recent Python release."
+        # We can't use the very latest because binary packages don't always keep up,
+        # (Chaquopy, Python.net) or aren't compatible with older releases.
+        default: "3.13"
         type: string
       runner-os:
         description: "The OS to use to build the App; must be a fully qualified GitHub runner OS, e.g. ubuntu-latest."
@@ -499,6 +501,7 @@ jobs:
             --device '{"avd":"beePhone"}' \
             --shutdown-on-exit \
             --Xemulator=-no-window \
+
             --Xemulator=-no-snapshot \
             --Xemulator=-no-audio \
             --Xemulator=-no-boot-anim
