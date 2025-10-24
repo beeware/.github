@@ -191,16 +191,16 @@ jobs:
       matrix:
         runner-os: [ macos-latest, windows-latest, ubuntu-24.04 ]
     steps:
-      - name: Checkout beeware/rubicon-objc
+      - name: Checkout beeware/toga-chart
         uses: actions/checkout@v5.0.0
         with:
-          repository: beeware/rubicon-objc
+          repository: beeware/toga-chart
 
-      - name: Checkout beeware/rubicon-objc to path
+      - name: Checkout beeware/toga-chart to path
         uses: actions/checkout@v5.0.0
         with:
-          repository: beeware/rubicon-objc
-          path: repos/rubicon-objc
+          repository: beeware/toga-chart
+          path: repos/toga-chart
 
       - name: Checkout beeware/.github
         uses: actions/checkout@v5.0.0
@@ -218,7 +218,7 @@ jobs:
         with:
           requirements: "pre-commit tox"
           extra: "dev"
-          project-root: "repos/rubicon-objc"
+          project-root: "repos/toga-chart"
 
       - name: Test Install Requirements with Extra
         uses: ./repos/.github-beeware/.github/actions/install-requirement
@@ -229,7 +229,7 @@ jobs:
       - name: Test Install Requirements
         uses: ./repos/.github-beeware/.github/actions/install-requirement
         with:
-          requirements: "setuptools_scm"
+          requirements: "matplotlib"
 
       - name: Verify Requirements Installed
         run: |
@@ -248,8 +248,8 @@ jobs:
             python -m pip list
             exit 1
           fi
-          if ! python -m pip list | grep setuptools_scm; then
-            echo '::error::Failed to install setuptools_scm'
+          if ! python -m pip list | grep matplotlib; then
+            echo '::error::Failed to install matplotlib'
             python -m pip list
             exit 1
           fi
