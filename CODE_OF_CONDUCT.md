@@ -136,7 +136,7 @@ For answers to common questions about Contributor Covenant, see the [FAQ](https:
 
 Major substantive changes are listed here; for a complete list of changes see the GitHub commit history.
 
-* **TODO: add date:** Updated to adapt the Contributor Covenant, version 3.0.
+* **October 24, 2025** Updated to adapt the Contributor Covenant, version 3.0.
 
 * **July 4, 2016:** Added instructions and guidelines for reporting incidents.
 
