@@ -276,8 +276,14 @@ jobs:
     needs: [ pre-commit, test-package-python ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
-      # Falls back to 3.x in called workflow if undefined
-      python-version: ${{ startsWith(matrix.runner-os, 'ubuntu') && 'system' || '' }}
+      # Python.net doesn't support 3.14, so we need to force a less recent version on
+      # Windows (see also test-verify-apps-windows-templates).
+      python-version: >-
+        ${{
+          startsWith(matrix.runner-os, 'ubuntu') && 'system'
+          || startsWith(matrix.runner-os, 'windows') && '3.13'
+          || '3.x'
+        }}
       repository: beeware/briefcase
       runner-os: ${{ matrix.runner-os }}
       framework: ${{ matrix.framework }}
@@ -432,7 +438,8 @@ jobs:
       runner-os: windows-latest
       target-platform: windows
       target-format: ${{ matrix.format }}
-      # Python.net doesn't support 3.14, so we need to force a less recent version.
+      # Python.net doesn't support 3.14, so we need to force a less recent version
+      # (see also test-verify-apps-briefcase).
       python-version: "3.13"
       framework: ${{ matrix.framework }}
     strategy:
