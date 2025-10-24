@@ -146,9 +146,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ briefcase, Python-support-testbed, rubicon-objc, toga ]
+        repo: [ Python-support-testbed, rubicon-objc, toga ]
         include:
-        - pre-commit-source: .[dev]
+        - repo: rubicon-objc
+          pre-commit-source: .[dev]
         - repo: Python-support-testbed
           pre-commit-source: pre-commit
         - repo: toga
@@ -190,16 +191,16 @@ jobs:
       matrix:
         runner-os: [ macos-latest, windows-latest, ubuntu-24.04 ]
     steps:
-      - name: Checkout beeware/briefcase
+      - name: Checkout beeware/rubicon-objc
         uses: actions/checkout@v5.0.0
         with:
-          repository: beeware/briefcase
+          repository: beeware/rubicon-objc
 
-      - name: Checkout beeware/briefcase to path
+      - name: Checkout beeware/rubicon-objc to path
         uses: actions/checkout@v5.0.0
         with:
-          repository: beeware/briefcase
-          path: repos/briefcase
+          repository: beeware/rubicon-objc
+          path: repos/rubicon-objc
 
       - name: Checkout beeware/.github
         uses: actions/checkout@v5.0.0
@@ -217,18 +218,18 @@ jobs:
         with:
           requirements: "pre-commit tox"
           extra: "dev"
-          project-root: "repos/briefcase"
+          project-root: "repos/rubicon-objc"
 
       - name: Test Install Requirements with Extra
         uses: ./repos/.github-beeware/.github/actions/install-requirement
         with:
-          requirements: "coverage"
+          requirements: "pytest"
           extra: "dev"
 
       - name: Test Install Requirements
         uses: ./repos/.github-beeware/.github/actions/install-requirement
         with:
-          requirements: "cookiecutter"
+          requirements: "setuptools_scm"
 
       - name: Verify Requirements Installed
         run: |
@@ -242,13 +243,13 @@ jobs:
             python -m pip list
             exit 1
           fi
-          if ! python -m pip list | grep coverage; then
-            echo '::error::Failed to install coverage'
+          if ! python -m pip list | grep pytest; then
+            echo '::error::Failed to install pytest'
             python -m pip list
             exit 1
           fi
-          if ! python -m pip list | grep cookiecutter; then
-            echo '::error::Failed to install cookiecutter'
+          if ! python -m pip list | grep setuptools_scm; then
+            echo '::error::Failed to install setuptools_scm'
             python -m pip list
             exit 1
           fi
@@ -428,6 +429,8 @@ jobs:
       runner-os: windows-latest
       target-platform: windows
       target-format: ${{ matrix.format }}
+      # Python.net doesn't support 3.14, so we need to force a less recent version.
+      python-version: "3.13"
       framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
