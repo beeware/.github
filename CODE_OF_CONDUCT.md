@@ -49,7 +49,7 @@ We agree to restrict the following behaviors in our community. Instances, threat
 
 Tensions can occur between community members even when they are trying their best to collaborate. Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces encouraged behaviors and norms that can help avoid conflicts and minimize harm. Reporting even minor issues is important, as they can be helpful in identifying patterns of behavior that may not be concerning in isolation, however, when viewed collectively may be more significant.
 
-When an incident does occur, it is important to report it promptly to the BeeWare Code of Conduct Response Team. 
+When an incident does occur, it is important to report it promptly to the BeeWare Code of Conduct Response Team.
 
 **If you believe you or anyone else is in physical danger, please notify appropriate law enforcement first.**
 
@@ -57,6 +57,8 @@ To report a possible violation, you email the Team at [conduct@beeware.org](mail
 
 * Russell Keith-Magee (@freakboy3742; [russell@beeware.org](mailto:russell@beeware.org))
 * Kattni (@kattni; [kattni@beeware.org](mailto:kattni@beeware.org))
+* Katie McLaughlin (@glasnt; [katie@beeware.org](mailto:katie@beeware.org))
+* Philip James (@phildini; [philip@beeware.org](mailto:philip@beeware.org))
 
 The Response Team takes reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. The Team will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution. If we determine that a public statement will need to be made, the identities of all victims and reporters will remain confidential unless those individuals instruct us otherwise.
 
@@ -74,7 +76,7 @@ In your report, please include:
 
 Code of Conduct Response Team members are obligated to maintain confidentiality with regard to the reporter and details of an incident.
 
-## The Response Team's report follow-up <a name="report-follow-up"></a>
+## The Response Team's report followup <a name="report-followup"></a>
 
 You will receive a response acknowledging receipt of your report. We promise to acknowledge receipt within 24 hours (and will aim for much quicker than that).
 
