@@ -52,7 +52,7 @@ jobs:
         id: config
         env:
           REPO: ${{ inputs.repository }}
-          DIFFERENTIATOR: ${{ inputs.build-subdirectory && format('-{0}', inputs.build-subdirectory) || '' }}
+          DIFFERENTIATOR: ${{ inputs.build-subdirectory && inputs.build-subdirectory != '.' && format('-{0}', inputs.build-subdirectory) || '' }}
         run: |
           echo "repo-name=$(basename "${REPO}")" | tee -a ${GITHUB_OUTPUT}
           echo "differentiator=${DIFFERENTIATOR}" | tee -a ${GITHUB_OUTPUT}
