@@ -55,10 +55,11 @@ When an incident does occur, it is important to report it promptly to the BeeWar
 
 To report a possible violation, you email the Team at [conduct@beeware.org](mailto:conduct@beeware.org). If necessary, you can reach out to individual team members. On the BeeWare Discord server, you can also direct message anyone on the Response Team, or, if appropriate, mention @moderators in a public channel. Team members can be reached by the following usernames on Discord or GitHub, or the provided email addresses:
 
-* Russell Keith-Magee (@freakboy3742; [russell@beeware.org](mailto:russell@beeware.org))
-* Kattni (@kattni; [kattni@beeware.org](mailto:kattni@beeware.org))
-* Katie McLaughlin (@glasnt; [katie@beeware.org](mailto:katie@beeware.org))
-* Philip James (@phildini; [philip@beeware.org](mailto:philip@beeware.org))
+  * Russell Keith-Magee (@freakboy3742; [russell@beeware.org](mailto:russell@beeware.org))
+  * Kattni (@kattni; [kattni@beeware.org](mailto:kattni@beeware.org))
+  * Katie McLaughlin (@glasnt; [katie@beeware.org](mailto:katie@beeware.org))
+  * Philip James (@phildini; [philip@beeware.org](mailto:philip@beeware.org))
+  * Charles Whittington (@HalfWhitt; [charles@beeware.org](mailto:charles@beeware.org))
 
 The Response Team takes reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. The Team will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution. If we determine that a public statement will need to be made, the identities of all victims and reporters will remain confidential unless those individuals instruct us otherwise.
 
