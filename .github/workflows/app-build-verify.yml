@@ -147,7 +147,7 @@ jobs:
     - name: Get Briefcase Packages
       # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(inputs.repository, 'briefcase')
-      uses: actions/download-artifact@v5.0.0
+      uses: actions/download-artifact@v6.0.0
       with:
         # artifact name is derived in python-package-create.yml
         pattern: "Packages-briefcase*"
@@ -536,7 +536,7 @@ jobs:
         briefcase package web static
 
     - name: Upload Failure Logs
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5.0.0
       if: failure()
       with:
         name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
