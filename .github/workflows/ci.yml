@@ -147,13 +147,11 @@ jobs:
       fail-fast: false
       matrix:
         # Test one repository for each way of installing pre-commit.
-        repo: [ Python-support-testbed, rubicon-objc, toga ]
+        repo: [ Python-support-testbed, rubicon-objc ]
         include:
-        - repo: rubicon-objc
-          pre-commit-source: .[dev]
         - repo: Python-support-testbed
           pre-commit-source: pre-commit
-        - repo: toga
+        - repo: rubicon-objc
           pre-commit-source: "--group pre-commit"
 
   test-package-python:
@@ -182,78 +180,6 @@ jobs:
         - name: toga-android
           repo: toga
           build-subdir: android
-
-  test-install-requirements:
-    name: Install Requirements
-    needs: pre-commit
-    runs-on: ${{ matrix.runner-os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        runner-os: [ macos-latest, windows-latest, ubuntu-24.04 ]
-    steps:
-      - name: Checkout beeware/toga-chart
-        uses: actions/checkout@v5.0.0
-        with:
-          repository: beeware/toga-chart
-
-      - name: Checkout beeware/toga-chart to path
-        uses: actions/checkout@v5.0.0
-        with:
-          repository: beeware/toga-chart
-          path: repos/toga-chart
-
-      - name: Checkout beeware/.github
-        uses: actions/checkout@v5.0.0
-        with:
-          repository: beeware/.github
-          path: repos/.github-beeware
-
-      - name: Set up Python
-        uses: actions/setup-python@v6.0.0
-        with:
-          python-version: "3.x"
-
-      - name: Test Install Requirements with Path
-        uses: ./repos/.github-beeware/.github/actions/install-requirement
-        with:
-          requirements: "pre-commit tox"
-          extra: "dev"
-          project-root: "repos/toga-chart"
-
-      - name: Test Install Requirements with Extra
-        uses: ./repos/.github-beeware/.github/actions/install-requirement
-        with:
-          requirements: "pytest"
-          extra: "dev"
-
-      - name: Test Install Requirements
-        uses: ./repos/.github-beeware/.github/actions/install-requirement
-        with:
-          requirements: "matplotlib"
-
-      - name: Verify Requirements Installed
-        run: |
-          if ! python -m pip list | grep tox; then
-            echo '::error::Failed to install tox'
-            python -m pip list
-            exit 1
-          fi
-          if ! python -m pip list | grep pre_commit; then
-            echo '::error::Failed to install pre-commit'
-            python -m pip list
-            exit 1
-          fi
-          if ! python -m pip list | grep pytest; then
-            echo '::error::Failed to install pytest'
-            python -m pip list
-            exit 1
-          fi
-          if ! python -m pip list | grep matplotlib; then
-            echo '::error::Failed to install matplotlib'
-            python -m pip list
-            exit 1
-          fi
 
   test-verify-projects-briefcase:
     name: Verify Project
