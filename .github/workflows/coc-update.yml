@@ -1,0 +1,67 @@
+name: Update Code of Conduct
+
+on:
+  push:
+    branches: ['main']
+    paths: ['CODE_OF_CONDUCT.md']
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan-coc-update:
+    runs-on: ubuntu-latest
+    outputs:
+      repo_list: ${{ steps.repo_list.outputs.repo_list }}
+    steps:
+    - name: Checkout this repository
+      uses: actions/checkout@v4
+    - name: Get list of repositories
+      id: repo_list
+      run: |
+        repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner")
+        echo "repo_list=$repo_list" >> $GITHUB_OUTPUT
+
+  update-coc:
+    runs-on: ubuntu-latest
+    needs: plan-coc-update
+    strategy:
+      matrix:
+        full_repo: ${{ fromJson(needs.plan-coc-update.outputs.repo_list) }}
+    steps:
+    - name: Checkout repo to be updated
+      uses: actions/checkout@v4
+    - name: Update Code of Conduct
+      env:
+        GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
+      run: |
+        # Ignore changes to this repo
+        if [[ "${{ matrix.full_repo }}" == "$GITHUB_REPOSITORY" ]]; then
+            echo "Skipping this repository ($GITHUB_REPOSITORY)..."
+            continue
+        fi
+
+        # Set the author information to Brutus
+        git config --local user.email "brutus@beeware.org"
+        git config --local user.name "Brutus (robot)"
+
+        # Make new branch for change
+        echo "Creating new branch..."
+        timestamp=$(date +%m%d%Y-%H%M%S)
+        branch_name="coc-update-$timestamp"
+        git checkout -b $branch_name
+
+        # Add the new code of conduct
+        echo "Replacing Code of Conduct..."
+        cp ../CODE_OF_CONDUCT.md .
+
+        # Commit and push the update
+        echo "Syncing updates to remote..."
+        git add CODE_OF_CONDUCT.md
+        git commit -m "Updated code of conduct"
+        git push --set-upstream origin "$branch_name"
+
+        # Create the pull request
+        echo "Creating pull request to upstream..."
+        gh pr create --repo ${{ matrix.full_repo }} --title "Update Code of Conduct" --body "Updated using $GITHUB_REPOSITORY"
