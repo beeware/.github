@@ -9,7 +9,7 @@ on:
     inputs:
       python-version:
         description: "Python version to use; defaults to latest Python release."
-        default: "3.x"
+        default: "3.13"  # TODO: restore to 3.x once docformatter is compatible with 3.14
         type: string
       repository:
         description: "GitHub repository to checkout; defaults to repo running this workflow."
