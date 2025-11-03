@@ -10,6 +10,10 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
+      python-version:
+        description: "Python version to use; defaults to latest Python release."
+        default: "3.13"  # TODO: restore to 3.x once docformatter is compatible with 3.14
+        type: string
       pre-commit-source:
         description: "The arguments for `pip install` to install pre-commit; use ./path/to/package[dev] for the repo's pinned version."
         default: ".[dev]"
@@ -79,7 +83,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6.0.0
         with:
-          python-version: "3.x"
+          python-version: ${{ inputs.python-version }}
+          allow-prereleases: true
           cache: pip
           cache-dependency-path: |
             **/setup.cfg
