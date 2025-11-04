@@ -14,9 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       repo_list: ${{ steps.repo_list.outputs.repo_list }}
+      commit_hash: ${{ steps.commit_hash.outputs.commit_hash }}
     steps:
     - name: Checkout this repository
       uses: actions/checkout@v4
+    - name: Get latest commit hash
+      id: commit_hash
+      run: |
+        commit_hash=$(git rev-parse --short=16 HEAD)
+        echo "commit_hash=$commit_hash" >> $GITHUB_OUTPUT
     - name: Get list of repositories
       id: repo_list
       run: |
@@ -59,9 +65,12 @@ jobs:
         # Commit and push the update
         echo "Syncing updates to remote..."
         git add CODE_OF_CONDUCT.md
-        git commit -m "Updated code of conduct"
+        git commit -m "Updated Code of Conduct ($GITHUB_REPOSITORY, ${{ needs.plan-coc-update.outputs.commit_hash }})"
         git push --set-upstream origin "$branch_name"
 
         # Create the pull request
-        echo "Creating pull request to upstream..."
-        gh pr create --repo ${{ matrix.full_repo }} --title "Update Code of Conduct" --body "Updated using $GITHUB_REPOSITORY"
+        echo "Creating pull request..."
+        gh pr create \
+              --repo ${{ matrix.full_repo }} \
+              --title "Update Code of Conduct" \
+              --body "Updated via $GITHUB_REPOSITORY (${{ needs.plan-coc-update.outputs.commit_hash }})"
