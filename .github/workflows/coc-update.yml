@@ -17,7 +17,7 @@ jobs:
       commit_hash: ${{ steps.commit_hash.outputs.commit_hash }}
     steps:
     - name: Checkout this repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Get latest commit hash
       id: commit_hash
       run: |
@@ -37,7 +37,7 @@ jobs:
         full_repo: ${{ fromJson(needs.plan-coc-update.outputs.repo_list) }}
     steps:
     - name: Checkout repo to be updated
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Update Code of Conduct
       env:
         GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}

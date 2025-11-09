@@ -105,7 +105,7 @@ jobs:
           expected: "main"
     steps:
     - name: Checkout beeware/.github
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v5
 
     - name: Set up Python
       uses: actions/setup-python@v6.0.0
