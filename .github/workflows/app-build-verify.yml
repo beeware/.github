@@ -133,7 +133,7 @@ jobs:
       # fall back to the system-provided Python package. Providing "system" as a value
       # on macOS or Windows will cause an error.
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
-      uses: actions/setup-python@v6.0.0
+      uses: actions/setup-python@v6.1.0
       with:
         # This needs to be kept aligned with the input default value
         python-version: ${{ inputs.python-version || '3.13' }}
