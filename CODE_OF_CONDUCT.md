@@ -30,7 +30,7 @@ We agree to restrict the following behaviors in our community. Instances, threat
   2. **Character attacks.** Making insulting, demeaning, or pejorative comments directed at a community member or group of people.
   3. **Stereotyping or discrimination.** Characterizing anyone’s personality or behavior on the basis of immutable identities or traits.
   4. **Sexualization.** Behaving in a way that would generally be considered inappropriately intimate in the context or purpose of the community.
-  5. **Violating confidentiality**. Sharing or acting on someone's personal or private information without their permission.
+  5. **Violating confidentiality.** Sharing or acting on someone's personal or private information without their permission.
   6. **Endangerment.** Causing, encouraging, or threatening violence or other harm toward any person or group.
   7. Behaving in other ways that **threaten the well-being** of our community.
 
@@ -41,7 +41,7 @@ We agree to restrict the following behaviors in our community. Instances, threat
   3. **Failing to credit sources.** Not properly crediting the sources of content you contribute.
   4. **Promotional materials.** Sharing marketing or other commercial content in a way that is outside the norms of the community.
   5. **Excessive communication.** Disrespecting the time and space of others by engaging in an unacceptable volume of communication.
-  6. **Unnecessary interactions.** Unnecessarily reacting to or involving yourself in interactions that do not require a response from you.
+  6. **Unhelpful communication.** Offering opinions without relevant experience in the topic being discussed, entering into an ongoing discussion without first gaining familiarity with the history of the topic, or making contributions that are off-topic or otherwise distracting.
   7. **Irresponsible messaging.** Failing to responsibly present content which includes, links or describes any other restricted behaviors.
   8. Other conduct that could reasonably be considered **unprofessional or inappropriate**.
 
@@ -96,7 +96,7 @@ We'll respond within one week to the person who filed the report with either a r
 
 Once we've determined our final action, we'll contact the original reporter to let them know what action (if any) we'll be taking. We'll take into account feedback from the reporter on the appropriateness of our response, but we don't guarantee we'll act on it.
 
-Finally, depending on the specifics of the incident and the potential for ongoing harm, the Response Team may choose to make a public report of the incident on The Buzz, the BeeWare blog.
+Finally, to maintain transparency in the reporting and enforcement process, whenever possible, the Response Team will make a public report of the incident on [The Buzz](https://beeware.org/news/buzz), the BeeWare blog. A public report may not be made if the specifics of the incident do not allow us to preserve anonymity, or if there is potential for ongoing harm from a report.
 
 ## Enforcement: addressing and repairing harm <a name="enforcement"></a>
 
@@ -127,6 +127,8 @@ This enforcement ladder is intended as a guideline. It does not limit the abilit
 ## Scope <a name="scope"></a>
 
 This Code of Conduct applies within all community spaces, including GitHub, the BeeWare Discord server, and in-person events, such as conferences, meetups, and sprints. It also applies when an individual is officially representing the community in public or other spaces. Examples of representing our community include using an official email address, posting via an official social media account, or acting as an appointed representative at an online or offline event.
+
+Behavior outside of official BeeWare spaces may also be considered as supporting evidence for a report if that behavior establishes a pattern, or represents a potential risk to the BeeWare community. 
 
 ## Attribution <a name="attribution"></a>
 
