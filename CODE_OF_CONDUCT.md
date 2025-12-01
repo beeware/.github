@@ -96,7 +96,7 @@ We'll respond within one week to the person who filed the report with either a r
 
 Once we've determined our final action, we'll contact the original reporter to let them know what action (if any) we'll be taking. We'll take into account feedback from the reporter on the appropriateness of our response, but we don't guarantee we'll act on it.
 
-Finally, to maintain transparency in the reporting and enforcement process, whenever possible, the Response Team will make a public report of the incident on [The Buzz](https://beeware.org/news/buzz), the BeeWare blog. A public report may not be made if the specifics of the incident do not allow us to preserve anonymity, or if there is potential for ongoing harm from a report.
+Finally, to maintain transparency in the reporting and enforcement process, whenever possible, the Response Team will make a public report of the incident on [The Buzz](https://beeware.org/news/buzz), the BeeWare blog. A public report may not be made if the specifics of the incident do not allow us to preserve anonymity, or if there is potential for ongoing harm.
 
 ## Enforcement: addressing and repairing harm <a name="enforcement"></a>
 
@@ -128,7 +128,7 @@ This enforcement ladder is intended as a guideline. It does not limit the abilit
 
 This Code of Conduct applies within all community spaces, including GitHub, the BeeWare Discord server, and in-person events, such as conferences, meetups, and sprints. It also applies when an individual is officially representing the community in public or other spaces. Examples of representing our community include using an official email address, posting via an official social media account, or acting as an appointed representative at an online or offline event.
 
-Behavior outside of official BeeWare spaces may also be considered as supporting evidence for a report if that behavior establishes a pattern, or represents a potential risk to the BeeWare community. 
+Behavior outside of official BeeWare spaces may also be considered as supporting evidence for a report if that behavior establishes a pattern, or represents a potential risk to the BeeWare community.
 
 ## Attribution <a name="attribution"></a>
 
