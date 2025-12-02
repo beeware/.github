@@ -114,7 +114,7 @@ If an investigation by the Response Team finds that this Code of Conduct has bee
 
   3. Temporary Suspension
      * Event: A pattern of repeated violation which the Response Team has tried to address with warnings, or a single serious violation.
-     * Consequence: A private written warning with conditions for return from suspension. In general, temporary suspensions give the person being suspended time to reflect upon their behavior and possible corrective actions.
+     * Consequence: A private written warning with conditions for return from suspension. In general, temporary suspensions give the person being suspended time to reflect upon their behavior and possible corrective actions. Suspensions will be based on where the violation occurs, and may be limited to the space in which the violation occurs. In the event of a more serious violation, the suspension may apply to all spaces.
      * Repair: Examples of repair include respecting the spirit of the suspension, meeting the specified conditions for return, and being thoughtful about how to reintegrate with the community when the suspension is lifted.
 
   4. Permanent Ban
