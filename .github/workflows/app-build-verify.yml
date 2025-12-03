@@ -114,7 +114,7 @@ jobs:
 
         # Free up disk space
         docker system prune -a -f
-        sudo rm -rf $ANDROID_HOME/ndk/{26,28}.* /opt/hostedtoolcache/CodeQL \
+        sudo rm -rf $ANDROID_HOME/ndk /opt/hostedtoolcache/CodeQL \
           /usr/local/lib/node_modules /usr/local/share/chromium \
           /usr/local/share/powershell
         df -h
