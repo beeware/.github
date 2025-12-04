@@ -6,7 +6,7 @@ We pledge to make our community welcoming, safe, and equitable for all.
 
 We are committed to fostering an environment that respects and promotes the dignity, rights, and contributions of all individuals, regardless of characteristics including race, ethnicity, caste, color, age, physical characteristics, neurodiversity, disability, sex or gender, gender identity or expression, sexual orientation, language, philosophy or religion, national or social origin, socio-economic position, level of education, or other status. The same privileges of participation are extended to everyone who participates in good faith and in accordance with this Covenant.
 
-The guidelines within and enforcement of the BeeWare Community Code of Conduct applies equally to everyone participating in the BeeWare community, including members of the Code of Conduct Response Team.
+The guidelines within and enforcement of the BeeWare Community Code of Conduct apply equally to everyone participating in the BeeWare community, including members of the Code of Conduct Response Team.
 
 ## Encouraged behaviors <a name="encouraged-behaviors"></a>
 
@@ -47,13 +47,13 @@ We agree to restrict the following behaviors in our community. Instances, threat
 
 ## Reporting an issue <a name="reporting-an-issue"></a>
 
-Tensions can occur between community members even when they are trying their best to collaborate. Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces encouraged behaviors and norms that can help avoid conflicts and minimize harm. Reporting even minor issues is important, as they can be helpful in identifying patterns of behavior that may not be concerning in isolation, however, when viewed collectively may be more significant.
+Tensions can occur between community members even when they are trying their best to collaborate. Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces encouraged behaviors and norms that can help avoid conflicts and minimize harm. Reporting even minor issues is important, as they can be helpful in identifying patterns of behavior that may not be concerning in isolation, but when viewed collectively may be more significant.
 
 When an incident does occur, it is important to report it promptly to the BeeWare Code of Conduct Response Team.
 
 **If you believe you or anyone else is in physical danger, please notify appropriate law enforcement first.**
 
-To report a possible violation, you email the Team at [conduct@beeware.org](mailto:conduct@beeware.org). If necessary, you can reach out to individual team members. On the BeeWare Discord server, you can also direct message anyone on the Response Team, or, if appropriate, mention @moderators in a public channel. Team members can be reached by the following usernames on Discord or GitHub, or the provided email addresses:
+To report a possible violation, email the Team at [conduct@beeware.org](mailto:conduct@beeware.org). If necessary, you can reach out to individual team members. On the BeeWare Discord server, you can also direct message anyone on the Response Team, or, if appropriate, mention @moderators in a public channel. Team members can be reached by the following usernames on Discord or GitHub, or the provided email addresses:
 
   * Russell Keith-Magee (@freakboy3742; [russell@beeware.org](mailto:russell@beeware.org))
   * Kattni (@kattni; [kattni@beeware.org](mailto:kattni@beeware.org))
@@ -61,7 +61,7 @@ To report a possible violation, you email the Team at [conduct@beeware.org](mail
   * Philip James (@phildini; [philip@beeware.org](mailto:philip@beeware.org))
   * Charles Whittington (@HalfWhitt; [charles@beeware.org](mailto:charles@beeware.org))
 
-The Response Team takes reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. The Team will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution. If we determine that a public statement will need to be made, the identities of all victims and reporters will remain confidential unless those individuals instruct us otherwise.
+The Response Team takes reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. The Team will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution. If we determine that a public statement needs to be made, the identities of all victims and reporters will remain confidential unless those individuals instruct us otherwise.
 
 In your report, please include:
 
@@ -85,7 +85,7 @@ The Response Team will immediately meet to review the incident and determine:
 
   * What happened.
   * Whether this event constitutes a code of conduct violation.
-  * Who the reported person was.
+  * Who the reported person is.
   * Whether this is an ongoing situation, or if there is a threat to anyone's physical safety.
   * If this is determined to be an ongoing incident or a threat to physical safety, the Response Team's immediate priority will be to protect everyone involved. This means we may delay an official response until we believe that the situation has concluded and that everyone is physically safe.
   * If a member of the Response Team is one of the named parties, they will not be included in any discussions, and will not be provided with any confidential details from the reporter.
@@ -118,7 +118,7 @@ If an investigation by the Response Team finds that this Code of Conduct has bee
      * Repair: Examples of repair include respecting the spirit of the suspension, meeting the specified conditions for return, and being thoughtful about how to reintegrate with the community when the suspension is lifted.
 
   4. Permanent Ban
-     * Event: A pattern of repeated code of conduct violations that other steps on the ladder have failed to resolve, or a violation so serious that the Response Team determine there is no way to keep the community safe with this person as a member.
+     * Event: A pattern of repeated code of conduct violations that other steps on the ladder have failed to resolve, or a violation so serious that the Response Team determines there is no way to keep the community safe with this person as a member.
      * Consequence: Access to all community spaces, tools, and communication channels is removed. In general, permanent bans should be rarely used, should have strong reasoning behind them, and should only be resorted to if working through other remedies has failed to change the behavior.
      * Repair: There is no possible repair in cases of this severity.
 
