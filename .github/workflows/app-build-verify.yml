@@ -112,13 +112,6 @@ jobs:
         sudo apt -y update
         sudo apt -y install --no-install-recommends socat xauth
 
-        # Free up disk space
-        docker system prune -a -f
-        sudo rm -rf $ANDROID_HOME/ndk /opt/hostedtoolcache/CodeQL \
-          /usr/local/lib/node_modules /usr/local/share/chromium \
-          /usr/local/share/powershell
-        df -h
-
     - name: Prepare macOS
       # GitHub recommends explicitly selecting the desired Xcode version:
       # https://github.com/actions/runner-images/issues/12541#issuecomment-3083850140
@@ -206,6 +199,9 @@ jobs:
         briefcase run macOS app
         briefcase package macOS app --adhoc-sign
 
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
+
     - name: Build macOS Xcode Project
       if: >
         startsWith(inputs.runner-os, 'macOS')
@@ -222,6 +218,9 @@ jobs:
         briefcase run macOS Xcode
         briefcase package macOS Xcode --adhoc-sign
 
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
+
     - name: Build Windows App
       if: >
         startsWith(inputs.runner-os, 'Windows')
@@ -235,6 +234,9 @@ jobs:
         briefcase run windows app
         briefcase package windows app --adhoc-sign
 
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
+
     - name: Build Windows Visual Studio Project
       if: >
         startsWith(inputs.runner-os, 'Windows')
@@ -247,6 +249,9 @@ jobs:
         briefcase build windows VisualStudio
         briefcase run windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
+
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
 
     - name: Build Linux System Project (Ubuntu, local)
       if: >
@@ -271,6 +276,9 @@ jobs:
         briefcase package linux system --adhoc-sign
 
         bash -c "sudo apt -y install --dry-run ./dist/*_0.0.1-1~ubuntu-*_$(dpkg --print-architecture).deb"
+
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
 
     - name: Log in to GitHub Container Registry
       if: >
@@ -483,6 +491,10 @@ jobs:
         xvfb-run briefcase run linux flatpak
         briefcase package linux flatpak --adhoc-sign
 
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
+        flatpak uninstall --all --delete-data --assumeyes
+
     - name: Build Android App
       # Android SDK is not compatible with ARM
       if: >
@@ -516,6 +528,9 @@ jobs:
 
         briefcase package android gradle --adhoc-sign
 
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
+
     - name: Build iOS App
       if: >
         startsWith(inputs.runner-os, 'macOS')
@@ -530,6 +545,9 @@ jobs:
         briefcase run iOS xcode -d "${{ inputs.ios-simulator }}"
         briefcase package iOS xcode --adhoc-sign
 
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
+
     - name: Build Web App
       if: >
         contains(fromJSON('["", "web"]'), inputs.target-platform)
@@ -541,6 +559,9 @@ jobs:
           ${{ steps.output-format.outputs.template-override }}
         briefcase build web static
         briefcase package web static
+
+        # Clean up built artefacts to preserve disk space
+        rm -rf build dist
 
     - name: Upload Failure Logs
       uses: actions/upload-artifact@v5.0.0
