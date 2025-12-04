@@ -112,6 +112,13 @@ jobs:
         sudo apt -y update
         sudo apt -y install --no-install-recommends socat xauth
 
+        # Free up disk space
+        docker system prune -a -f
+        sudo rm -rf $ANDROID_HOME/ndk /opt/hostedtoolcache/CodeQL \
+          /usr/local/lib/node_modules /usr/local/share/chromium \
+          /usr/local/share/powershell
+        df -h
+
     - name: Prepare macOS
       # GitHub recommends explicitly selecting the desired Xcode version:
       # https://github.com/actions/runner-images/issues/12541#issuecomment-3083850140
