@@ -72,7 +72,7 @@ jobs:
     env:
       SDL_AUDIODRIVER: dummy  # disable audio for SDL
       TOGA_SYSTEM_REQUIRES: libcairo2-dev libcanberra-gtk3-module libegl1 libgirepository1.0-dev libgirepository-2.0-dev libthai-dev gir1.2-gtk-3.0
-      PYSIDE6_SYSTEM_REQUIRES: libegl1 libfontconfig1 libgl1 libglib2.0-0t64 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
+      PYSIDE6_SYSTEM_REQUIRES: libdbus-1-3 libegl1 libfontconfig1 libgl1 libglib2.0-0t64 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
     steps:
 
     - name: Workflow Configuration
