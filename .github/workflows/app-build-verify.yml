@@ -564,7 +564,7 @@ jobs:
         rm -rf build dist
 
     - name: Upload Failure Logs
-      uses: actions/upload-artifact@v5.0.0
+      uses: actions/upload-artifact@v6.0.0
       if: failure()
       with:
         name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}-${{ inputs.target-platform }}-${{ inputs.target-format }}
