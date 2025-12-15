@@ -32,7 +32,8 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner")
-        echo repo_list=\"$repo_list\" >> $GITHUB_OUTPUT
+        jq_repo_list=$(jq -c -n '$ARGS.positional' --args ${repo_list[@]})
+        echo repo_list="$jq_repo_list" >> $GITHUB_OUTPUT
 
   update-coc:
     runs-on: ubuntu-latest
@@ -41,17 +42,28 @@ jobs:
       matrix:
         full_repo: ${{ fromJson(needs.plan-coc-update.outputs.repo_list) }}
     steps:
+    - name: Checkout this repo
+      uses: actions/checkout@v6
+      with:
+        path: sourcerepo
     - name: Checkout repo to be updated
       uses: actions/checkout@v6
+      with:
+        repository: ${{ matrix.full_repo }}
+        path: targetrepo
+        token: ${{ secrets.BRUTUS_PAT_TOKEN }}
     - name: Update Code of Conduct
       env:
         GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
       run: |
         # Ignore changes to this repo
         if [[ "${{ matrix.full_repo }}" == "$GITHUB_REPOSITORY" ]]; then
-            echo "Skipping this repository ($GITHUB_REPOSITORY)..."
-            continue
+            echo "Skipping source repository ($GITHUB_REPOSITORY)..."
+            exit 0
         fi
+
+        # Work within target repo
+        cd targetrepo
 
         # Set the author information to Brutus
         git config --local user.email "brutus@beeware.org"
@@ -65,7 +77,7 @@ jobs:
 
         # Add the new code of conduct
         echo "Replacing Code of Conduct..."
-        cp ../CODE_OF_CONDUCT.md .
+        cp ../sourcerepo/CODE_OF_CONDUCT.md .
 
         # Commit and push the update
         echo "Syncing updates to remote..."
