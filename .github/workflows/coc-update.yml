@@ -63,8 +63,8 @@ jobs:
         fi
 
         # Safety catch for initial testing.
-        if [[ "${{ matrix.full_repo }}" != "beeware/bugjar" ]]; then
-            echo "Initial safety catch... skipping non-bugjar..."
+        if [[ "${{ matrix.full_repo }}" != "beeware/colosseum" ]]; then
+            echo "Initial safety catch... skipping non-colosseum..."
             exit 0
         fi
 
