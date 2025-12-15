@@ -32,7 +32,7 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner")
-        echo "repo_list=$repo_list" >> $GITHUB_OUTPUT
+        echo repo_list=\"$repo_list\" >> $GITHUB_OUTPUT
 
   update-coc:
     runs-on: ubuntu-latest
