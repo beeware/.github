@@ -28,7 +28,7 @@ We agree to restrict the following behaviors in our community. Instances, threat
 
   1. **Harassment.** Violating explicitly expressed boundaries or engaging in unnecessary personal attention after any clear request to stop.
   2. **Character attacks.** Making insulting, demeaning, or pejorative comments directed at a community member or group of people.
-  3. **Stereotyping or discrimination.** Characterizing anyone’s personality or behavior on the basis of immutable identities or traits.
+  3. **Stereotyping or discrimination.** Characterizing anyone’s personality or behavior on the basis of a personal identity or trait.
   4. **Sexualization.** Behaving in a way that would generally be considered inappropriately intimate in the context or purpose of the community.
   5. **Violating confidentiality.** Sharing or acting on someone's personal or private information without their permission.
   6. **Endangerment.** Causing, encouraging, or threatening violence or other harm toward any person or group.
@@ -42,7 +42,7 @@ We agree to restrict the following behaviors in our community. Instances, threat
   4. **Promotional materials.** Sharing marketing or other commercial content in a way that is outside the norms of the community.
   5. **Excessive communication.** Disrespecting the time and space of others by engaging in an unacceptable volume of communication.
   6. **Unhelpful communication.** Offering opinions without relevant experience in the topic being discussed, entering into an ongoing discussion without first gaining familiarity with the history of the topic, or making contributions that are off-topic or otherwise distracting.
-  7. **Irresponsible messaging.** Failing to responsibly present content which includes, links or describes any other restricted behaviors.
+  7. **Irresponsible messaging.** Presenting content which includes, links, or describes other restricted behaviors without a relevant reason and appropriate prior warnings for consumers of that content.
   8. Other conduct that could reasonably be considered **unprofessional or inappropriate**.
 
 ## Reporting an issue <a name="reporting-an-issue"></a>
@@ -53,7 +53,7 @@ When an incident does occur, it is important to report it promptly to the BeeWar
 
 **If you believe you or anyone else is in physical danger, please notify appropriate law enforcement first.**
 
-To report a possible violation, email the Team at [conduct@beeware.org](mailto:conduct@beeware.org). If necessary, you can reach out to individual team members. On the BeeWare Discord server, you can also direct message anyone on the Response Team, or, if appropriate, mention @moderators in a public channel. Team members can be reached by the following usernames on Discord or GitHub, or the provided email addresses:
+To report a possible violation, email the Team at [conduct@beeware.org](mailto:conduct@beeware.org). If necessary, you can reach out to individual team members. On the BeeWare Discord server, you can also direct message anyone on the Response Team, or, if appropriate, mention `@moderators` in a public channel. Team members can be reached by the following usernames on Discord or GitHub, or the provided email addresses:
 
   * Russell Keith-Magee (@freakboy3742; [russell@beeware.org](mailto:russell@beeware.org))
   * Kattni (@kattni; [kattni@beeware.org](mailto:kattni@beeware.org))
@@ -130,6 +130,7 @@ This Code of Conduct applies within all community spaces, including GitHub, the 
 
 Behavior outside of official BeeWare spaces may also be considered as supporting evidence for a report if that behavior establishes a pattern, or represents a potential risk to the BeeWare community.
 
+This Code of Conduct operates in parallel to any Code of Conduct that is in effect in a given context (e.g., the Code of Conduct for a conference). If an incident occurs, we encourage reporting that incident to all relevant conduct groups. Known violations of other Codes of Conduct may be considered as supporting evidence for a report under this Code of Conduct. The BeeWare Code of Conduct Response Team will cooperate with other Code of Conduct teams, but will not disclose any identifying details without the prior consent of the reporting party.
 ## Attribution <a name="attribution"></a>
 
 This Code of Conduct is adapted from the Contributor Covenant, version 3.0, permanently available at [https://www.contributor-covenant.org/version/3/0/](https://www.contributor-covenant.org/version/3/0/).
@@ -142,7 +143,7 @@ For answers to common questions about Contributor Covenant, see the [FAQ](https:
 
 Major substantive changes are listed here; for a complete list of changes see the GitHub commit history.
 
-  * **TODO: add date:** Updated to adapt the Contributor Covenant, version 3.0.
+  * **15 Dec 2025: ** Updated to adapt the Contributor Covenant, version 3.0, with some modifications for BeeWare-specific guidelines and procedures.
 
   * **July 4, 2016:** Added instructions and guidelines for reporting incidents.
 
