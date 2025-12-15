@@ -62,12 +62,6 @@ jobs:
             exit 0
         fi
 
-        # Safety catch for initial testing.
-        if [[ "${{ matrix.full_repo }}" != "beeware/colosseum" ]]; then
-            echo "Initial safety catch... skipping non-colosseum..."
-            exit 0
-        fi
-
         # Work within target repo
         cd targetrepo
 
