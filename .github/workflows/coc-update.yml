@@ -4,6 +4,7 @@ on:
   push:
     branches: ['main']
     paths: ['CODE_OF_CONDUCT.md']
+  workflow_call:
 
 defaults:
   run:
@@ -12,6 +13,8 @@ defaults:
 jobs:
   plan-coc-update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       repo_list: ${{ steps.repo_list.outputs.repo_list }}
       commit_hash: ${{ steps.commit_hash.outputs.commit_hash }}
@@ -25,6 +28,8 @@ jobs:
         echo "commit_hash=$commit_hash" >> $GITHUB_OUTPUT
     - name: Get list of repositories
       id: repo_list
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner")
         echo "repo_list=$repo_list" >> $GITHUB_OUTPUT
