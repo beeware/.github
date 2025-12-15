@@ -143,7 +143,7 @@ For answers to common questions about Contributor Covenant, see the [FAQ](https:
 
 Major substantive changes are listed here; for a complete list of changes see the GitHub commit history.
 
-  * **15 Dec 2025: ** Updated to adapt the Contributor Covenant, version 3.0, with some modifications for BeeWare-specific guidelines and procedures.
+  * **December 15, 2025:** Updated to adapt the Contributor Covenant, version 3.0, with some modifications for BeeWare-specific guidelines and procedures.
 
   * **July 4, 2016:** Added instructions and guidelines for reporting incidents.
 
