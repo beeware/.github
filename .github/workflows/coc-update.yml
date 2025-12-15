@@ -50,8 +50,8 @@ jobs:
       run: |
         # Ignore changes to this repo
         if [[ "${{ matrix.full_repo }}" == "$GITHUB_REPOSITORY" ]]; then
-            echo "Skipping this repository ($GITHUB_REPOSITORY)..."
-            continue
+            echo "Skipping source repository ($GITHUB_REPOSITORY)..."
+            exit 0
         fi
 
         # Set the author information to Brutus
