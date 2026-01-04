@@ -1,12 +1,3 @@
-<!--
-  **********************************************************************
-  ***                DO NOT MODIFY THIS FILE DIRECTLY                ***
-  **********************************************************************
-   The original copy of this file is in the beeware/.github repository.
-   It will be automatically copied into other BeeWare repositories when
-   the original is altered. Any changes should be made to the original.
-  **********************************************************************
--->
 # BeeWare Community Code of Conduct
 
 ## Our pledge <a name="our-pledge"></a>
