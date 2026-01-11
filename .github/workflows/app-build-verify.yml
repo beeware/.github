@@ -371,9 +371,11 @@ jobs:
 
     - name: Build Linux System Project (Arch, Dockerized)
       # Arch is not officially supported on ARM
+      # Arch can't build PyGame apps until they publish 3.14 binary wheels
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && !endsWith(inputs.runner-os, '-arm')
+        && !startsWith(inputs.framework, 'pygame')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
