@@ -121,7 +121,7 @@ jobs:
       - name: Create Pull Request
         id: created-pr
         if: steps.pr.outputs.needed == 'true'
-        uses: peter-evans/create-pull-request@v8.0.0
+        uses: peter-evans/create-pull-request@v8.1.0
         with:
           token: ${{ secrets.BRUTUS_PAT_TOKEN }}
           title: "Bump ${{ steps.pr.outputs.hook-name }} from ${{ steps.update.outputs.vers-bump-str }}"
