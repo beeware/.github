@@ -31,7 +31,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner")
+        repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner" -L 500)
         jq_repo_list=$(jq -c -n '$ARGS.positional' --args ${repo_list[@]})
         echo repo_list="$jq_repo_list" >> $GITHUB_OUTPUT
 
