@@ -1,0 +1,14 @@
+[tool.rumdl]
+exclude = [".github/*.md"]
+respect-gitignore = true
+
+# MD033: No inline HTML - Used in CoC for header anchors.
+disable = ["MD033"]
+
+[tool.rumdl.MD013]  # Line length
+line_length = 999999
+reflow = true
+reflow_mode = "normalize"
+
+[tool.rumdl.MD026]  # Remove punctuation at the end of headings
+punctuation = ",;:"
