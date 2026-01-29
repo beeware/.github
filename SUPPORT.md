@@ -6,4 +6,4 @@ As each project in the BeeWare suite of tools and libraries reach a point of sta
 
 ## Python Version support
 
-We support Python 3.8 and above. Support for pre-release versions of Python is not guaranteed.
+We support all Python versions that have "bugfix" or "security" status [in Python's own version support policy](https://devguide.python.org/versions/). Support for "feature" and "pre-release" versions of Python is not guaranteed.
