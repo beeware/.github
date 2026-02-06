@@ -94,7 +94,6 @@ jobs:
         steps.check-if-source.outputs.is_source == '0' &&
         steps.check-no-change.outputs.changed == '1'
       working-directory: ./targetrepo
-      continue-on-error: true
       env:
         GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
       run: |
