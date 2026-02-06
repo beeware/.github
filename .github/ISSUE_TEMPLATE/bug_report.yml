@@ -8,7 +8,7 @@ body:
     id: description
     attributes:
       label: Describe the bug
-      description: A clear and concise description of the problem behavior
+      description: A clear and concise description of the problem behavior.
     validations:
       required: true
 
@@ -16,7 +16,7 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      description: Steps to reproduce the behavior
+      description: Steps to reproduce the behavior.
       value: |
         1. Go to '...'
         2. Click on '....'
@@ -26,10 +26,19 @@ body:
       required: true
 
   - type: textarea
+    id: example
+    attributes:
+      label: Minimum example code
+      description: The smallest possible code example that is needed to reproduce the bug. This will be automatically formatted into code, so there is no need for backticks.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
     id: expected
     attributes:
       label: Expected behavior
-      description: A clear and concise description of what you expected to happen
+      description: A clear and concise description of what you expected to happen.
     validations:
       required: true
 
@@ -44,9 +53,9 @@ body:
   - type: textarea
     attributes:
       label: Environment
-      description: Include versions for all relevant dependencies.
+      description: Details about your development environment, including versions for all relevant software dependencies.
       value: |
-        - Operating System:
+        - Operating system and version:
         - Python version:
         - Software versions:
           - Briefcase:
@@ -58,11 +67,8 @@ body:
   - type: textarea
     attributes:
       label: Logs
-      description: Paste or upload relevant log files. Briefcase will create a logfile when invoked with the ``--log`` flag.
-      value: |
-        ```
-
-        ```
+      description: Paste or upload relevant log files. Briefcase will create a logfile when invoked with the ``--log`` flag. This will be automatically formated into code, so there is no need for backticks.
+      render: shell
     validations:
       required: false
 
