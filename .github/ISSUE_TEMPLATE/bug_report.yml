@@ -11,9 +11,11 @@ body:
       description: A clear and concise description of the problem behavior, and the behavior you were expecting to happen.
       value: |
         ## Bug description
+        <!-- A clear an concise description of the problem behavior. -->
 
 
         ## Expected behavior
+        <!-- Describe what you were expecting to happen when the bug occurred. -->
     validations:
       required: true
 
@@ -24,6 +26,7 @@ body:
       description: Include steps to reproduce the behavior, and details about your development environment, including versions for all relevant software dependencies.
       value: |
         ## Steps to reproduce
+        <!-- Provide a step-by-step explanation of how to reproduce the bug. -->
 
         1. Go to '...'
         2. Click on '....'
@@ -31,6 +34,7 @@ body:
         4. See error
 
         ## Environment details
+        <!-- Include details about your development environment, including names and versions for all relevant software dependencies. -->
 
         - Operating system and version:
         - Python version:
@@ -51,14 +55,6 @@ body:
       required: true
 
   - type: textarea
-    id: screenshots
-    attributes:
-      label: Screenshots
-      description: Please add screenshots of the bug happening, if applicable.
-    validations:
-      required: false
-
-  - type: textarea
     attributes:
       label: Logs
       description: Paste or upload relevant log files. Briefcase will create a logfile when invoked with the ``--log`` flag. This will be automatically formated into code, so there is no need for backticks.
@@ -67,8 +63,20 @@ body:
       required: false
 
   - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Please add screenshots of the bug happening, if applicable.
+      value: |
+        <!-- If the bug is visual, please include screenshots of the bug happening. -->
+    validations:
+      required: false
+
+  - type: textarea
     attributes:
       label: Additional context
       description: Add any other context about the problem here.
+      value: |
+        <!-- Include any other context about the problem that you'd like to share. -->
     validations:
       required: false
