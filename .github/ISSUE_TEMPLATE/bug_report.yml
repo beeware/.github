@@ -7,21 +7,37 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Describe the bug
-      description: A clear and concise description of the problem behavior.
+      label: Describe the bug and expected behavior
+      description: A clear and concise description of the problem behavior, and the behavior you were expecting to happen.
+      value: |
+        ## Bug description
+
+
+        ## Expected behavior
     validations:
       required: true
 
   - type: textarea
     id: reproduce
     attributes:
-      label: Steps to reproduce
-      description: Steps to reproduce the behavior.
+      label: Steps to reproduce, and environment details.
+      description: Include steps to reproduce the behavior, and details about your development environment, including versions for all relevant software dependencies.
       value: |
+        ## Steps to reproduce
+
         1. Go to '...'
         2. Click on '....'
         3. Scroll down to '....'
         4. See error
+
+        ## Environment details
+
+        - Operating system and version:
+        - Python version:
+        - Software versions:
+          - Briefcase:
+          - Toga:
+          - ...
     validations:
       required: true
 
@@ -35,34 +51,12 @@ body:
       required: true
 
   - type: textarea
-    id: expected
-    attributes:
-      label: Expected behavior
-      description: A clear and concise description of what you expected to happen.
-    validations:
-      required: true
-
-  - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
-      description: Please add screenshots, if applicable.
+      description: Please add screenshots of the bug happening, if applicable.
     validations:
       required: false
-
-  - type: textarea
-    attributes:
-      label: Environment
-      description: Details about your development environment, including versions for all relevant software dependencies.
-      value: |
-        - Operating system and version:
-        - Python version:
-        - Software versions:
-          - Briefcase:
-          - Toga:
-          - ...
-    validations:
-      required: true
 
   - type: textarea
     attributes:
