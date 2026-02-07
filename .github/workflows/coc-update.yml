@@ -42,6 +42,15 @@ jobs:
       matrix:
         full_repo: ${{ fromJson(needs.plan-coc-update.outputs.repo_list) }}
     steps:
+    - name: Check if source repository
+      id: check-if-source
+      run: |
+        if [[ "${{ matrix.full_repo }}" == "$GITHUB_REPOSITORY" ]]; then
+            echo "Skipping source repository ($GITHUB_REPOSITORY)..."
+            echo "is_source=1" >> "$GITHUB_OUTPUT"
+            exit 0
+        fi
+        echo "is_source=0" >> "$GITHUB_OUTPUT"
     - name: Checkout this repo
       uses: actions/checkout@v6
       with:
@@ -52,45 +61,60 @@ jobs:
         repository: ${{ matrix.full_repo }}
         path: targetrepo
         token: ${{ secrets.BRUTUS_PAT_TOKEN }}
-    - name: Update Code of Conduct
+    - name: Configure git
+      working-directory: ./targetrepo
+      run: |
+        git config --local user.email "brutus@beeware.org"
+        git config --local user.name "Brutus (robot)"
+    - name: Replace Code of Conduct
+      working-directory: ./targetrepo
+      run: |
+        cp ../sourcerepo/CODE_OF_CONDUCT.md .
+    - name: Prepend warning text to Code of Conduct
+      working-directory: ./targetrepo
+      run: |
+        WARNING_TEXT=$(< ../sourcerepo/.github/workflows/coc-edit-warning.txt)
+        printf '%s\n\n' "$WARNING_TEXT" | sed -i '0r /dev/stdin' CODE_OF_CONDUCT.md
+    - name: Check diff for need to push changes
+      id: check-no-change
+      working-directory: ./targetrepo
+      run: |
+        echo "changed=0" >> "$GITHUB_OUTPUT"
+        git diff --exit-code --quiet CODE_OF_CONDUCT.md || echo "changed=1" >> "$GITHUB_OUTPUT"
+    - name: Commit changes
+      working-directory: ./targetrepo
+      if: |
+        steps.check-no-change.outputs.changed == '1'
+      run: |
+        git add CODE_OF_CONDUCT.md
+        git commit -m "Updated Code of Conduct ($GITHUB_REPOSITORY, ${{ needs.plan-coc-update.outputs.commit_hash }})"
+    - name: Attempt to push Code of Conduct to main
+      id: push-main
+      if: |
+        steps.check-if-source.outputs.is_source == '0' &&
+        steps.check-no-change.outputs.changed == '1'
+      working-directory: ./targetrepo
       env:
         GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
       run: |
-        # Ignore changes to this repo
-        if [[ "${{ matrix.full_repo }}" == "$GITHUB_REPOSITORY" ]]; then
-            echo "Skipping source repository ($GITHUB_REPOSITORY)..."
-            exit 0
-        fi
-
-        # Work within target repo
-        cd targetrepo
-
-        # Set the author information to Brutus
-        git config --local user.email "brutus@beeware.org"
-        git config --local user.name "Brutus (robot)"
-
-        # Make new branch for change
-        echo "Creating new branch..."
+        # Attempt to push directly to main
+        echo "success=1" >> "$GITHUB_OUTPUT"
+        git push || echo "success=0" >> "$GITHUB_OUTPUT"
+    - name: Update Code of Conduct via PR to main using new branch
+      id: pr-main
+      if: |
+        steps.check-if-source.outputs.is_source == '0' &&
+        steps.check-no-change.outputs.changed == '1' &&
+        steps.push-main.outputs.success == '0'
+      working-directory: ./targetrepo
+      env:
+        GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
+      run: |
         timestamp=$(date +%m%d%Y-%H%M%S)
         branch_name="coc-update-$timestamp"
         git checkout -b $branch_name
-
-        # Add the new code of conduct
-        echo "Replacing Code of Conduct..."
-        cp ../sourcerepo/CODE_OF_CONDUCT.md .
-
-        # Prepend the edit warning to the file
-        WARNING_TEXT=$(< ../sourcerepo/.github/workflows/coc-edit-warning.txt)
-        printf '%s\n\n' "$WARNING_TEXT" | sed -i '0r /dev/stdin' CODE_OF_CONDUCT.md
-
-        # Commit and push the update
-        echo "Syncing updates to remote..."
-        git add CODE_OF_CONDUCT.md
-        git commit -m "Updated Code of Conduct ($GITHUB_REPOSITORY, ${{ needs.plan-coc-update.outputs.commit_hash }})"
         git push --set-upstream origin "$branch_name"
 
-        # Create the pull request
-        echo "Creating pull request..."
         gh pr create \
               --repo ${{ matrix.full_repo }} \
               --title "Update Code of Conduct" \
