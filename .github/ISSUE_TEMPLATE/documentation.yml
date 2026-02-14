@@ -1,0 +1,41 @@
+name: 📝 Documentation
+description: Report missing, incorrect, or unclear documentation
+labels: ["documentation"]
+
+body:
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of documentation issue is this?
+      options:
+        - Missing documentation
+        - Incorrect documentation
+        - Unclear or confusing documentation
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Affected page
+      description: Link to the documentation page, or the file path in the repository
+      placeholder: https://briefcase.beeware.org/en/latest/...
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the issue
+      description: What is missing, incorrect, or unclear?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: If you have a specific suggestion for how the documentation should read, describe it here.
+    validations:
+      required: false
