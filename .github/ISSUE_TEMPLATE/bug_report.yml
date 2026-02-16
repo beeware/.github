@@ -62,7 +62,7 @@ body:
   - type: textarea
     id: environment
     attributes:
-      label: Development environment details.
+      label: Environment details
       description: Include details about your development environment, including names and versions for all relevant software dependencies.
       value: |
         - Operating system and version:
