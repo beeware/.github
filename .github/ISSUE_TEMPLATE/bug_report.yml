@@ -4,44 +4,32 @@ labels: ["bug"]
 
 body:
 
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug!
+
+        **Please provide as much information as you have available. The more information we have, the better we will be able to help resolve the issue.**
+
+        ## Bug details
+
   - type: textarea
     id: description
     attributes:
-      label: Describe the bug and expected behavior
-      description: A clear and concise description of the problem behavior, and the behavior you were expecting to happen.
+      label: The bug, the expected behavior, and steps to reproduce
+      description: A clear and concise description of the problem behavior, the behavior you were expecting to happen, and how to reproduce it step-by-step.
       value: |
-        ## Bug description
-        <!-- A clear an concise description of the problem behavior. -->
+        ### Bug description
+        <!-- A clear and concise description of the problem behavior. -->
 
 
-        ## Expected behavior
-        <!-- Describe what you were expecting to happen when the bug occurred. -->
-    validations:
-      required: true
-
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce, and environment details.
-      description: Include steps to reproduce the behavior, and details about your development environment, including versions for all relevant software dependencies.
-      value: |
-        ## Steps to reproduce
+        ### Steps to reproduce
         <!-- Provide a step-by-step explanation of how to reproduce the bug. -->
 
         1. Go to '...'
         2. Click on '....'
         3. Scroll down to '....'
         4. See error
-
-        ## Environment details
-        <!-- Include details about your development environment, including names and versions for all relevant software dependencies. -->
-
-        - Operating system and version:
-        - Python version:
-        - Software versions:
-          - Briefcase:
-          - Toga:
-          - ...
     validations:
       required: true
 
@@ -52,31 +40,62 @@ body:
       description: The smallest possible code example that is needed to reproduce the bug. This will be automatically formatted into code, so there is no need for backticks.
       render: shell
     validations:
-      required: true
-
-  - type: textarea
-    attributes:
-      label: Logs
-      description: Paste or upload relevant log files. Briefcase will create a logfile when invoked with the ``--log`` flag. This will be automatically formated into code, so there is no need for backticks.
-      render: shell
-    validations:
       required: false
 
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
-      description: Please add screenshots of the bug happening, if applicable.
+      description: Include screenshots, if applicable.
+      placeholder: If the bug is visual, upload screenshots of the bug happening.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
       value: |
-        <!-- If the bug is visual, please include screenshots of the bug happening. -->
+        ## Environment details
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Development environment details.
+      description: Include details about your development environment, including names and versions for all relevant software dependencies.
+      value: |
+        <!-- Include development environment details, including all relevant dependencies. -->
+
+        - Operating system and version:
+        - Python version:
+        - Software versions:
+          - Briefcase:
+          - Toga:
+          - ...
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Logs and additional context
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste or upload relevant log files. Briefcase will create a logfile when it has an error, or when invoked with the ``--log`` flag. This will be automatically formated into code, so there is no need for backticks.
+      value: |
+        <!-- Paste your log content between the backticks, or upload a file. -->
+        ```
+
+        ```
     validations:
       required: false
 
   - type: textarea
+    id: additional
     attributes:
       label: Additional context
       description: Add any other context about the problem here.
-      value: |
-        <!-- Include any other context about the problem that you'd like to share. -->
+      placeholder: Include any other context about the problem that you'd like to share.
     validations:
       required: false
