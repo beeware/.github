@@ -28,10 +28,9 @@ body:
     id: reproduce
     attributes:
       label: The steps to reproduce
-      description: Explain how to reproduce the bug, step-by-step.
+      description: Provide a step-by-step explanation of how to reproduce the bug.
       value: |
         ### Steps to reproduce
-        <!-- Provide a step-by-step explanation of how to reproduce the bug. -->
 
         1. Go to '...'
         2. Click on '....'
@@ -69,8 +68,6 @@ body:
       label: Development environment details.
       description: Include details about your development environment, including names and versions for all relevant software dependencies.
       value: |
-        <!-- Include development environment details, including all relevant dependencies. -->
-
         - Operating system and version:
         - Python version:
         - Software versions:
