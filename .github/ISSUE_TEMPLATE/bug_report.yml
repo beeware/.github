@@ -17,12 +17,19 @@ body:
     id: description
     attributes:
       label: The bug and the steps to reproduce
-      description: A clear and concise description of the problem behavior, the behavior you were expecting to happen, and how to reproduce it step-by-step.
+      description: Provide a description of the bug.
       value: |
         ### Bug description
-        <!-- A clear and concise description of the problem behavior. -->
+        <!-- A clear and concise description of the problem behavior, including what is happening, and what you expected to happen. -->
+    validations:
+      required: true
 
-
+  - type: textarea
+    id: description
+    attributes:
+      label: The steps to reproduce
+      description: Explain how to reproduce the bug, step-by-step.
+      value: |
         ### Steps to reproduce
         <!-- Provide a step-by-step explanation of how to reproduce the bug. -->
 
@@ -82,7 +89,7 @@ body:
     id: logs
     attributes:
       label: Logs
-      description: Paste or upload relevant log files. Briefcase will create a logfile when it has an error, or when invoked with the ``--log`` flag. This will be automatically formated into code, so there is no need for backticks.
+      description: Paste or upload relevant log files. Briefcase will create a logfile when it has an error, or when invoked with the ``--log`` flag.
       value: |
         <!-- Paste your log content between the backticks, or upload a file. -->
         ```
