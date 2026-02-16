@@ -16,10 +16,9 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: The bug and the steps to reproduce
+      label: Describe the bug
       description: Provide a description of the bug.
       value: |
-        ### Bug description
         <!-- A clear and concise description of the problem behavior, including what is happening, and what you expected to happen. -->
     validations:
       required: true
@@ -30,8 +29,6 @@ body:
       label: The steps to reproduce
       description: Provide a step-by-step explanation of how to reproduce the bug.
       value: |
-        ### Steps to reproduce
-
         1. Go to '...'
         2. Click on '....'
         3. Scroll down to '....'
