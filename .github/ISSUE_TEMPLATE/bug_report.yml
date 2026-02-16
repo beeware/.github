@@ -4,19 +4,30 @@ labels: ["bug"]
 
 body:
 
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug!
+
+        **Please provide as much information as you have available. The more information we have, the better we will be able to help resolve the issue.**
+
+        ## Bug details
+
   - type: textarea
     id: description
     attributes:
       label: Describe the bug
-      description: A clear and concise description of the problem behavior
+      description: Provide a description of the bug.
+      value: |
+        <!-- A clear and concise description of the problem behavior, including what is happening, and what you expected to happen. -->
     validations:
       required: true
 
   - type: textarea
     id: reproduce
     attributes:
-      label: Steps to reproduce
-      description: Steps to reproduce the behavior
+      label: How to reproduce the bug
+      description: Provide a step-by-step explanation of how to reproduce the bug.
       value: |
         1. Go to '...'
         2. Click on '....'
@@ -26,27 +37,35 @@ body:
       required: true
 
   - type: textarea
-    id: expected
+    id: example
     attributes:
-      label: Expected behavior
-      description: A clear and concise description of what you expected to happen
+      label: Minimum example code
+      description: The smallest possible code example that is needed to reproduce the bug. This will be automatically formatted into code, so there is no need for backticks.
+      render: shell
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
-      description: Please add screenshots, if applicable.
+      description: Include screenshots, if applicable.
+      placeholder: If the bug is visual, upload screenshots of the bug happening.
     validations:
       required: false
 
-  - type: textarea
+  - type: markdown
     attributes:
-      label: Environment
-      description: Include versions for all relevant dependencies.
       value: |
-        - Operating System:
+        ## Environment details
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment details
+      description: Include details about your development environment, including names and versions for all relevant software dependencies.
+      value: |
+        - Operating system and version:
         - Python version:
         - Software versions:
           - Briefcase:
@@ -55,11 +74,18 @@ body:
     validations:
       required: true
 
+  - type: markdown
+    attributes:
+      value: |
+        ## Logs and additional context
+
   - type: textarea
+    id: logs
     attributes:
       label: Logs
-      description: Paste or upload relevant log files. Briefcase will create a logfile when invoked with the ``--log`` flag.
+      description: Paste or upload relevant log files. Briefcase will create a logfile when it has an error, or when invoked with the ``--log`` flag.
       value: |
+        <!-- Paste your log content between the backticks, or upload a file. -->
         ```
 
         ```
@@ -67,8 +93,10 @@ body:
       required: false
 
   - type: textarea
+    id: additional
     attributes:
       label: Additional context
       description: Add any other context about the problem here.
+      placeholder: Include any other context about the problem that you'd like to share.
     validations:
       required: false
