@@ -16,7 +16,7 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: The bug, the expected behavior, and steps to reproduce
+      label: The bug and the steps to reproduce
       description: A clear and concise description of the problem behavior, the behavior you were expecting to happen, and how to reproduce it step-by-step.
       value: |
         ### Bug description
