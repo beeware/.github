@@ -25,7 +25,7 @@ body:
       required: true
 
   - type: textarea
-    id: description
+    id: reproduce
     attributes:
       label: The steps to reproduce
       description: Explain how to reproduce the bug, step-by-step.
