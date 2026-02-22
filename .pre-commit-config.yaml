@@ -35,6 +35,6 @@ repos:
       - id: flake8
         args: [--max-line-length=119]
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.1.21
+    rev: v0.1.25
     hooks:
       - id: rumdl
