@@ -14,7 +14,7 @@ repos:
       - id: pyupgrade
         args: [--py38-plus]
   - repo: https://github.com/PyCQA/isort
-    rev: 7.0.0
+    rev: 8.0.0
     hooks:
       - id: isort
         args: [--profile=black, --split-on-trailing-comma, --combine-as]
