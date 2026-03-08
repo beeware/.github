@@ -15,6 +15,6 @@ repos:
         args: [ --fix ]
       - id: ruff-format
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.1.33
+    rev: v0.1.43
     hooks:
       - id: rumdl
