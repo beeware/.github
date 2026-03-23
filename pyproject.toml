@@ -2,8 +2,10 @@
 exclude = [".github/*.md"]
 respect-gitignore = true
 
+# MD007: List leading spaces - CoC nested lists only render on both GitHub and website with 5 spaces.
 # MD033: No inline HTML - Used in CoC for header anchors.
-disable = ["MD033"]
+[tool.rumdl.per-file-ignores]
+"CODE_OF_CONDUCT.md" = ["MD007", "MD033"]
 
 [tool.rumdl.MD013]  # Line length
 line_length = 999999
