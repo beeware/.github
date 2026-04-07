@@ -521,7 +521,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
           briefcase run android gradle \
-            --device '{"avd":"beePhone"}' \
+            --device '{"avd":"beePhone","device_type":"pixel"}' \
             --shutdown-on-exit \
             --Xemulator=-no-window \
             --Xemulator=-no-audio \
