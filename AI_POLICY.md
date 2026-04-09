@@ -89,3 +89,9 @@ Any such action will be reported to the BeeWare Code of Conduct Response Team. R
 ## Acknowledgements
 
 This policy is based on the [Mastodon AI Contribution Policy](https://github.com/mastodon/.github/blob/main/AI_POLICY.md). That policy was based on the the [CloudNativePG AI Contribution Policy](https://github.com/cloudnative-pg/governance/blob/main/AI_POLICY.md), which was inspired by the [Ghostty AI Usage Policy](https://github.com/ghostty-org/ghostty/blob/main/AI_POLICY.md) and the Linux Foundation's [Generative AI Policy](https://www.linuxfoundation.org/legal/generative-ai).
+
+## Changes <a name="changes"></a>
+
+Major substantive changes are listed here; for a complete list of changes see the GitHub commit history.
+
+* **April 24, 2026:** Initial AI policy adopted.
