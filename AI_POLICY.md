@@ -38,7 +38,7 @@ Autonomous agents may be used to initiate an action (e.g., submit a pull request
 
 If AI tools were used to generate a significant portion of your contribution (i.e. beyond simple autocomplete), we require you to **disclose the tools used** in the pull request description.
 
-Transparency helps maintainers calibrate the areas of focus for a review, and the style of feedback that will be helpful in a review. 
+Transparency helps maintainers calibrate the areas of focus for a review, and the style of feedback that will be helpful in a review.
 
 Please add a trailer to your pull request message in the following format:
 
@@ -84,7 +84,7 @@ The following are strictly prohibited:
 
 ## Enforcement
 
-BeeWare project maintainers reserve the right to close any issue or pull request that violates this policy, without providing a detailed technical critique. 
+BeeWare project maintainers reserve the right to close any issue or pull request that violates this policy, without providing a detailed technical critique.
 
 Any such action will be reported to the BeeWare Code of Conduct Response Team. Repeated violations may result in a ban from BeeWare Project spaces.
 
