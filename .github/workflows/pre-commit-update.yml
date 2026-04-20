@@ -141,7 +141,7 @@ jobs:
           git checkout "${BRANCH_NAME}"
 
           FILENAME="${{ env.CHANGENOTE_DIR }}/${{ steps.created-pr.outputs.pull-request-number }}.misc.${{ inputs.changenote-format }}"
-          printf 'The ``pre-commit`` hook for ``${{ steps.pr.outputs.hook-name }}`` was updated to its latest version.\n' > "${FILENAME}"
+          printf 'The `pre-commit` hook for `${{ steps.pr.outputs.hook-name }}` was updated to its latest version.\n' > "${FILENAME}"
 
           git add "${FILENAME}"
           git commit -m "Add changenote."
