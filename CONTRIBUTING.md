@@ -1,44 +1,37 @@
 # All Contributions Welcome
 
-It's not just about code. A successful software project requires documentation, design skills, feedback and bug reports. The BeeWare community acknowledges that all contributions are important - not just the ones that come as a pull request on GitHub.
+It's not just about code. A successful software project requires documentation, design skills, feedback and bug reports. The BeeWare project recognizes that all contributions are important - not just the ones that come as a pull request on GitHub.
 
-## First-time Contributors
+## How to contribute
 
-If you're new to the project (or even entirely new to open source in general), the best place to start is with our [first-time contributors guide](https://beeware.org/contributing/how/first-time/). Everyone can contribute to open source, and we're here to show you how.
+If you'd like to contribute to a BeeWare project, our [contribution guide](https://beeware.org/contributing/guide) has details on how to pick a way to contribute, how to set up a development environment, and other requirements we have as part of our contribution process.
 
-## Code Contributions
+### Code of Conduct
 
-Your code contributions are welcome! Please familiarize yourself with our [Development Process](https://beeware.org/contributing/how/process/).
+BeeWare operates under a [Code of Conduct](https://beeware.org/community/behavior/code-of-conduct/). All participation the BeeWare community is governed by this code.
 
-If you're looking for something to work on, and don't know where your effort would be welcome, try looking at the ticket tracker for a project of interest. There will usually be a couple of tickets with known problems; any ticket is a candidate for being fixed. Some tickets in particular will be tagged [up-for-grabs](https://github.com/search?q=user%3Abeeware+label%3Aup-for-grabs+is%3Aissue+is%3Aopen&type=)
+### AI contributions
 
-- this indicates that they are areas of particular interest where the project
-would like contributions.
+We neither encourage nor prohibit the use of autonomous coding tools when contributing to BeeWare projects. However, if you have used an autonomous coding tool to support your work processes, all contributions are you make are ultimately **your** responsibility.
 
-If you're a first time contributor, some tickets are also tagged as [first-timers-only](https://github.com/search?q=user%3Abeeware+label%3Afirst-timers-only+is%3Aissue+is%3Aopen&type=). These are special issues that have been selected because they're relatively simple introductions to the project, and the BeeWare team will mentor any first time contributor in committing a patch for one of these issues.
+Our [AI Policy](./AI_POLICY.md) has the full details of your obligations if you choose to use an AI tool when contributing to BeeWare.
 
-## Platform Usage
+### Issues
 
-Do you use Windows or various flavours of Linux? Are you able to install a project or application on your system? Did you run into any problems?
+We have a [process and requirements for creating new issues](https://beeware.org/contributing/guide/how/new-issue/).
 
-If so, please update the documentation to show how you were able to get it to work, or log an issue if you've found a bug that you can't fix.
+### Code style guide
 
-## Documentation
+We have a [code style guide](https://beeware.org/contributing/guide/style/code-style-guide/) all code must follow. This is partially enforced by automated pre-commit checks; our guide on [setting up a development environment](https://beeware.org/contributing/guide/how/dev-environment/) decribes how to configure these automated checks.
 
-Is the documentation up to date? Do you think things could be worded differently? Are there missing sections? Do you have an idea for a tutorial that could be written? Please submit a Pull Request!
+### Testing
 
-## Help translate and update our Website
+We require that all new code is exercised by automated tests. Our contribution guide describes [how to run the project test suite](https://beeware.org/contributing/guide/how/write-code/).
 
-Is there anything wrong or missing from our website? Please feel free to make edits and submit a pull request!
+### Documentation
 
-Want to help translate or update the content of this website? Visit the translations section.
+We require that all new features have full user documentation. We have a [documentation style guide](https://beeware.org/contributing/guide/style/docs-style-guide/) that all documentation should follow. Our contribution guide has details on [how to build and preview project documentation](https://beeware.org/contributing/guide/how/build-docs/).
 
-## Build a real application!
+### Pull Requests
 
-Ultimately BeeWare is a set of tools for building applications. One of the best ways to evaluate our progress is to see people build real-world applications with the BeeWare tools. So if you've got an idea for an application you've always wanted or needed - try to build it!
-
-In the process of building that application, you'll likely find bugs, missing features, or friction in the development process. Those problems can then be turned into bug reports or patches.
-
-## Something else
-
-If you've got your own idea for something, or if you don't see any tickets, or you want to be mentored on a ticket, or you aren't sure how to proceed, contact the project maintainers on Twitter or Discord. The project maintainers love collaborating, especially with new contributors, and will gladly answer any questions or walk you through any problems you may encounter.
+We have a [process for submitting a PR](https://beeware.org/contributing/guide/how/submit-pr/) that all contributions must follow.
