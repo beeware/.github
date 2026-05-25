@@ -1,0 +1,95 @@
+name: PR Checklist
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-pr-template:
+    name: Check PR template
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check PR body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          ERRORS=()
+
+          require() {
+              if ! grep -qE -- "$1" <<< "$PR_BODY"; then
+                  echo "::error::$2"
+                  ERRORS+=("$2")
+              fi
+          }
+
+          require "^[[:space:]]*## PR Checklist:" \
+            "Could not find the BeeWare PR checklist in the pull request comment. This probably means you've used a tool to submit your PR, rather than the GitHub UI. The BeeWare project provides, and requires the use of a standard template for all PRs. Your PR will be ignored until/unless you add the required components of the template. See https://beeware.org/contributing/guide/how/submit-pr/ for details."
+
+          require "^[[:space:]]*- \[\s*[xX]\s*\] I will abide by the BeeWare Code of Conduct" \
+            "The 'Code of Conduct' checkbox in the PR checklist must be checked."
+
+          require "^[[:space:]]*- \[\s*[xX]\s*\] I have read and have followed the \*\*CONTRIBUTING.md\*\* file" \
+            "The 'CONTRIBUTING.md' checkbox in the PR checklist must be checked."
+
+          require "^[[:space:]]*- \[\s*[xX]?\s*\] This PR was generated or assisted using an AI tool" \
+            "The AI tool checkbox is missing. It must be present and either checked or unchecked."
+
+          if grep -qE -- "^[[:space:]]*- \[\s*[xX]\s*\] This PR was generated or assisted using an AI tool" <<< "$PR_BODY"; then
+              require "^[[:space:]]*(-\s+)?Assisted-by:" "'Assisted-by:' line is missing."
+
+              # Extract the value, strip HTML comments and whitespace
+              ASSISTED_BY_VAL=$(grep -E "^[[:space:]]*(-\s+)?Assisted-by:" <<< "$PR_BODY" | sed -r -e 's/^[[:space:]]*(-\s+)?Assisted-by://' -e 's/<!--.*-->//' | tr -d '[:space:]')
+              if [ -z "$ASSISTED_BY_VAL" ]; then
+                  MSG="You checked the AI tool checkbox in the PR template, but did not specify the tool that was used in 'Assisted-by:'."
+                  echo "::error::$MSG"
+                  ERRORS+=("$MSG")
+              fi
+          fi
+
+          if [ ${#ERRORS[@]} -gt 0 ]; then
+              # Find existing comments
+              COMMENT_IDS=$(gh api --paginate repos/$REPO/issues/$PR_NUMBER/comments --jq '.[] | select(.body | contains("<!-- pr-checklist-comment -->")) | .id')
+
+              PREFIX=""
+              if [ -n "$COMMENT_IDS" ]; then
+                  for ID in $COMMENT_IDS; do
+                      # Delete existing comment
+                      gh api -X DELETE repos/$REPO/issues/comments/$ID > /dev/null
+                  done
+                  PREFIX="As previously noted, "
+              fi
+
+              # Build the comment body
+              COMMENT_BODY="<!-- pr-checklist-comment -->
+              Thank you for your pull request! However, ${PREFIX}your pull request is missing some required elements. Please review and complete the checklist in our PR template.
+
+              **Missing items:**
+              "
+              for ERR in "${ERRORS[@]}"; do
+                  COMMENT_BODY+="- $ERR
+              "
+              done
+
+              COMMENT_BODY+="
+              For key details on how to contribute, please review and follow the [**CONTRIBUTING.md**](https://github.com/$REPO/blob/main/CONTRIBUTING.md) file.
+              "
+
+              # Strip leading indentation from COMMENT_BODY
+              COMMENT_BODY=$(printf '%s\n' "$COMMENT_BODY" | sed -E 's/^[[:space:]]+//')
+              # Post new comment
+              gh api repos/$REPO/issues/$PR_NUMBER/comments -f body="$COMMENT_BODY" > /dev/null
+
+              exit 1
+          fi
+
+          echo "PR Checklist verification passed."
