@@ -24,6 +24,9 @@ on:
         default: "ubuntu-latest"
         type: string
 
+permissions:
+  pull-requests: write
+
 defaults:
   run:
     shell: bash
@@ -70,6 +73,25 @@ jobs:
     - name: Run towncrier check
       id: tox
       run: tox -e towncrier-check
+
+    - name: Add PR comment if change note is missing
+      if: always() && github.event_name == 'pull_request' && steps.tox.outcome == 'failure'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        PR_NUM: ${{ github.event.pull_request.number }}
+      run: |
+        MESSAGE="Thank you for your pull request! Unfortunately, CI checks for this pull request are failing because you haven't included a change note in your contribution. Details on creating a change note can be found in the [BeeWare Contribution Guide](https://beeware.org/contributing/guide/how/change-note/).
+
+        <!-- towncrier-missing-change-note -->"
+
+        COMMENTS=$(gh api repos/${{ github.repository }}/issues/${PR_NUM}/comments)
+        HAS_COMMENT=$(jq -r '.[] | select(.body | contains("<!-- towncrier-missing-change-note -->")) | .body' <<< "$COMMENTS")
+
+        if [ -z "$HAS_COMMENT" ]; then
+          gh api --method POST repos/${{ github.repository }}/issues/${PR_NUM}/comments -f body="$MESSAGE"
+        else
+          echo "Comment already exists."
+        fi
 
     - name: Towncrier Check Resolution Instructions
       if: always() && steps.tox.outcome == 'failure'
