@@ -78,7 +78,7 @@ jobs:
       - name: Configure git
         run: |
           git config user.email "brutus@beeware.org"
-          git config user.name "Brutus (robot)"
+          git config user.name "Brutus[bot]"
 
       - name: Set up Python
         uses: actions/setup-python@v6.2.0
@@ -127,8 +127,8 @@ jobs:
           title: "Bump ${{ steps.pr.outputs.hook-name }} from ${{ steps.update.outputs.vers-bump-str }}"
           branch: "${{ env.BRANCH_PREFIX }}/${{ steps.pr.outputs.hook-name }}"
           commit-message: "Bump ${{ steps.pr.outputs.hook-name }} from ${{ steps.update.outputs.vers-bump-str }}"
-          committer: "Brutus (robot) <brutus@beeware.org>"
-          author: "Brutus (robot) <brutus@beeware.org>"
+          committer: "Brutus[bot] <brutus@beeware.org>"
+          author: "Brutus[bot] <brutus@beeware.org>"
           body: "Bumps `pre-commit` hook for `${{ steps.pr.outputs.hook-name }}` from ${{ steps.update.outputs.vers-bump-str }} and ran the update against the repo."
           labels: "dependencies"
 

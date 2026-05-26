@@ -65,7 +65,7 @@ jobs:
       working-directory: ./targetrepo
       run: |
         git config --local user.email "brutus@beeware.org"
-        git config --local user.name "Brutus (robot)"
+        git config --local user.name "Brutus[bot]"
     - name: Replace Code of Conduct
       working-directory: ./targetrepo
       run: |
