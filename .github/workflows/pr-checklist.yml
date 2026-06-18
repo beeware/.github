@@ -15,15 +15,24 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
+          GUIDE="The BeeWare project provides and requires the use of a standard template for all PRs; this content is required. See https://beeware.org/contributing/guide/how/submit-pr/#pr-content for details."
+
+          # fail <contextual clarification> — emits the clarification followed by the
+          # common "this content is required" framing and link to the contribution guide.
+          fail() {
+              echo "::error::$1 $GUIDE"
+              exit 1
+          }
+
+          # require <pattern> <contextual clarification> — fail() unless the pattern is present.
           require() {
               if ! grep -qE -- "$1" <<< "$PR_BODY"; then
-                  echo "::error::$2"
-                  exit 1
+                  fail "$2"
               fi
           }
 
           require "^[[:space:]]*## PR Checklist:" \
-            "Could not find the BeeWare PR checklist in the pull request comment. This probably means you've used a tool to submit your PR, rather than the GitHub UI. The BeeWare project provides and requires the use of a standard template for all PRs. Your PR will be ignored until/unless you add the required components of the template. See https://beeware.org/contributing/guide/how/submit-pr/#pr-content for details."
+            "Could not find the BeeWare PR checklist in the pull request body. This probably means you've used a tool to submit your PR, rather than the GitHub UI."
 
           require "^[[:space:]]*- \[\s*[xX]\s*\] I will abide by the BeeWare Code of Conduct" \
             "The 'Code of Conduct' checkbox in the PR checklist must be checked."
@@ -31,14 +40,24 @@ jobs:
           require "^[[:space:]]*- \[\s*[xX]\s*\] I have read and have followed the \*\*CONTRIBUTING.md\*\* file" \
             "The 'CONTRIBUTING.md' checkbox in the PR checklist must be checked."
 
-          if grep -qE -- "^[[:space:]]*- \[\s*[xX]\s*\] This PR was generated or assisted using an AI tool" <<< "$PR_BODY"; then
-              require "^[[:space:]]*(-\s+)?Assisted-by:" "'Assisted-by:' line is missing."
+          require "^[[:space:]]*- \[\s*[xX ]\s*\] This PR was generated or assisted using an AI tool" \
+            "Could not find the 'This PR was generated or assisted using an AI tool' line in the PR checklist. Leave the checkbox empty if you did not use an AI tool, or check it and fill in the 'Assisted-by:' line if you did."
 
-              # Extract the value, strip HTML comments and whitespace
-              ASSISTED_BY_VAL=$(grep -E "^[[:space:]]*(-\s+)?Assisted-by:" <<< "$PR_BODY" | sed -r -e 's/^[[:space:]]*(-\s+)?Assisted-by://' -e 's/<!--.*-->//' | tr -d '[:space:]')
+          # Extract any 'Assisted-by:' value, stripping HTML comments and whitespace.
+          ASSISTED_BY_VAL=$(grep -E "^[[:space:]]*(-\s+)?Assisted-by:" <<< "$PR_BODY" | sed -r -e 's/^[[:space:]]*(-\s+)?Assisted-by://' -e 's/<!--.*-->//g' | tr -d '[:space:]')
+
+          if grep -qE -- "^[[:space:]]*- \[\s*[xX]\s*\] This PR was generated or assisted using an AI tool" <<< "$PR_BODY"; then
+              # Box is checked: a filled-in 'Assisted-by:' line must be present.
+              require "^[[:space:]]*(-\s+)?Assisted-by:" \
+                "You checked the AI tool checkbox in the PR template, but the 'Assisted-by:' line is missing."
               if [ -z "$ASSISTED_BY_VAL" ]; then
-                  echo "::error::You checked the AI tool checkbox in the PR template, but did not specify the tool that was used in 'Assisted-by:'."
-                  exit 1
+                  fail "You checked the AI tool checkbox in the PR template, but did not specify the tool that was used in 'Assisted-by:'."
+              fi
+          else
+              # Box is empty: the 'Assisted-by:' line may be absent, but if present it
+              # must not contain any uncommented content.
+              if [ -n "$ASSISTED_BY_VAL" ]; then
+                  fail "You specified a tool in 'Assisted-by:', but did not check the AI tool checkbox in the PR template."
               fi
           fi
 
