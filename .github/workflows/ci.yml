@@ -195,7 +195,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga, pyside6 ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-briefcase:
     name: Verify Briefcase
@@ -211,7 +211,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-15-intel, macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-15-intel, macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-briefcase-template:
     name: Verify Briefcase Template
@@ -226,7 +226,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-latest, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-verify-apps-android-templates:
     name: Verify Android
@@ -242,7 +242,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]  # toga only
-        runner-os: [ macos-latest, windows-latest, ubuntu-24.04 ]
+        runner-os: [ macos-15, windows-latest, ubuntu-24.04 ]
 
   test-verify-apps-iOS-templates:
     name: Verify iOS
@@ -250,7 +250,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-iOS-xcode-template
-      runner-os: macos-latest
+      runner-os: macos-15
       target-platform: iOS
       target-format: xcode
       framework: ${{ matrix.framework }}
@@ -322,7 +322,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-macos-${{ matrix.format }}-template
-      runner-os: macos-latest
+      runner-os: macos-15
       target-platform: macOS
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
