@@ -58,14 +58,15 @@ jobs:
           echo "differentiator=${DIFFERENTIATOR}" | tee -a ${GITHUB_OUTPUT}
 
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: ${{ inputs.repository }}
           fetch-depth: 0  # Fetch all refs so setuptools_scm can generate the correct version number
+          persist-credentials: false
 
       - name: Build Package & Upload Artifact
         id: package
-        uses: hynek/build-and-inspect-python-package@v2.18.0
+        uses: hynek/build-and-inspect-python-package@d44ca7d91762de7a7d5436ddae667c6da6d1c3df  # v2.18.0
         with:
           path: ${{ inputs.build-subdirectory || '.' }}
           upload-name-suffix: ${{ format('-{0}{1}', steps.config.outputs.repo-name, steps.config.outputs.differentiator) }}
@@ -75,6 +76,7 @@ jobs:
         id: artifact
         env:
           BASENAME: ${{ steps.package.outputs.artifact-name }}
+          DIFFERENTIATOR: ${{ steps.config.outputs.differentiator }}
         run: |
           # trim the differentiator to generate the artifact's basename
-          echo "basename=${BASENAME%${{ steps.config.outputs.differentiator }}}" | tee -a ${GITHUB_OUTPUT}
+          echo "basename=${BASENAME%${DIFFERENTIATOR}}" | tee -a ${GITHUB_OUTPUT}

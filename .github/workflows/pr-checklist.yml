@@ -5,6 +5,9 @@ on:
     types: [opened, edited, reopened, synchronize]
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   check-pr-template:
     name: Check PR template

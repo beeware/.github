@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only by default. Called reusable workflows declare any additional
+# permissions they require (e.g. towncrier needs pull-requests: write).
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: bash
@@ -30,7 +35,8 @@ jobs:
     # inherited secrets are not exposed to forked repos
     if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
     uses: ./.github/workflows/docs-build-verify.yml
-    secrets: inherit
+    secrets:
+      RTD_API_TOKEN: ${{ secrets.RTD_API_TOKEN }}
     with:
       project-name: ${{ matrix.name }}
       project-version: ${{ matrix.version }}
@@ -105,10 +111,12 @@ jobs:
           expected: "main"
     steps:
     - name: Checkout beeware/.github
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      with:
+        persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@v6.3.0
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
       with:
         python-version: "3.x"
         cache: pip
@@ -128,11 +136,14 @@ jobs:
         testing-ref-name: ${{ matrix.testing-ref-name }}
 
     - name: Briefcase @ ${{ matrix.test-case }}
+      env:
+        EXPECTED: ${{ matrix.expected }}
+        INSTALLED_VERSION: ${{ steps.briefcase.outputs.installed-version }}
       run: |
-        if [[ "${{ matrix.expected }}" != "${{ steps.briefcase.outputs.installed-version }}" ]]; then
-          echo "installed-version: ${{ steps.briefcase.outputs.installed-version }}"
+        if [[ "${EXPECTED}" != "${INSTALLED_VERSION}" ]]; then
+          echo "installed-version: ${INSTALLED_VERSION}"
           echo "Found Briefcase version v$(briefcase -V)"
-          echo "Expected Briefcase version ${{ matrix.expected }}"
+          echo "Expected Briefcase version ${EXPECTED}"
           exit 1
         fi
 
