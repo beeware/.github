@@ -168,6 +168,11 @@ jobs:
   test-package-python:
     name: Create Package
     needs: pre-commit
+    # id-token and attestations permissions are needed for packaging.
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     uses: ./.github/workflows/python-package-create.yml
     with:
       repository: beeware/${{ matrix.repo || matrix.name }}
