@@ -32,7 +32,7 @@ jobs:
   test-docs-build-verify:
     name: Verify Docs Build
     needs: pre-commit
-    # inherited secrets are not exposed to forked repos
+    # inherited secrets are not exposed to forked repos, so we can't run there
     if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
     uses: ./.github/workflows/docs-build-verify.yml
     secrets:

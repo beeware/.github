@@ -45,12 +45,11 @@ jobs:
           # Pass values through the environment rather than interpolating them
           # directly into the script, to avoid injection and secret leakage.
           PROJECT_VERSION: ${{ inputs.project-version }}
-          RTD_API_TOKEN: ${{ secrets.RTD_API_TOKEN }}
         run: |
           echo "Verifying docs for ${PROJECT_VERSION} were successfully built:"
           while true
           do
-              RTD_RESPONSE=$(curl -s -H "Authorization: Token ${RTD_API_TOKEN}" "${RTD_API_URL}")
+              RTD_RESPONSE=$(curl -s -H "Authorization: Token ${{ secrets.RTD_API_TOKEN }}" "${RTD_API_URL}")
               IS_DOCS_BUILT=$(jq .built <<< "${RTD_RESPONSE}")
 
               echo "::group::IS_DOCS_BUILT=${IS_DOCS_BUILT}"
