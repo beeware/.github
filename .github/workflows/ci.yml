@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only by default. Called reusable workflows declare any additional
+# permissions they require (e.g. towncrier needs pull-requests: write).
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: bash
@@ -25,12 +30,13 @@ jobs:
       pre-commit-source: -r requirements.txt
 
   test-docs-build-verify:
-    name: Verify Docs Build
+    name: Docs Build Verify
     needs: pre-commit
-    # inherited secrets are not exposed to forked repos
+    # inherited secrets are not exposed to forked repos, so we can't run there
     if: ${{ github.event.pull_request.head.repo.owner.login == 'beeware' }}
     uses: ./.github/workflows/docs-build-verify.yml
-    secrets: inherit
+    secrets:
+      RTD_API_TOKEN: ${{ secrets.RTD_API_TOKEN }}
     with:
       project-name: ${{ matrix.name }}
       project-version: ${{ matrix.version }}
@@ -105,10 +111,12 @@ jobs:
           expected: "main"
     steps:
     - name: Checkout beeware/.github
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      with:
+        persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@v6.3.0
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
       with:
         python-version: "3.x"
         cache: pip
@@ -128,16 +136,19 @@ jobs:
         testing-ref-name: ${{ matrix.testing-ref-name }}
 
     - name: Briefcase @ ${{ matrix.test-case }}
+      env:
+        INSTALLED_VERSION: ${{ steps.briefcase.outputs.installed-version }}
+        MATRIX_EXPECTED: ${{ matrix.expected }}
       run: |
-        if [[ "${{ matrix.expected }}" != "${{ steps.briefcase.outputs.installed-version }}" ]]; then
-          echo "installed-version: ${{ steps.briefcase.outputs.installed-version }}"
+        if [[ "${MATRIX_EXPECTED}" != "${INSTALLED_VERSION}" ]]; then
+          echo "installed-version: ${INSTALLED_VERSION}"
           echo "Found Briefcase version v$(briefcase -V)"
-          echo "Expected Briefcase version ${{ matrix.expected }}"
+          echo "Expected Briefcase version ${MATRIX_EXPECTED}"
           exit 1
         fi
 
   test-pre-commit-run:
-    name: Pre-commit
+    name: Pre-commit Run
     needs: pre-commit
     uses: ./.github/workflows/pre-commit-run.yml
     with:
@@ -154,9 +165,14 @@ jobs:
         - repo: rubicon-objc
           pre-commit-source: "--group pre-commit"
 
-  test-package-python:
-    name: Create Package
+  test-python-package-create:
+    name: Python Package Create
     needs: pre-commit
+    # id-token and attestations permissions are needed for packaging.
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     uses: ./.github/workflows/python-package-create.yml
     with:
       repository: beeware/${{ matrix.repo || matrix.name }}
@@ -181,9 +197,9 @@ jobs:
           repo: toga
           build-subdir: android
 
-  test-verify-projects-briefcase:
-    name: Verify Project
-    needs: [ pre-commit, test-package-python ]
+  test-app-create-verify:
+    name: App Create Verify
+    needs: [ pre-commit, test-python-package-create ]
     uses: ./.github/workflows/app-create-verify.yml
     with:
       # Falls back to 3.x in called workflow if undefined
@@ -197,9 +213,9 @@ jobs:
         framework: [ toga, pyside6 ]
         runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
-  test-verify-apps-briefcase:
-    name: Verify Briefcase
-    needs: [ pre-commit, test-package-python ]
+  test-app-build-verify:
+    name: App Build Verify (Default templates)
+    needs: [ pre-commit, test-python-package-create ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
       # Falls back to 3.x in called workflow if undefined
@@ -213,8 +229,8 @@ jobs:
         framework: [ toga ]
         runner-os: [ macos-15-intel, macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
-  test-verify-apps-briefcase-template:
-    name: Verify Briefcase Template
+  test-app-build-verify-template:
+    name: App Build Verify (Briefcase template)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -228,8 +244,8 @@ jobs:
         framework: [ toga ]
         runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
 
-  test-verify-apps-android-templates:
-    name: Verify Android
+  test-app-build-verify-android:
+    name: App Build Verify (Android template)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -244,8 +260,8 @@ jobs:
         framework: [ toga ]  # toga only
         runner-os: [ macos-15, windows-latest, ubuntu-24.04 ]
 
-  test-verify-apps-iOS-templates:
-    name: Verify iOS
+  test-app-build-verify-iOS:
+    name: App Build Verify (iOS template)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -259,8 +275,8 @@ jobs:
       matrix:
         framework: [ toga ]  # toga only
 
-  test-verify-apps-linux-system-templates:
-    name: Verify Linux
+  test-app-build-verify-linux-system:
+    name: App Build Verify (System template)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -278,8 +294,8 @@ jobs:
         runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
 # see app-build-verify.yml; AppImage testing was disabled sept 2024
-#  test-verify-apps-appimage-templates:
-#    name: Verify AppImage
+#  test-app-build-verify-linux-appimage:
+#    name: App Build Verify (AppImage template)
 #    needs: pre-commit
 #    uses: ./.github/workflows/app-build-verify.yml
 #    with:
@@ -294,8 +310,8 @@ jobs:
 #        # 2024-07-11 (beeware/briefcase#1908): pyside6 segfaults on AppImage start.
 #        framework: [ toga, pygame, console ]
 
-  test-verify-apps-flatpak-templates:
-    name: Verify Flatpak
+  test-app-build-verify-linux-flatpak:
+    name: App Build Verify (Flatpak template)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -316,8 +332,8 @@ jobs:
           - framework: pyside6
             runner-os: ubuntu-24.04-arm
 
-  test-verify-apps-macOS-templates:
-    name: Verify macOS
+  test-app-build-verify-macOS:
+    name: App Build Verify (macOS templates)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -332,8 +348,8 @@ jobs:
         framework: [ toga, pyside6, pygame, console ]
         format: [ app, Xcode ]
 
-  test-verify-apps-web-templates:
-    name: Verify Web
+  test-app-build-verify-web:
+    name: App Build Verify (Web template)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:
@@ -347,8 +363,8 @@ jobs:
       matrix:
         framework: [ toga ]  # toga only
 
-  test-verify-apps-windows-templates:
-    name: Verify Windows
+  test-app-build-verify-windows:
+    name: App Build Verify (Windows templates)
     needs: pre-commit
     uses: ./.github/workflows/app-build-verify.yml
     with:

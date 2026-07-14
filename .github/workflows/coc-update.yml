@@ -20,52 +20,68 @@ jobs:
       commit_hash: ${{ steps.commit_hash.outputs.commit_hash }}
     steps:
     - name: Checkout this repository
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      with:
+        persist-credentials: false
     - name: Get latest commit hash
       id: commit_hash
       run: |
         commit_hash=$(git rev-parse --short=16 HEAD)
-        echo "commit_hash=$commit_hash" >> $GITHUB_OUTPUT
+        echo "commit_hash=$commit_hash" >> "$GITHUB_OUTPUT"
     - name: Get list of repositories
       id: repo_list
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        repo_list=$(gh repo list $GITHUB_REPOSITORY_OWNER --no-archived --json nameWithOwner --jq ".[].nameWithOwner" -L 500)
-        jq_repo_list=$(jq -c -n '$ARGS.positional' --args ${repo_list[@]})
-        echo repo_list="$jq_repo_list" >> $GITHUB_OUTPUT
+        repo_list=$(gh repo list "$GITHUB_REPOSITORY_OWNER" --no-archived --json nameWithOwner --jq ".[].nameWithOwner" -L 500 \
+          | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        echo "repo_list=$repo_list" >> "$GITHUB_OUTPUT"
 
   update-coc:
     runs-on: ubuntu-latest
     needs: plan-coc-update
+    # This job performs all cross-repo writes using BRUTUS_PAT_TOKEN, so the
+    # job's own GITHUB_TOKEN needs no permissions. Deny everything by default.
+    permissions: {}
     strategy:
       matrix:
         full_repo: ${{ fromJson(needs.plan-coc-update.outputs.repo_list) }}
     steps:
     - name: Check if source repository
       id: check-if-source
+      env:
+        MATRIX_FULL_REPO: ${{ matrix.full_repo }}
       run: |
-        if [[ "${{ matrix.full_repo }}" == "$GITHUB_REPOSITORY" ]]; then
-            echo "Skipping source repository ($GITHUB_REPOSITORY)..."
+        if [[ "${MATRIX_FULL_REPO}" == "${GITHUB_REPOSITORY}" ]]; then
+            echo "Skipping source repository (${GITHUB_REPOSITORY})..."
             echo "is_source=1" >> "$GITHUB_OUTPUT"
             exit 0
         fi
         echo "is_source=0" >> "$GITHUB_OUTPUT"
     - name: Checkout this repo
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       with:
         path: sourcerepo
+        persist-credentials: false
     - name: Checkout repo to be updated
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       with:
         repository: ${{ matrix.full_repo }}
         path: targetrepo
-        token: ${{ secrets.BRUTUS_PAT_TOKEN }}
+        # Don't persist the token in .git/config (avoids the artipacked
+        # credential-leak vector); pushes are authenticated via the gh
+        # credential helper configured in "Configure git" below.
+        persist-credentials: false
     - name: Configure git
       working-directory: ./targetrepo
+      env:
+        GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
       run: |
         git config --local user.email "brutus@beeware.org"
         git config --local user.name "Brutus[bot]"
+        # Authenticate git via the gh credential helper using BRUTUS_PAT_TOKEN,
+        # rather than a token persisted by actions/checkout.
+        gh auth setup-git
     - name: Replace Code of Conduct
       working-directory: ./targetrepo
       run: |
@@ -85,9 +101,11 @@ jobs:
       working-directory: ./targetrepo
       if: |
         steps.check-no-change.outputs.changed == '1'
+      env:
+        COMMIT_HASH: ${{ needs.plan-coc-update.outputs.commit_hash }}
       run: |
         git add CODE_OF_CONDUCT.md
-        git commit -m "Updated Code of Conduct ($GITHUB_REPOSITORY, ${{ needs.plan-coc-update.outputs.commit_hash }})"
+        git commit -m "Updated Code of Conduct ($GITHUB_REPOSITORY, ${COMMIT_HASH})"
     - name: Attempt to push Code of Conduct to main
       id: push-main
       if: |
@@ -97,7 +115,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
       run: |
-        # Attempt to push directly to main
+        # Attempt to push directly to main.
         echo "success=1" >> "$GITHUB_OUTPUT"
         git push || echo "success=0" >> "$GITHUB_OUTPUT"
     - name: Update Code of Conduct via PR to main using new branch
@@ -108,14 +126,16 @@ jobs:
         steps.push-main.outputs.success == '0'
       working-directory: ./targetrepo
       env:
+        COMMIT_HASH: ${{ needs.plan-coc-update.outputs.commit_hash }}
         GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
+        MATRIX_FULL_REPO: ${{ matrix.full_repo }}
       run: |
         timestamp=$(date +%m%d%Y-%H%M%S)
         branch_name="coc-update-$timestamp"
-        git checkout -b $branch_name
+        git checkout -b "$branch_name"
         git push --set-upstream origin "$branch_name"
 
         gh pr create \
-              --repo ${{ matrix.full_repo }} \
+              --repo "${MATRIX_FULL_REPO}" \
               --title "Update Code of Conduct" \
-              --body "Updated via $GITHUB_REPOSITORY (${{ needs.plan-coc-update.outputs.commit_hash }})"
+              --body "Updated via $GITHUB_REPOSITORY (${COMMIT_HASH})"
