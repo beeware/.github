@@ -43,6 +43,10 @@ on:
         description: "The target format for the app, e.g. appimage, xcode, app, etc. Leave blank all supported formats."
         default: ""
         type: string
+      create-options:
+        description: "Additional options to pass to `briefcase create`."
+        default: ""
+        type: string
       workflow-repo:
         # Only needed for PRs in other repos wanting to test new workflow changes before they are merged.
         # These inputs should not be specified by another repo on their main branch.
@@ -200,12 +204,9 @@ jobs:
       env:
         # SDL cannot always find hardware acceleration on macOS in CI
         SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        # TEMPLATE_OVERRIDE is intentionally expanded unquoted so it splits into
-        # the `--config template='...'` arguments; see the output-format step.
-        briefcase create macOS app \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create macOS app ${CREATE_OPTIONS}
         briefcase build macOS app
         briefcase run macOS app
         briefcase package macOS app --adhoc-sign
@@ -222,10 +223,9 @@ jobs:
       env:
         # SDL cannot always find hardware acceleration on macOS in CI
         SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create macOS Xcode \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create macOS Xcode ${CREATE_OPTIONS}
         briefcase build macOS Xcode
         briefcase run macOS Xcode
         briefcase package macOS Xcode --adhoc-sign
@@ -240,10 +240,9 @@ jobs:
         && contains(fromJSON('["", "app"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create windows app \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create windows app ${CREATE_OPTIONS}
         briefcase build windows app
         briefcase run windows app
         briefcase package windows app --adhoc-sign
@@ -258,10 +257,9 @@ jobs:
         && contains(fromJSON('["", "VisualStudio"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create windows VisualStudio \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create windows VisualStudio ${CREATE_OPTIONS}
         briefcase build windows VisualStudio
         briefcase run windows VisualStudio
         briefcase package windows VisualStudio --adhoc-sign
@@ -278,7 +276,7 @@ jobs:
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
         INPUT_FRAMEWORK: ${{ inputs.framework }}
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
         PACKAGES="python3-dev python3-pip build-essential"
         case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_FRAMEWORK}")" in
@@ -288,8 +286,7 @@ jobs:
 
         sudo apt install -y --no-install-recommends ${PACKAGES}
 
-        briefcase create linux system \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create linux system ${CREATE_OPTIONS}
         briefcase build linux system
         xvfb-run briefcase run linux system
         briefcase package linux system --adhoc-sign
@@ -306,10 +303,9 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target debian:trixie \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create linux system --target debian:trixie ${CREATE_OPTIONS}
         briefcase build linux system --target debian:trixie
         xvfb-run briefcase run linux system --target debian:trixie
         briefcase package linux system --target debian:trixie --adhoc-sign
@@ -326,10 +322,9 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target fedora:41 \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create linux system --target fedora:41 ${CREATE_OPTIONS}
         briefcase build linux system --target fedora:41
         xvfb-run briefcase run linux system --target fedora:41
         briefcase package linux system --target fedora:41 --adhoc-sign
@@ -348,10 +343,9 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target archlinux:latest \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create linux system --target archlinux:latest ${CREATE_OPTIONS}
         briefcase build linux system --target archlinux:latest
         xvfb-run briefcase run linux system --target archlinux:latest
         briefcase package linux system --target archlinux:latest --adhoc-sign
@@ -368,10 +362,9 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target opensuse/tumbleweed:latest \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create linux system --target opensuse/tumbleweed:latest ${CREATE_OPTIONS}
         briefcase build linux system --target opensuse/tumbleweed:latest
         xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
         briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
@@ -451,12 +444,11 @@ jobs:
         && contains(fromJSON('["", "Flatpak"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
         sudo apt install -y --no-install-recommends flatpak flatpak-builder elfutils
 
-        briefcase create linux flatpak \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create linux flatpak ${CREATE_OPTIONS}
         briefcase build linux flatpak
         xvfb-run briefcase run linux flatpak
         briefcase package linux flatpak --adhoc-sign
@@ -474,15 +466,12 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        # NB: do not name this RUNNER_OS — that is a built-in GitHub variable
-        # ("Linux"/"macOS"/"Windows") that would override this value.
         INPUT_RUNNER_OS: ${{ inputs.runner-os }}
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
         export JAVA_HOME=${JAVA_HOME_17_X64}
 
-        briefcase create android gradle \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create android gradle ${CREATE_OPTIONS}
         briefcase build android gradle
 
         # Only run Android app on Linux since it's duplicative (and slow) on other platforms
@@ -518,10 +507,9 @@ jobs:
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
         INPUT_IOS_SIMULATOR: ${{ inputs.ios-simulator }}
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create iOS xcode \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create iOS xcode ${CREATE_OPTIONS}
         briefcase build iOS xcode
         briefcase run iOS xcode -d "${INPUT_IOS_SIMULATOR}"
         briefcase package iOS xcode --adhoc-sign
@@ -536,10 +524,9 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
+        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create web static \
-          ${TEMPLATE_OVERRIDE}
+        briefcase create web static ${CREATE_OPTIONS}
         briefcase build web static
         briefcase package web static
 
