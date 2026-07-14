@@ -199,7 +199,7 @@ jobs:
 
   test-app-create-verify:
     name: App Create Verify
-    needs: pre-commit
+    needs: [ pre-commit, test-python-package-create ]
     uses: ./.github/workflows/app-create-verify.yml
     with:
       # Falls back to 3.x in called workflow if undefined
@@ -215,7 +215,7 @@ jobs:
 
   test-app-build-verify:
     name: App Build Verify (Default templates)
-    needs: pre-commit
+    needs: [ pre-commit, test-python-package-create ]
     uses: ./.github/workflows/app-build-verify.yml
     with:
       # Falls back to 3.x in called workflow if undefined
