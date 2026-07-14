@@ -35,19 +35,19 @@ runs:
     - name: Use Specified Briefcase Version
       id: briefcase-override
       env:
+        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_TOKEN: ${{ github.token }}
-        TESTING_PR_BODY: ${{ inputs.testing-pr-body }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
-        REPO_FULL: ${{ github.repository }}
-        BRIEFCASE_URL: ${{ inputs.briefcase-url }}
-        BRIEFCASE_OVERRIDE_VERSION: ${{ inputs.briefcase-override-version }}
+        INPUT_BRIEFCASE_OVERRIDE_VERSION: ${{ inputs.briefcase-override-version }}
+        INPUT_BRIEFCASE_URL: ${{ inputs.briefcase-url }}
+        INPUT_TESTING_PR_BODY: ${{ inputs.testing-pr-body }}
       shell: bash
+
       run: |
         # Check Body of PR for Briefcase version to use
         # (only PRs will have a value for github.event.pull_request.number)
-        PR_BODY="${TESTING_PR_BODY}"
-        if [[ -z "${PR_BODY}" && -n "${PR_NUMBER}" ]]; then
-          PR_BODY=$(gh api "repos/${REPO_FULL}/pulls/${PR_NUMBER}" --jq '.body')
+        PR_BODY="${INPUT_TESTING_PR_BODY}"
+        if [[ -z "${PR_BODY}" && -n "${GITHUB_PR_NUMBER}" ]]; then
+          PR_BODY=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${GITHUB_PR_NUMBER}" --jq '.body')
         fi
         printf "::group::Retrieved PR Body\n%s\n::endgroup::\n" "${PR_BODY}"
 
@@ -56,10 +56,10 @@ runs:
 
         # If a version is not in the PR, use inputs specified in CI workflow
         if [ -z "${BRIEFCASE_REPO}" ]; then
-          BRIEFCASE_REPO="${BRIEFCASE_URL}"
+          BRIEFCASE_REPO="${INPUT_BRIEFCASE_URL}"
         fi
         if [ -z "${BRIEFCASE_REF}" ]; then
-          BRIEFCASE_REF="${BRIEFCASE_OVERRIDE_VERSION}"
+          BRIEFCASE_REF="${INPUT_BRIEFCASE_OVERRIDE_VERSION}"
         fi
 
         # Expose repo and version via outputs
@@ -71,16 +71,11 @@ runs:
       if: steps.briefcase-override.outputs.ref == ''
       shell: bash
       env:
-        TESTING_TRIGGER_REF: ${{ inputs.testing-trigger-ref }}
-        TESTING_PR_REF: ${{ inputs.testing-pr-ref }}
-        TESTING_REF_NAME: ${{ inputs.testing-ref-name }}
-        GITHUB_REF: ${{ github.ref }}
-        GITHUB_BASE_REF: ${{ github.base_ref }}
-        GITHUB_REF_NAME: ${{ github.ref_name }}
-        GITHUB_HEAD_REF: ${{ github.head_ref }}
-        GITHUB_EVENT_NAME: ${{ github.event_name }}
-        BRIEFCASE_URL: ${{ inputs.briefcase-url }}
-        BRIEFCASE_DEFAULT_BRANCH: ${{ inputs.briefcase-default-branch }}
+        INPUT_BRIEFCASE_DEFAULT_BRANCH: ${{ inputs.briefcase-default-branch }}
+        INPUT_BRIEFCASE_URL: ${{ inputs.briefcase-url }}
+        INPUT_TESTING_PR_REF: ${{ inputs.testing-pr-ref }}
+        INPUT_TESTING_REF_NAME: ${{ inputs.testing-ref-name }}
+        INPUT_TESTING_TRIGGER_REF: ${{ inputs.testing-trigger-ref }}
       run: |
         # Branch or tag that triggered the workflow.
         #  For example, when github.event is:
@@ -88,17 +83,17 @@ runs:
         #                 refs/tags/<tag_name>
         #   release:      refs/tags/<tag_name>
         #   pull_request: refs/pull/<pr_number>/merge
-        TRIGGER_REF="${TESTING_TRIGGER_REF:-$GITHUB_REF}"
+        TRIGGER_REF="${INPUT_TESTING_TRIGGER_REF:-$GITHUB_REF}"
 
         # PR target branch (only available for pull requests)
-        PR_TARGET_REF="${TESTING_PR_REF:-$GITHUB_BASE_REF}"
+        PR_TARGET_REF="${INPUT_TESTING_PR_REF:-$GITHUB_BASE_REF}"
 
         # The short ref name of the branch or tag that triggered the workflow
         #  For example:
         #   push:         main
         #   release:      v0.3.12
         #   pull_request: 18/merge
-        REF_NAME="${TESTING_REF_NAME:-$GITHUB_REF_NAME}"
+        REF_NAME="${INPUT_TESTING_REF_NAME:-$GITHUB_REF_NAME}"
 
         echo "::group::Workflow Trigger Details"
         echo "Event:    ${GITHUB_EVENT_NAME}"
@@ -122,8 +117,8 @@ runs:
 
           # Default to 'main'
           * )
-            echo "::warning::Could not determine Briefcase version from '${TRIGGER_REF}'; defaulting to '${BRIEFCASE_DEFAULT_BRANCH}'."
-            TARGET_VERSION="${BRIEFCASE_DEFAULT_BRANCH}"
+            echo "::warning::Could not determine Briefcase version from '${TRIGGER_REF}'; defaulting to '${INPUT_BRIEFCASE_DEFAULT_BRANCH}'."
+            TARGET_VERSION="${INPUT_BRIEFCASE_DEFAULT_BRANCH}"
             ;;
 
         esac
@@ -131,17 +126,17 @@ runs:
         echo "Derived Briefcase version: ${TARGET_VERSION}"
 
         # Use Briefcase's default branch
-        if [[ "${TARGET_VERSION}" == "${BRIEFCASE_DEFAULT_BRANCH}" ]]; then
+        if [[ "${TARGET_VERSION}" == "${INPUT_BRIEFCASE_DEFAULT_BRANCH}" ]]; then
           echo "version=${TARGET_VERSION}" >> ${GITHUB_OUTPUT}
 
         # Use version if it is a valid Briefcase tag
-        elif [[ $(git ls-remote --tags "${BRIEFCASE_URL}" "${TARGET_VERSION}") ]]; then
+        elif [[ $(git ls-remote --tags "${INPUT_BRIEFCASE_URL}" "${TARGET_VERSION}") ]]; then
           echo "version=${TARGET_VERSION}" >> ${GITHUB_OUTPUT}
 
         # Default to Briefcase's default branch
         else
-          echo "::warning::Unknown Briefcase version: '${TARGET_VERSION}'; defaulting to '${BRIEFCASE_DEFAULT_BRANCH}'."
-          echo "version=${BRIEFCASE_DEFAULT_BRANCH}" >> ${GITHUB_OUTPUT}
+          echo "::warning::Unknown Briefcase version: '${TARGET_VERSION}'; defaulting to '${INPUT_BRIEFCASE_DEFAULT_BRANCH}'."
+          echo "version=${INPUT_BRIEFCASE_DEFAULT_BRANCH}" >> ${GITHUB_OUTPUT}
         fi
 
     - name: Update pip
@@ -152,12 +147,12 @@ runs:
       id: install
       shell: bash
       env:
-        OVERRIDE_REPO: ${{ steps.briefcase-override.outputs.repo }}
-        OVERRIDE_REF: ${{ steps.briefcase-override.outputs.ref }}
         DERIVED_VERSION: ${{ steps.briefcase-derived.outputs.version }}
-        BRIEFCASE_URL: ${{ inputs.briefcase-url }}
+        INPUT_BRIEFCASE_URL: ${{ inputs.briefcase-url }}
+        OVERRIDE_REF: ${{ steps.briefcase-override.outputs.ref }}
+        OVERRIDE_REPO: ${{ steps.briefcase-override.outputs.repo }}
       run: |
-        REPO="${OVERRIDE_REPO:-$BRIEFCASE_URL}"
+        REPO="${OVERRIDE_REPO:-$INPUT_BRIEFCASE_URL}"
         REF="${OVERRIDE_REF:-$DERIVED_VERSION}"
 
         echo "Installing ${REPO}@${REF}"

@@ -50,10 +50,10 @@ jobs:
     - name: Check if source repository
       id: check-if-source
       env:
-        FULL_REPO: ${{ matrix.full_repo }}
+        MATRIX_FULL_REPO: ${{ matrix.full_repo }}
       run: |
-        if [[ "${FULL_REPO}" == "$GITHUB_REPOSITORY" ]]; then
-            echo "Skipping source repository ($GITHUB_REPOSITORY)..."
+        if [[ "${MATRIX_FULL_REPO}" == "${GITHUB_REPOSITORY}" ]]; then
+            echo "Skipping source repository (${GITHUB_REPOSITORY})..."
             echo "is_source=1" >> "$GITHUB_OUTPUT"
             exit 0
         fi
@@ -126,9 +126,9 @@ jobs:
         steps.push-main.outputs.success == '0'
       working-directory: ./targetrepo
       env:
-        GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
-        FULL_REPO: ${{ matrix.full_repo }}
         COMMIT_HASH: ${{ needs.plan-coc-update.outputs.commit_hash }}
+        GH_TOKEN: ${{ secrets.BRUTUS_PAT_TOKEN }}
+        MATRIX_FULL_REPO: ${{ matrix.full_repo }}
       run: |
         timestamp=$(date +%m%d%Y-%H%M%S)
         branch_name="coc-update-$timestamp"
@@ -136,6 +136,6 @@ jobs:
         git push --set-upstream origin "$branch_name"
 
         gh pr create \
-              --repo "${FULL_REPO}" \
+              --repo "${MATRIX_FULL_REPO}" \
               --title "Update Code of Conduct" \
               --body "Updated via $GITHUB_REPOSITORY (${COMMIT_HASH})"

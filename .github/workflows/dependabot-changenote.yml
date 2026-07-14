@@ -43,18 +43,18 @@ jobs:
 
       - name: Commit Change Note
         env:
+          GITHUB_HEAD_COMMIT_ID: ${{ github.event.head_commit.id }}
+          GITHUB_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           GITHUB_TOKEN: ${{ github.token }}
-          HEAD_COMMIT_ID: ${{ github.event.head_commit.id }}
-          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          CHANGENOTE_FORMAT: ${{ inputs.changenote-format }}
+          INPUT_CHANGENOTE_FORMAT: ${{ inputs.changenote-format }}
         run: |
           # Retrieve PR number from GitHub API
-          PR_NUM=$(gh api "repos/{owner}/{repo}/commits/${HEAD_COMMIT_ID}/pulls" --jq '.[].number')
-          CHANGENOTE_FILEPATH="./changes/${PR_NUM}.misc.${CHANGENOTE_FORMAT}"
+          PR_NUM=$(gh api "repos/{owner}/{repo}/commits/${GITHUB_HEAD_COMMIT_ID}/pulls" --jq '.[].number')
+          CHANGENOTE_FILEPATH="./changes/${PR_NUM}.misc.${INPUT_CHANGENOTE_FORMAT}"
 
           # Create change note from first line of dependabot commit
           # Replace "Bump" with "Updated", and add markup to URLs.
-          NEWS=$(printf "%s" "${HEAD_COMMIT_MESSAGE}" | head -n1 | sed -e 's|Bump|Updated|' | sed -e 's|\(https://[^/]*/[^ .]*\)|<\1>|')
+          NEWS=$(printf "%s" "${GITHUB_HEAD_COMMIT_MESSAGE}" | head -n1 | sed -e 's|Bump|Updated|' | sed -e 's|\(https://[^/]*/[^ .]*\)|<\1>|')
           printf "%s.\n" "${NEWS}" > "${CHANGENOTE_FILEPATH}"
 
           # Commit the change note

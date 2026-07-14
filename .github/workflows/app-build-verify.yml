@@ -69,21 +69,21 @@ jobs:
     permissions:
       contents: read
     env:
+      PYSIDE6_SYSTEM_REQUIRES: libgl1 libqt6dbus6 libqt6gui6t64 libxcb-cursor0
       SDL_AUDIODRIVER: dummy  # disable audio for SDL
       TOGA_SYSTEM_REQUIRES: libcairo2-dev libcanberra-gtk3-module libegl1 libgirepository1.0-dev libgirepository-2.0-dev libthai-dev gir1.2-gtk-3.0
-      PYSIDE6_SYSTEM_REQUIRES: libgl1 libqt6dbus6 libqt6gui6t64 libxcb-cursor0
     steps:
 
     - name: Workflow Configuration
       id: config
       env:
-        RUNNER_OS: ${{ inputs.runner-os }}
-        REPOSITORY: ${{ inputs.repository }}
-        FRAMEWORK: ${{ inputs.framework }}
-        TARGET_PLATFORM: ${{ inputs.target-platform }}
-        TARGET_FORMAT: ${{ inputs.target-format }}
+        INPUT_FRAMEWORK: ${{ inputs.framework }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_RUNNER_OS: ${{ inputs.runner-os }}
+        INPUT_TARGET_FORMAT: ${{ inputs.target-format }}
+        INPUT_TARGET_PLATFORM: ${{ inputs.target-platform }}
       run: |
-        case "$(tr '[:upper:]' '[:lower:]' <<< "${RUNNER_OS}")" in
+        case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_RUNNER_OS}")" in
           ubuntu*  ) BRIEFCASE_DIR="$HOME/.cache/briefcase" ;;
           macos*   ) BRIEFCASE_DIR="$HOME/Library/Caches/org.beeware.briefcase" ;;
           windows* ) BRIEFCASE_DIR="$HOME/AppData/Local/BeeWare/briefcase/Cache" ;;
@@ -91,10 +91,10 @@ jobs:
         esac
         echo "briefcase-data-dir=${BRIEFCASE_DIR}" | tee -a ${GITHUB_OUTPUT}
 
-        CACHE_KEY="${RUNNER_OS}|${REPOSITORY}|${FRAMEWORK}|${TARGET_PLATFORM}"
+        CACHE_KEY="${INPUT_RUNNER_OS}|${INPUT_REPOSITORY}|${INPUT_FRAMEWORK}|${INPUT_TARGET_PLATFORM}"
         # For Linux builds, the cache varies by the output format
-        case "$(tr '[:upper:]' '[:lower:]' <<< "${RUNNER_OS}")" in
-          ubuntu* ) CACHE_KEY="$CACHE_KEY|${TARGET_FORMAT}" ;;
+        case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_RUNNER_OS}")" in
+          ubuntu* ) CACHE_KEY="$CACHE_KEY|${INPUT_TARGET_FORMAT}" ;;
         esac
         echo "cache-key=$(date +%Y-%m)|${CACHE_KEY}" | tee -a ${GITHUB_OUTPUT}
 
@@ -127,9 +127,9 @@ jobs:
       # https://github.com/actions/runner-images/issues/12751.
       if: ${{ startsWith(inputs.runner-os, 'macos') && inputs.xcode-version }}
       env:
-        XCODE_VERSION: ${{ inputs.xcode-version }}
+        INPUT_XCODE_VERSION: ${{ inputs.xcode-version }}
       run: |
-        sudo xcode-select --switch "/Applications/Xcode_${XCODE_VERSION}.app"
+        sudo xcode-select --switch "/Applications/Xcode_${INPUT_XCODE_VERSION}.app"
 
     - name: Cache Briefcase Tools
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
@@ -185,11 +185,8 @@ jobs:
       # other repos will fetch the latest template version during `create` as normal.
       if: endsWith(inputs.repository, '-template') && inputs.repository != 'beeware/briefcase-template'
       id: output-format
-      env:
-        WORKSPACE: ${{ github.workspace }}
       run: |
-        # Since the current repo is cloned in to the workspace, use it for the template
-        echo "template-override=$(printf -- "--config template=%q" "'${WORKSPACE}'")" | tee -a ${GITHUB_OUTPUT}
+        echo "template-override=--config template='${GITHUB_WORKSPACE}'" | tee -a "${GITHUB_OUTPUT}"
 
     # In the steps below, the builtin functions (i.e. contains, startsWith, etc.)
     # are used for comparison (instead of ==) because they are case-insensitive.
@@ -205,6 +202,8 @@ jobs:
         SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
       run: |
+        # TEMPLATE_OVERRIDE is intentionally expanded unquoted so it splits into
+        # the `--config template='...'` arguments; see the output-format step.
         briefcase create macOS app \
           ${TEMPLATE_OVERRIDE}
         briefcase build macOS app
@@ -278,11 +277,11 @@ jobs:
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        FRAMEWORK: ${{ inputs.framework }}
+        INPUT_FRAMEWORK: ${{ inputs.framework }}
         TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
       run: |
         PACKAGES="python3-dev python3-pip build-essential"
-        case "$(tr '[:upper:]' '[:lower:]' <<< "${FRAMEWORK}")" in
+        case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_FRAMEWORK}")" in
           toga    ) PACKAGES="${PACKAGES} ${TOGA_SYSTEM_REQUIRES}" ;;
           pyside6 ) PACKAGES="${PACKAGES} ${PYSIDE6_SYSTEM_REQUIRES}" ;;
         esac
@@ -475,8 +474,10 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
+        # NB: do not name this RUNNER_OS — that is a built-in GitHub variable
+        # ("Linux"/"macOS"/"Windows") that would override this value.
+        INPUT_RUNNER_OS: ${{ inputs.runner-os }}
         TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
-        RUNNER_OS: ${{ inputs.runner-os }}
       run: |
         export JAVA_HOME=${JAVA_HOME_17_X64}
 
@@ -486,7 +487,7 @@ jobs:
 
         # Only run Android app on Linux since it's duplicative (and slow) on other platforms
         # (runner-os values are always canonical lowercase runner labels, e.g. ubuntu-24.04)
-        case "${RUNNER_OS}" in
+        case "${INPUT_RUNNER_OS}" in
           ubuntu* )
           # allow access to KVM to run the emulator
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
@@ -516,13 +517,13 @@ jobs:
         && startsWith(inputs.framework, 'toga')
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
+        INPUT_IOS_SIMULATOR: ${{ inputs.ios-simulator }}
         TEMPLATE_OVERRIDE: ${{ steps.output-format.outputs.template-override }}
-        IOS_SIMULATOR: ${{ inputs.ios-simulator }}
       run: |
         briefcase create iOS xcode \
           ${TEMPLATE_OVERRIDE}
         briefcase build iOS xcode
-        briefcase run iOS xcode -d "${IOS_SIMULATOR}"
+        briefcase run iOS xcode -d "${INPUT_IOS_SIMULATOR}"
         briefcase package iOS xcode --adhoc-sign
 
         # Clean up built artefacts to preserve disk space
