@@ -1,4 +1,4 @@
-name: Build App
+name: Verify app build
 
 #######
 # Verify building an app for a target platform, format, and framework on a particular OS.
