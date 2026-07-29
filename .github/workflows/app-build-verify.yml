@@ -355,24 +355,27 @@ jobs:
             pacman --sync --refresh && \
             pacman --noconfirm --upgrade --print /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
 
-    - name: Build Linux System Project (openSUSE, Dockerized)
-      if: >
-        startsWith(inputs.runner-os, 'ubuntu')
-        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-        && contains(fromJSON('["", "system"]'), inputs.target-format)
-      working-directory: ${{ steps.create.outputs.project-path }}
-      env:
-        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
-      run: |
-        briefcase create linux system --target opensuse/tumbleweed:latest ${CREATE_OPTIONS}
-        briefcase build linux system --target opensuse/tumbleweed:latest
-        xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
-        briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
-
-        docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
-          sh -c "\
-            zypper --non-interactive --no-gpg-checks \
-              install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
+    # 2026-07-30: OpenSUSE tumbleweed is a rolling distribution, and OpenSUSE appears
+    # to semi-regularly push bad configurations that prevent our CI passing.
+    #
+    # - name: Build Linux System Project (openSUSE, Dockerized)
+    #   if: >
+    #     startsWith(inputs.runner-os, 'ubuntu')
+    #     && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+    #     && contains(fromJSON('["", "system"]'), inputs.target-format)
+    #   working-directory: ${{ steps.create.outputs.project-path }}
+    #   env:
+    #     CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
+    #   run: |
+    #     briefcase create linux system --target opensuse/tumbleweed:latest ${CREATE_OPTIONS}
+    #     briefcase build linux system --target opensuse/tumbleweed:latest
+    #     xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
+    #     briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
+    #
+    #     docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
+    #       sh -c "\
+    #         zypper --non-interactive --no-gpg-checks \
+    #           install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
 
     # 2024-09-02 AppImage testing disabled entirely In Briefcase#1977, the
     # Bootstrap app was updated to use a Toga API introduced in Toga 0.4.6. This
