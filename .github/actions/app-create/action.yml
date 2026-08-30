@@ -63,6 +63,7 @@ runs:
       id: create
       shell: bash
       env:
+        BRIEFCASE_VERBOSITY: ${{ runner.debug == '1' && '-vvv' || '' }}
         INPUT_ENABLE_AUTOMATION: ${{ inputs.enable-automation }}
         INPUT_FRAMEWORK: ${{ inputs.framework }}
         TEMPLATE_REF: ${{ steps.template-override.outputs.ref }}
@@ -98,7 +99,7 @@ runs:
         rm -rf "${APP_DIR}"
 
         # Roll out the project
-        briefcase new --no-input ${TEMPLATE} ${TEMPLATE_BRANCH} \
+        briefcase new --no-input ${BRIEFCASE_VERBOSITY} ${TEMPLATE} ${TEMPLATE_BRANCH} \
           -Q "formal_name=${APP_NAME}" \
           -Q "app_name=${APP_DIR}" \
           -Q "bootstrap=${BOOTSTRAP}"
