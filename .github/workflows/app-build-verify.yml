@@ -87,6 +87,11 @@ jobs:
         INPUT_TARGET_FORMAT: ${{ inputs.target-format }}
         INPUT_TARGET_PLATFORM: ${{ inputs.target-platform }}
       run: |
+        # RUNNER_DEBUG is set natively by the runner when debug logging is enabled
+        BRIEFCASE_VERBOSITY=""
+        [ "${RUNNER_DEBUG:-}" = "1" ] && BRIEFCASE_VERBOSITY="-vvv"
+        echo "BRIEFCASE_VERBOSITY=${BRIEFCASE_VERBOSITY}" | tee -a "${GITHUB_ENV}"
+
         case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_RUNNER_OS}")" in
           ubuntu*  ) BRIEFCASE_DIR="$HOME/.cache/briefcase" ;;
           macos*   ) BRIEFCASE_DIR="$HOME/Library/Caches/org.beeware.briefcase" ;;
@@ -206,10 +211,10 @@ jobs:
         SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create macOS app ${CREATE_OPTIONS}
-        briefcase build macOS app
-        briefcase run macOS app
-        briefcase package macOS app --adhoc-sign
+        briefcase create macOS app ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build macOS app ${BRIEFCASE_VERBOSITY}
+        briefcase run macOS app ${BRIEFCASE_VERBOSITY}
+        briefcase package macOS app --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -225,10 +230,10 @@ jobs:
         SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create macOS Xcode ${CREATE_OPTIONS}
-        briefcase build macOS Xcode
-        briefcase run macOS Xcode
-        briefcase package macOS Xcode --adhoc-sign
+        briefcase create macOS Xcode ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build macOS Xcode ${BRIEFCASE_VERBOSITY}
+        briefcase run macOS Xcode ${BRIEFCASE_VERBOSITY}
+        briefcase package macOS Xcode --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -242,10 +247,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create windows app ${CREATE_OPTIONS}
-        briefcase build windows app
-        briefcase run windows app
-        briefcase package windows app --adhoc-sign
+        briefcase create windows app ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build windows app ${BRIEFCASE_VERBOSITY}
+        briefcase run windows app ${BRIEFCASE_VERBOSITY}
+        briefcase package windows app --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -259,10 +264,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create windows VisualStudio ${CREATE_OPTIONS}
-        briefcase build windows VisualStudio
-        briefcase run windows VisualStudio
-        briefcase package windows VisualStudio --adhoc-sign
+        briefcase create windows VisualStudio ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build windows VisualStudio ${BRIEFCASE_VERBOSITY}
+        briefcase run windows VisualStudio ${BRIEFCASE_VERBOSITY}
+        briefcase package windows VisualStudio --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -286,10 +291,10 @@ jobs:
 
         sudo apt install -y --no-install-recommends ${PACKAGES}
 
-        briefcase create linux system ${CREATE_OPTIONS}
-        briefcase build linux system
-        xvfb-run briefcase run linux system
-        briefcase package linux system --adhoc-sign
+        briefcase create linux system ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         bash -c "sudo apt -y install --dry-run ./dist/*_0.0.1-1~ubuntu-*_$(dpkg --print-architecture).deb"
 
@@ -305,10 +310,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target debian:trixie ${CREATE_OPTIONS}
-        briefcase build linux system --target debian:trixie
-        xvfb-run briefcase run linux system --target debian:trixie
-        briefcase package linux system --target debian:trixie --adhoc-sign
+        briefcase create linux system --target debian:trixie ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system --target debian:trixie ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system --target debian:trixie ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --target debian:trixie --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         docker run --volume $(pwd)/dist:/dist debian:trixie \
           sh -c "\
@@ -324,10 +329,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target fedora:41 ${CREATE_OPTIONS}
-        briefcase build linux system --target fedora:41
-        xvfb-run briefcase run linux system --target fedora:41
-        briefcase package linux system --target fedora:41 --adhoc-sign
+        briefcase create linux system --target fedora:41 ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system --target fedora:41 ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system --target fedora:41 ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --target fedora:41 --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         docker run --volume $(pwd)/dist:/dist fedora:41 \
           sh -c "yum -y install --downloadonly /dist/*-0.0.1-1.fc*.$(rpm --eval '%_arch').rpm"
@@ -345,10 +350,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target archlinux:latest ${CREATE_OPTIONS}
-        briefcase build linux system --target archlinux:latest
-        xvfb-run briefcase run linux system --target archlinux:latest
-        briefcase package linux system --target archlinux:latest --adhoc-sign
+        briefcase create linux system --target archlinux:latest ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system --target archlinux:latest ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system --target archlinux:latest ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --target archlinux:latest --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         docker run --volume $(pwd)/dist:/dist archlinux \
           sh -c "\
@@ -451,10 +456,10 @@ jobs:
       run: |
         sudo apt install -y --no-install-recommends flatpak flatpak-builder elfutils
 
-        briefcase create linux flatpak ${CREATE_OPTIONS}
-        briefcase build linux flatpak
-        xvfb-run briefcase run linux flatpak
-        briefcase package linux flatpak --adhoc-sign
+        briefcase create linux flatpak ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux flatpak ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux flatpak ${BRIEFCASE_VERBOSITY}
+        briefcase package linux flatpak --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -474,8 +479,8 @@ jobs:
       run: |
         export JAVA_HOME=${JAVA_HOME_17_X64}
 
-        briefcase create android gradle ${CREATE_OPTIONS}
-        briefcase build android gradle
+        briefcase create android gradle ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build android gradle ${BRIEFCASE_VERBOSITY}
 
         # Only run Android app on Linux since it's duplicative (and slow) on other platforms
         # (runner-os values are always canonical lowercase runner labels, e.g. ubuntu-24.04)
@@ -492,11 +497,12 @@ jobs:
             --shutdown-on-exit \
             --Xemulator=-no-window \
             --Xemulator=-no-audio \
-            --Xemulator=-no-boot-anim
+            --Xemulator=-no-boot-anim \
+            ${BRIEFCASE_VERBOSITY}
           ;;
         esac
 
-        briefcase package android gradle --adhoc-sign
+        briefcase package android gradle --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -512,10 +518,10 @@ jobs:
         INPUT_IOS_SIMULATOR: ${{ inputs.ios-simulator }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create iOS xcode ${CREATE_OPTIONS}
-        briefcase build iOS xcode
-        briefcase run iOS xcode -d "${INPUT_IOS_SIMULATOR}"
-        briefcase package iOS xcode --adhoc-sign
+        briefcase create iOS xcode ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build iOS xcode ${BRIEFCASE_VERBOSITY}
+        briefcase run iOS xcode -d "${INPUT_IOS_SIMULATOR}" ${BRIEFCASE_VERBOSITY}
+        briefcase package iOS xcode --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -529,9 +535,9 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create web static ${CREATE_OPTIONS}
-        briefcase build web static
-        briefcase package web static
+        briefcase create web static ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build web static ${BRIEFCASE_VERBOSITY}
+        briefcase package web static ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
