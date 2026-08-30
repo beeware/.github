@@ -2,4 +2,4 @@ venv
 .envrc
 .idea
 *.pyc
-UNKNOWN.egg-info
+*.egg-info
