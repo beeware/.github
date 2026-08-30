@@ -1,3 +1,10 @@
+[project]
+name = "beeware-.github"
+version = "2026.8.1"
+dependencies = [
+    "pre-commit == 4.6.2"
+]
+
 [tool.rumdl]
 exclude = [".github/*.md"]
 respect-gitignore = true

@@ -27,7 +27,7 @@ jobs:
     name: Pre-commit Checks
     uses: ./.github/workflows/pre-commit-run.yml
     with:
-      pre-commit-source: -r requirements.txt
+      pre-commit-source: -e .
 
   test-docs-build-verify:
     name: Docs Build Verify

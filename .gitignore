@@ -2,3 +2,4 @@ venv
 .envrc
 .idea
 *.pyc
+beeware_.github.egg-info
