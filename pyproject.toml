@@ -1,3 +1,8 @@
+[dependency-groups]
+pre-commit = [
+    "pre-commit == 4.6.2"
+]
+
 [tool.rumdl]
 exclude = [".github/*.md"]
 respect-gitignore = true
