@@ -1,5 +1,7 @@
 venv
 .envrc
+.vscode
 .idea
 *.pyc
 *.egg-info
+.kilo/
