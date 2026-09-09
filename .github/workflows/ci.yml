@@ -290,7 +290,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
 # see app-build-verify.yml; AppImage testing was disabled sept 2024
@@ -308,7 +308,7 @@ jobs:
 #      fail-fast: false
 #      matrix:
 #        # 2024-07-11 (beeware/briefcase#1908): pyside6 segfaults on AppImage start.
-#        framework: [ toga, pygame, console ]
+#        framework: [ toga, console ]
 
   test-app-build-verify-linux-flatpak:
     name: App Build Verify (Flatpak template)
@@ -323,7 +323,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
         exclude:
@@ -345,7 +345,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         format: [ app, Xcode ]
 
   test-app-build-verify-web:
@@ -376,5 +376,5 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         format: [ app, VisualStudio ]
