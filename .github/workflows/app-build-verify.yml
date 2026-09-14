@@ -74,7 +74,6 @@ jobs:
       contents: read
     env:
       PYSIDE6_SYSTEM_REQUIRES: libgl1 libqt6dbus6 libqt6gui6t64 libxcb-cursor0
-      SDL_AUDIODRIVER: dummy  # disable audio for SDL
       TOGA_SYSTEM_REQUIRES: libcairo2-dev libcanberra-gtk3-module libegl1 libgirepository1.0-dev libgirepository-2.0-dev libthai-dev gir1.2-gtk-3.0
     steps:
 
@@ -207,8 +206,6 @@ jobs:
         && contains(fromJSON('["", "app"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        # SDL cannot always find hardware acceleration on macOS in CI
-        SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
         briefcase create macOS app ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
@@ -226,8 +223,6 @@ jobs:
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        # SDL cannot always find hardware acceleration on macOS in CI
-        SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
         briefcase create macOS Xcode ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
@@ -339,11 +334,9 @@ jobs:
 
     - name: Build Linux System Project (Arch, Dockerized)
       # Arch is not officially supported on ARM
-      # Arch can't build PyGame apps until they publish 3.14 binary wheels
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && !endsWith(inputs.runner-os, '-arm')
-        && !startsWith(inputs.framework, 'pygame')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
