@@ -5,7 +5,7 @@
 ## PR Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
 - [ ] I will abide by the BeeWare Code of Conduct
-- [ ] I have read and have followed the **CONTRIBUTING.md** file
+- [ ] I have read and have followed the [**CONTRIBUTING.md**](../blob/main/CONTRIBUTING.md) filefile
 - [ ] This PR was generated or assisted using an AI tool
 <!-- update or delete the next line to reflect your usage -->
 Assisted-by: <!--name of tool; e.g., Claude Opus 4.5-->
