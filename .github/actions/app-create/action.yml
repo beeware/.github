@@ -80,7 +80,6 @@ runs:
         case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_FRAMEWORK}")" in
           toga    ) BOOTSTRAP=Toga ;;
           pyside6 ) BOOTSTRAP=PySide6 ;;
-          pygame  ) BOOTSTRAP=Pygame ;;
           console ) BOOTSTRAP=Console ;;
           *       ) BOOTSTRAP="${INPUT_FRAMEWORK}" ;;
         esac
