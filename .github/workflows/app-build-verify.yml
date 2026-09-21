@@ -24,8 +24,8 @@ on:
         default: ""
         type: string
       ios-simulator:
-        description: "The iOS simulator image to use"
-        default: "iPhone 16e::iOS 18.5"
+        description: "The iOS simulator image to use; leave blank to let Briefcase select an appropriate default device."
+        default: ""
         type: string
       framework:
         description: "Framework to use to build the App, e.g. toga."
@@ -511,9 +511,12 @@ jobs:
         INPUT_IOS_SIMULATOR: ${{ inputs.ios-simulator }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
+        IOS_SIMULATOR_OPTION=()
+        [ -n "${INPUT_IOS_SIMULATOR}" ] && IOS_SIMULATOR_OPTION=(-d "${INPUT_IOS_SIMULATOR}")
+
         briefcase create iOS xcode ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
         briefcase build iOS xcode ${BRIEFCASE_VERBOSITY}
-        briefcase run iOS xcode -d "${INPUT_IOS_SIMULATOR}" ${BRIEFCASE_VERBOSITY}
+        briefcase run iOS xcode "${IOS_SIMULATOR_OPTION[@]}" ${BRIEFCASE_VERBOSITY}
         briefcase package iOS xcode --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space

@@ -211,7 +211,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga, pyside6 ]
-        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify:
     name: App Build Verify (Default templates)
@@ -227,7 +227,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-15-intel, macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26-intel, macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify-template:
     name: App Build Verify (Briefcase template)
@@ -242,7 +242,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify-android:
     name: App Build Verify (Android template)
@@ -258,7 +258,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]  # toga only
-        runner-os: [ macos-15, windows-latest, ubuntu-24.04 ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04 ]
 
   test-app-build-verify-iOS:
     name: App Build Verify (iOS template)
@@ -266,7 +266,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-iOS-xcode-template
-      runner-os: macos-15
+      runner-os: macos-26
       target-platform: iOS
       target-format: xcode
       framework: ${{ matrix.framework }}
@@ -338,7 +338,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-macos-${{ matrix.format }}-template
-      runner-os: macos-15
+      runner-os: macos-26
       target-platform: macOS
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
@@ -369,7 +369,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-windows-${{ matrix.format }}-template
-      runner-os: windows-latest
+      runner-os: windows-2025
       target-platform: windows
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
