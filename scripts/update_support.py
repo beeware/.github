@@ -37,6 +37,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -191,7 +192,7 @@ def _official_cpython_support(
                 )
                 continue
             digest = files[0]["sha256_sum"]
-        except Exception as e:
+        except (urllib.error.URLError, ValueError, KeyError, IndexError) as e:
             print(
                 f"warning: could not resolve latest release for Python {tag} "
                 f"({e}); leaving unchanged",
