@@ -98,6 +98,39 @@ def _apple_support(
     return revisions, hashes
 
 
+# --- macOS / iOS: official python.org release-data API (3.15+) -------------
+
+PYTHON_ORG_API_ROOT = "https://www.python.org/api/v1"
+PYTHON_ORG_LATEST_URL = "https://www.python.org/downloads/latest/python{tag}/"
+
+
+def _python_org_api_get(url: str, opener) -> object:
+    """GET `url` (a python.org /api/v1/ endpoint) and return the parsed JSON
+    body. Unlike _github.py's api_get, no auth header is needed or sent --
+    python.org's public downloads API is unauthenticated."""
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with opener(request) as response:
+        return json.load(response)
+
+
+def _resolve_release_slug(tag: str, opener) -> str:
+    """The python.org release slug (e.g. "python-3150rc2") for the latest
+    release of Python `tag` (e.g. "3.15"), resolved via the redirect target
+    of the public "latest" URL -- avoids needing a "starts with" filter that
+    the public release API doesn't expose."""
+    request = urllib.request.Request(
+        PYTHON_ORG_LATEST_URL.format(tag=tag), method="HEAD"
+    )
+    with opener(request) as response:
+        final_url = response.geturl()
+    match = re.search(r"/downloads/release/(?P<slug>[^/]+)/?$", final_url)
+    if not match:
+        raise ValueError(
+            f"Unexpected redirect target resolving latest Python {tag}: {final_url}"
+        )
+    return match.group("slug")
+
+
 # --- Windows: python.org embeddable-package index ----------------------------
 
 WINDOWS_INDEX_URL = "https://www.python.org/ftp/python/index-windows.json"
