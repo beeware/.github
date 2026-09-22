@@ -131,6 +131,77 @@ def _resolve_release_slug(tag: str, opener) -> str:
     return match.group("slug")
 
 
+# Platforms with an official-CPython-source support package, the first
+# Python (major, minor) for which that source is authoritative, and the
+# python.org `OS.slug` identifying the relevant release-file row. Only iOS
+# is populated today; adding macOS later (once python.org's macOS installer,
+# or some other officially published macOS artifact, becomes the support
+# package source) is just adding an entry to each of these two dicts.
+OFFICIAL_SOURCE_MIN_VERSION: dict[str, tuple[int, int]] = {
+    "iOS": (3, 15),
+}
+OFFICIAL_SOURCE_OS_SLUG: dict[str, str] = {
+    "iOS": "ios",
+}
+
+
+def _official_cpython_support(
+    platform: str,
+    tags: set[str],
+    opener,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Flat revisions/hashes sourced from python.org's own release-data API,
+    for platforms/tags that have moved off Python-Apple-support."""
+    os_slug = OFFICIAL_SOURCE_OS_SLUG[platform]
+
+    revisions: dict[str, str] = {}
+    hashes: dict[str, str] = {}
+    for tag in sorted(tags):
+        try:
+            slug = _resolve_release_slug(tag, opener)
+            release = _python_org_api_get(
+                f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json&slug={slug}",
+                opener,
+            )["objects"][0]
+        except Exception as e:
+            print(
+                f"warning: could not resolve latest release for Python {tag} "
+                f"({e}); leaving unchanged",
+                file=sys.stderr,
+            )
+            continue
+
+        prefix = f"Python {tag}."
+        if not release["name"].startswith(prefix):
+            print(
+                f"warning: unexpected release name {release['name']!r} for "
+                f"Python {tag}; leaving unchanged",
+                file=sys.stderr,
+            )
+            continue
+        revision = release["name"][len(prefix) :]
+
+        files = _python_org_api_get(
+            f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
+            f"&release__slug={slug}&os__slug={os_slug}",
+            opener,
+        )["objects"]
+        if len(files) != 1:
+            print(
+                f"warning: expected exactly one {platform} release file for "
+                f"Python {tag} ({slug}), found {len(files)}; leaving unchanged",
+                file=sys.stderr,
+            )
+            continue
+        digest = files[0]["sha256_sum"]
+
+        revisions[tag] = revision
+        hashes[tag] = f"sha256:{digest}"
+        print(f"{tag}: support_revision = {revision}, sha256:{digest}")
+
+    return revisions, hashes
+
+
 # --- Windows: python.org embeddable-package index ----------------------------
 
 WINDOWS_INDEX_URL = "https://www.python.org/ftp/python/index-windows.json"
@@ -331,7 +402,32 @@ def update(template_dir: Path, opener=urllib.request.urlopen) -> None:
     to_delete: set[int] = set()
 
     if platform in {"macOS", "iOS"}:
-        revisions, hashes = _apple_support(platform, tags, opener)
+        min_version = OFFICIAL_SOURCE_MIN_VERSION.get(platform)
+        if min_version is not None:
+            official_tags = {
+                tag
+                for tag in tags
+                if tuple(int(part) for part in tag.split(".")) >= min_version
+            }
+        else:
+            official_tags = set()
+        legacy_tags = tags - official_tags
+
+        revisions: dict[str, str] = {}
+        hashes: dict[str, str] = {}
+        if legacy_tags:
+            legacy_revisions, legacy_hashes = _apple_support(
+                platform, legacy_tags, opener
+            )
+            revisions.update(legacy_revisions)
+            hashes.update(legacy_hashes)
+        if official_tags:
+            official_revisions, official_hashes = _official_cpython_support(
+                platform, official_tags, opener
+            )
+            revisions.update(official_revisions)
+            hashes.update(official_hashes)
+
         to_delete |= apply_updates(lines, REVISION_ENTRY_RE, REVISION_KEY, revisions)
         to_delete |= apply_updates(lines, HASH_ENTRY_RE, HASH_KEY, hashes)
 
