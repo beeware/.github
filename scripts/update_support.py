@@ -106,34 +106,21 @@ def _apple_support(
 # --- macOS / iOS: official python.org release-data API (3.15+) -------------
 
 PYTHON_ORG_API_ROOT = "https://www.python.org/api/v1"
-PYTHON_ORG_LATEST_URL = "https://www.python.org/downloads/latest/python{tag}/"
 
 
 def _python_org_api_get(url: str, opener) -> object:
     """GET `url` (a python.org /api/v1/ endpoint) and return the parsed JSON
     body. Unlike _github.py's api_get, no auth header is needed or sent --
-    python.org's public downloads API is unauthenticated."""
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
-    with opener(request) as response:
-        return json.load(response)
+    python.org's public downloads API is unauthenticated.
 
-
-def _resolve_release_slug(tag: str, opener) -> str:
-    """The python.org release slug (e.g. "python-3150rc2") for the latest
-    release of Python `tag` (e.g. "3.15"), resolved via the redirect target
-    of the public "latest" URL -- avoids needing a "starts with" filter that
-    the public release API doesn't expose."""
+    `limit=0` is appended -- Tastypie's convention for "return every
+    matching object" -- so the full release/release-file list is fetched in
+    one request rather than paginating."""
     request = urllib.request.Request(
-        PYTHON_ORG_LATEST_URL.format(tag=tag), method="HEAD"
+        f"{url}&limit=0", headers={"Accept": "application/json"}
     )
     with opener(request) as response:
-        final_url = response.geturl()
-    match = re.search(r"/downloads/release/(?P<slug>[^/]+)/?$", final_url)
-    if not match:
-        raise ValueError(
-            f"Unexpected redirect target resolving latest Python {tag}: {final_url}"
-        )
-    return match.group("slug")
+        return json.load(response)
 
 
 # Platforms with an official-CPython-source support package, the first
@@ -156,45 +143,69 @@ def _official_cpython_support(
     opener,
 ) -> tuple[dict[str, str], dict[str, str]]:
     """Flat revisions/hashes sourced from python.org's own release-data API,
-    for platforms/tags that have moved off Python-Apple-support."""
+    for platforms/tags that have moved off Python-Apple-support.
+
+    Two bulk requests cover every tag: one for every published Python 3.x
+    release (there's no server-side "latest release for X.Y" filter, so the
+    latest-per-tag is picked out client-side by release_date), and one for
+    every release-file row for this platform's OS. This is two requests
+    total regardless of how many tags are being resolved -- looking up one
+    tag at a time would mean two requests, plus a HEAD-redirect trick to
+    work around the API's missing "starts with" filter, per tag."""
     os_slug = OFFICIAL_SOURCE_OS_SLUG[platform]
 
     revisions: dict[str, str] = {}
     hashes: dict[str, str] = {}
-    for tag in sorted(tags):
-        try:
-            slug = _resolve_release_slug(tag, opener)
-            release = _python_org_api_get(
-                f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json&slug={slug}",
-                opener,
-            )["objects"][0]
-
-            prefix = f"Python {tag}."
-            if not release["name"].startswith(prefix):
-                print(
-                    f"warning: unexpected release name {release['name']!r} for "
-                    f"Python {tag}; leaving unchanged",
-                    file=sys.stderr,
-                )
-                continue
-            revision = release["name"][len(prefix) :]
-
-            files = _python_org_api_get(
+    try:
+        releases = _python_org_api_get(
+            f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json"
+            "&version=3&is_published=true",
+            opener,
+        )["objects"]
+        files_by_release_uri = {
+            file["release"]: file
+            for file in _python_org_api_get(
                 f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
-                f"&release__slug={slug}&os__slug={os_slug}",
+                f"&os__slug={os_slug}",
                 opener,
             )["objects"]
-            if len(files) != 1:
+        }
+    except (urllib.error.URLError, ValueError, KeyError) as e:
+        print(
+            f"warning: could not fetch python.org release data for "
+            f"{platform} ({e}); leaving {', '.join(sorted(tags))} unchanged",
+            file=sys.stderr,
+        )
+        return revisions, hashes
+
+    for tag in sorted(tags):
+        prefix = f"Python {tag}."
+        try:
+            candidates = [
+                release for release in releases if release["name"].startswith(prefix)
+            ]
+            if not candidates:
                 print(
-                    f"warning: expected exactly one {platform} release file for "
-                    f"Python {tag} ({slug}), found {len(files)}; leaving unchanged",
+                    f"warning: no releases found for Python {tag}; leaving unchanged",
                     file=sys.stderr,
                 )
                 continue
-            digest = files[0]["sha256_sum"]
-        except (urllib.error.URLError, ValueError, KeyError, IndexError) as e:
+            release = max(candidates, key=lambda release: release["release_date"])
+
+            file = files_by_release_uri.get(release["resource_uri"])
+            if file is None:
+                print(
+                    f"warning: no {platform} release file found for "
+                    f"{release['name']}; leaving unchanged",
+                    file=sys.stderr,
+                )
+                continue
+
+            revision = release["name"][len(prefix) :]
+            digest = file["sha256_sum"]
+        except KeyError as e:
             print(
-                f"warning: could not resolve latest release for Python {tag} "
+                f"warning: malformed python.org data for Python {tag} "
                 f"({e}); leaving unchanged",
                 file=sys.stderr,
             )
