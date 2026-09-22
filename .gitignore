@@ -6,3 +6,4 @@ venv
 *.egg-info
 .kilo
 .opencode
+docs/superpowers/

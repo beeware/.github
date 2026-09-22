@@ -158,22 +158,28 @@ def _official_cpython_support(
     hashes: dict[str, str] = {}
     try:
         releases = _python_org_api_get(
-            f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json"
-            "&version=3&is_published=true",
+            (
+                f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json"
+                "&version=3&is_published=true"
+            ),
             opener,
         )["objects"]
         files_by_release_uri = {
             file["release"]: file
             for file in _python_org_api_get(
-                f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
-                f"&os__slug={os_slug}",
+                (
+                    f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
+                    f"&os__slug={os_slug}"
+                ),
                 opener,
             )["objects"]
         }
     except (urllib.error.URLError, ValueError, KeyError) as e:
         print(
-            f"warning: could not fetch python.org release data for "
-            f"{platform} ({e}); leaving {', '.join(sorted(tags))} unchanged",
+            (
+                f"warning: could not fetch python.org release data for "
+                f"{platform} ({e}); leaving {', '.join(sorted(tags))} unchanged"
+            ),
             file=sys.stderr,
         )
         return revisions, hashes
@@ -195,8 +201,10 @@ def _official_cpython_support(
             file = files_by_release_uri.get(release["resource_uri"])
             if file is None:
                 print(
-                    f"warning: no {platform} release file found for "
-                    f"{release['name']}; leaving unchanged",
+                    (
+                        f"warning: no {platform} release file found for "
+                        f"{release['name']}; leaving unchanged"
+                    ),
                     file=sys.stderr,
                 )
                 continue
@@ -205,8 +213,10 @@ def _official_cpython_support(
             digest = file["sha256_sum"]
         except KeyError as e:
             print(
-                f"warning: malformed python.org data for Python {tag} "
-                f"({e}); leaving unchanged",
+                (
+                    f"warning: malformed python.org data for Python {tag} "
+                    f"({e}); leaving unchanged"
+                ),
                 file=sys.stderr,
             )
             continue
