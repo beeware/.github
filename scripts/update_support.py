@@ -10,7 +10,11 @@ platform (macOS / iOS / windows / linux) is inferred from the directory's name
 (see platforms.py), and used to select the correct upstream data source:
 
 - macOS / iOS: GitHub releases of `beeware/Python-Apple-support`
-  (per-Python-version release tags, e.g. `3.14-b11`).
+  (per-Python-version release tags, e.g. `3.14-b11`), for Python versions
+  before each platform's official-source cutover (see
+  `OFFICIAL_SOURCE_MIN_VERSION`). For iOS, Python 3.15 and later instead use
+  official CPython release artifacts published via python.org's public
+  downloads API (https://www.python.org/api/v1/downloads/).
 - Windows: the Windows embeddable-package index published at
   https://www.python.org/ftp/python/index-windows.json, per AMD64/ARM64 host
   architecture.
