@@ -167,6 +167,30 @@ def _official_cpython_support(
                 f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json&slug={slug}",
                 opener,
             )["objects"][0]
+
+            prefix = f"Python {tag}."
+            if not release["name"].startswith(prefix):
+                print(
+                    f"warning: unexpected release name {release['name']!r} for "
+                    f"Python {tag}; leaving unchanged",
+                    file=sys.stderr,
+                )
+                continue
+            revision = release["name"][len(prefix) :]
+
+            files = _python_org_api_get(
+                f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
+                f"&release__slug={slug}&os__slug={os_slug}",
+                opener,
+            )["objects"]
+            if len(files) != 1:
+                print(
+                    f"warning: expected exactly one {platform} release file for "
+                    f"Python {tag} ({slug}), found {len(files)}; leaving unchanged",
+                    file=sys.stderr,
+                )
+                continue
+            digest = files[0]["sha256_sum"]
         except Exception as e:
             print(
                 f"warning: could not resolve latest release for Python {tag} "
@@ -174,30 +198,6 @@ def _official_cpython_support(
                 file=sys.stderr,
             )
             continue
-
-        prefix = f"Python {tag}."
-        if not release["name"].startswith(prefix):
-            print(
-                f"warning: unexpected release name {release['name']!r} for "
-                f"Python {tag}; leaving unchanged",
-                file=sys.stderr,
-            )
-            continue
-        revision = release["name"][len(prefix) :]
-
-        files = _python_org_api_get(
-            f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
-            f"&release__slug={slug}&os__slug={os_slug}",
-            opener,
-        )["objects"]
-        if len(files) != 1:
-            print(
-                f"warning: expected exactly one {platform} release file for "
-                f"Python {tag} ({slug}), found {len(files)}; leaving unchanged",
-                file=sys.stderr,
-            )
-            continue
-        digest = files[0]["sha256_sum"]
 
         revisions[tag] = revision
         hashes[tag] = f"sha256:{digest}"
