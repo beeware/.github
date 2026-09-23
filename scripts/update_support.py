@@ -10,7 +10,11 @@ platform (macOS / iOS / windows / linux) is inferred from the directory's name
 (see platforms.py), and used to select the correct upstream data source:
 
 - macOS / iOS: GitHub releases of `beeware/Python-Apple-support`
-  (per-Python-version release tags, e.g. `3.14-b11`).
+  (per-Python-version release tags, e.g. `3.14-b11`), for Python versions
+  before each platform's official-source cutover (see
+  `OFFICIAL_SOURCE_MIN_VERSION`). For iOS, Python 3.15 and later instead use
+  official CPython release artifacts published via python.org's public
+  downloads API (https://www.python.org/api/v1/downloads/).
 - Windows: the Windows embeddable-package index published at
   https://www.python.org/ftp/python/index-windows.json, per AMD64/ARM64 host
   architecture.
@@ -33,6 +37,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -95,6 +100,131 @@ def _apple_support(
         revisions[tag] = str(revision)
         hashes[tag] = digest
         print(f"{tag}: support_revision = {revision}, {digest}")
+    return revisions, hashes
+
+
+# --- macOS / iOS: official python.org release-data API (3.15+) -------------
+
+PYTHON_ORG_API_ROOT = "https://www.python.org/api/v1"
+
+
+def _python_org_api_get(url: str, opener) -> object:
+    """GET `url` (a python.org /api/v1/ endpoint) and return the parsed JSON
+    body. Unlike _github.py's api_get, no auth header is needed or sent --
+    python.org's public downloads API is unauthenticated.
+
+    `limit=0` is appended -- Tastypie's convention for "return every
+    matching object" -- so the full release/release-file list is fetched in
+    one request rather than paginating."""
+    request = urllib.request.Request(
+        f"{url}&limit=0", headers={"Accept": "application/json"}
+    )
+    with opener(request) as response:
+        return json.load(response)
+
+
+# Platforms with an official-CPython-source support package, the first
+# Python (major, minor) for which that source is authoritative, and the
+# python.org `OS.slug` identifying the relevant release-file row. Only iOS
+# is populated today; adding macOS later (once python.org's macOS installer,
+# or some other officially published macOS artifact, becomes the support
+# package source) is just adding an entry to each of these two dicts.
+OFFICIAL_SOURCE_MIN_VERSION: dict[str, tuple[int, int]] = {
+    "iOS": (3, 15),
+}
+OFFICIAL_SOURCE_OS_SLUG: dict[str, str] = {
+    "iOS": "ios",
+}
+
+
+def _official_cpython_support(
+    platform: str,
+    tags: set[str],
+    opener,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Flat revisions/hashes sourced from python.org's own release-data API,
+    for platforms/tags that have moved off Python-Apple-support.
+
+    Two bulk requests cover every tag: one for every published Python 3.x
+    release (there's no server-side "latest release for X.Y" filter, so the
+    latest-per-tag is picked out client-side by release_date), and one for
+    every release-file row for this platform's OS. This is two requests
+    total regardless of how many tags are being resolved -- looking up one
+    tag at a time would mean two requests, plus a HEAD-redirect trick to
+    work around the API's missing "starts with" filter, per tag."""
+    os_slug = OFFICIAL_SOURCE_OS_SLUG[platform]
+
+    revisions: dict[str, str] = {}
+    hashes: dict[str, str] = {}
+    try:
+        releases = _python_org_api_get(
+            (
+                f"{PYTHON_ORG_API_ROOT}/downloads/release/?format=json"
+                "&version=3&is_published=true"
+            ),
+            opener,
+        )["objects"]
+        files_by_release_uri = {
+            file["release"]: file
+            for file in _python_org_api_get(
+                (
+                    f"{PYTHON_ORG_API_ROOT}/downloads/release_file/?format=json"
+                    f"&os__slug={os_slug}"
+                ),
+                opener,
+            )["objects"]
+        }
+    except (urllib.error.URLError, ValueError, KeyError) as e:
+        print(
+            (
+                f"warning: could not fetch python.org release data for "
+                f"{platform} ({e}); leaving {', '.join(sorted(tags))} unchanged"
+            ),
+            file=sys.stderr,
+        )
+        return revisions, hashes
+
+    for tag in sorted(tags):
+        prefix = f"Python {tag}."
+        try:
+            candidates = [
+                release for release in releases if release["name"].startswith(prefix)
+            ]
+            if not candidates:
+                print(
+                    f"warning: no releases found for Python {tag}; leaving unchanged",
+                    file=sys.stderr,
+                )
+                continue
+            release = max(candidates, key=lambda release: release["release_date"])
+
+            file = files_by_release_uri.get(release["resource_uri"])
+            if file is None:
+                print(
+                    (
+                        f"warning: no {platform} release file found for "
+                        f"{release['name']}; leaving unchanged"
+                    ),
+                    file=sys.stderr,
+                )
+                continue
+
+            revision = release["name"][len(prefix) :]
+            digest = file["sha256_sum"]
+        except KeyError as e:
+            print(
+                (
+                    f"warning: malformed python.org data for Python {tag} "
+                    f"({e}); leaving unchanged"
+                ),
+                file=sys.stderr,
+            )
+            continue
+
+        revisions[tag] = revision
+        hashes[tag] = f"sha256:{digest}"
+        print(f"{tag}: support_revision = {revision}, sha256:{digest}")
+
     return revisions, hashes
 
 
@@ -298,7 +428,32 @@ def update(template_dir: Path, opener=urllib.request.urlopen) -> None:
     to_delete: set[int] = set()
 
     if platform in {"macOS", "iOS"}:
-        revisions, hashes = _apple_support(platform, tags, opener)
+        min_version = OFFICIAL_SOURCE_MIN_VERSION.get(platform)
+        if min_version is not None:
+            official_tags = {
+                tag
+                for tag in tags
+                if tuple(int(part) for part in tag.split(".")) >= min_version
+            }
+        else:
+            official_tags = set()
+        legacy_tags = tags - official_tags
+
+        revisions: dict[str, str] = {}
+        hashes: dict[str, str] = {}
+        if legacy_tags:
+            legacy_revisions, legacy_hashes = _apple_support(
+                platform, legacy_tags, opener
+            )
+            revisions.update(legacy_revisions)
+            hashes.update(legacy_hashes)
+        if official_tags:
+            official_revisions, official_hashes = _official_cpython_support(
+                platform, official_tags, opener
+            )
+            revisions.update(official_revisions)
+            hashes.update(official_hashes)
+
         to_delete |= apply_updates(lines, REVISION_ENTRY_RE, REVISION_KEY, revisions)
         to_delete |= apply_updates(lines, HASH_ENTRY_RE, HASH_KEY, hashes)
 
