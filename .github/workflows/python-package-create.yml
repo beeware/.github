@@ -58,7 +58,7 @@ jobs:
           echo "differentiator=${DIFFERENTIATOR}" | tee -a ${GITHUB_OUTPUT}
 
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: ${{ inputs.repository }}
           fetch-depth: 0  # Fetch all refs so setuptools_scm can generate the correct version number
@@ -66,7 +66,7 @@ jobs:
 
       - name: Build Package & Upload Artifact
         id: package
-        uses: hynek/build-and-inspect-python-package@d44ca7d91762de7a7d5436ddae667c6da6d1c3df  # v2.18.0
+        uses: hynek/build-and-inspect-python-package@67230f7b8410ae0052b39c1efc89d89fff43ff10  # v3.0.2
         with:
           path: ${{ inputs.build-subdirectory || '.' }}
           upload-name-suffix: ${{ format('-{0}{1}', steps.config.outputs.repo-name, steps.config.outputs.differentiator) }}

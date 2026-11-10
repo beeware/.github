@@ -24,8 +24,8 @@ on:
         default: ""
         type: string
       ios-simulator:
-        description: "The iOS simulator image to use"
-        default: "iPhone 16e::iOS 18.5"
+        description: "The iOS simulator image to use; leave blank to let Briefcase select an appropriate default device."
+        default: ""
         type: string
       framework:
         description: "Framework to use to build the App, e.g. toga."
@@ -74,7 +74,6 @@ jobs:
       contents: read
     env:
       PYSIDE6_SYSTEM_REQUIRES: libgl1 libqt6dbus6 libqt6gui6t64 libxcb-cursor0
-      SDL_AUDIODRIVER: dummy  # disable audio for SDL
       TOGA_SYSTEM_REQUIRES: libcairo2-dev libcanberra-gtk3-module libegl1 libgirepository1.0-dev libgirepository-2.0-dev libthai-dev gir1.2-gtk-3.0
     steps:
 
@@ -87,6 +86,11 @@ jobs:
         INPUT_TARGET_FORMAT: ${{ inputs.target-format }}
         INPUT_TARGET_PLATFORM: ${{ inputs.target-platform }}
       run: |
+        # RUNNER_DEBUG is set natively by the runner when debug logging is enabled
+        BRIEFCASE_VERBOSITY=""
+        [ "${RUNNER_DEBUG:-}" = "1" ] && BRIEFCASE_VERBOSITY="-vvv"
+        echo "BRIEFCASE_VERBOSITY=${BRIEFCASE_VERBOSITY}" | tee -a "${GITHUB_ENV}"
+
         case "$(tr '[:upper:]' '[:lower:]' <<< "${INPUT_RUNNER_OS}")" in
           ubuntu*  ) BRIEFCASE_DIR="$HOME/.cache/briefcase" ;;
           macos*   ) BRIEFCASE_DIR="$HOME/Library/Caches/org.beeware.briefcase" ;;
@@ -103,14 +107,14 @@ jobs:
         echo "cache-key=$(date +%Y-%m)|${CACHE_KEY}" | tee -a ${GITHUB_OUTPUT}
 
     - name: Checkout ${{ inputs.repository }}
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         repository: ${{ inputs.repository }}
         fetch-depth: 0
         persist-credentials: false
 
     - name: Checkout ${{ inputs.workflow-repo }}${{ inputs.workflow-repo-ref && format('@{0}', inputs.workflow-repo-ref) || '' }}
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         repository: ${{ inputs.workflow-repo }}
         ref: ${{ inputs.workflow-repo-ref }}
@@ -146,7 +150,7 @@ jobs:
       # fall back to the system-provided Python package. Providing "system" as a value
       # on macOS or Windows will cause an error.
       if: ${{ !startsWith(inputs.runner-os, 'ubuntu') || inputs.python-version != 'system' }}
-      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
       with:
         # This needs to be kept aligned with the input default value
         python-version: ${{ inputs.python-version || '3.13' }}
@@ -160,7 +164,7 @@ jobs:
     - name: Get Briefcase Packages
       # Briefcase will build and package itself in a previous step in its CI
       if: endsWith(inputs.repository, 'briefcase')
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
       with:
         # artifact name is derived in python-package-create.yml
         pattern: "Packages-briefcase*"
@@ -202,14 +206,12 @@ jobs:
         && contains(fromJSON('["", "app"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        # SDL cannot always find hardware acceleration on macOS in CI
-        SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create macOS app ${CREATE_OPTIONS}
-        briefcase build macOS app
-        briefcase run macOS app
-        briefcase package macOS app --adhoc-sign
+        briefcase create macOS app ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build macOS app ${BRIEFCASE_VERBOSITY}
+        briefcase run macOS app ${BRIEFCASE_VERBOSITY}
+        briefcase package macOS app --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -221,14 +223,12 @@ jobs:
         && contains(fromJSON('["", "Xcode"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
-        # SDL cannot always find hardware acceleration on macOS in CI
-        SDL_VIDEODRIVER: ${{ startsWith(inputs.framework, 'pygame') && 'dummy' || '' }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create macOS Xcode ${CREATE_OPTIONS}
-        briefcase build macOS Xcode
-        briefcase run macOS Xcode
-        briefcase package macOS Xcode --adhoc-sign
+        briefcase create macOS Xcode ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build macOS Xcode ${BRIEFCASE_VERBOSITY}
+        briefcase run macOS Xcode ${BRIEFCASE_VERBOSITY}
+        briefcase package macOS Xcode --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -242,10 +242,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create windows app ${CREATE_OPTIONS}
-        briefcase build windows app
-        briefcase run windows app
-        briefcase package windows app --adhoc-sign
+        briefcase create windows app ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build windows app ${BRIEFCASE_VERBOSITY}
+        briefcase run windows app ${BRIEFCASE_VERBOSITY}
+        briefcase package windows app --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -259,10 +259,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create windows VisualStudio ${CREATE_OPTIONS}
-        briefcase build windows VisualStudio
-        briefcase run windows VisualStudio
-        briefcase package windows VisualStudio --adhoc-sign
+        briefcase create windows VisualStudio ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build windows VisualStudio ${BRIEFCASE_VERBOSITY}
+        briefcase run windows VisualStudio ${BRIEFCASE_VERBOSITY}
+        briefcase package windows VisualStudio --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -286,10 +286,10 @@ jobs:
 
         sudo apt install -y --no-install-recommends ${PACKAGES}
 
-        briefcase create linux system ${CREATE_OPTIONS}
-        briefcase build linux system
-        xvfb-run briefcase run linux system
-        briefcase package linux system --adhoc-sign
+        briefcase create linux system ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         bash -c "sudo apt -y install --dry-run ./dist/*_0.0.1-1~ubuntu-*_$(dpkg --print-architecture).deb"
 
@@ -305,10 +305,10 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target debian:trixie ${CREATE_OPTIONS}
-        briefcase build linux system --target debian:trixie
-        xvfb-run briefcase run linux system --target debian:trixie
-        briefcase package linux system --target debian:trixie --adhoc-sign
+        briefcase create linux system --target debian:trixie ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system --target debian:trixie ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system --target debian:trixie ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --target debian:trixie --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         docker run --volume $(pwd)/dist:/dist debian:trixie \
           sh -c "\
@@ -324,55 +324,56 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target fedora:41 ${CREATE_OPTIONS}
-        briefcase build linux system --target fedora:41
-        xvfb-run briefcase run linux system --target fedora:41
-        briefcase package linux system --target fedora:41 --adhoc-sign
+        briefcase create linux system --target fedora:41 ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system --target fedora:41 ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system --target fedora:41 ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --target fedora:41 --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         docker run --volume $(pwd)/dist:/dist fedora:41 \
           sh -c "yum -y install --downloadonly /dist/*-0.0.1-1.fc*.$(rpm --eval '%_arch').rpm"
 
     - name: Build Linux System Project (Arch, Dockerized)
       # Arch is not officially supported on ARM
-      # Arch can't build PyGame apps until they publish 3.14 binary wheels
       if: >
         startsWith(inputs.runner-os, 'ubuntu')
         && !endsWith(inputs.runner-os, '-arm')
-        && !startsWith(inputs.framework, 'pygame')
         && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
         && contains(fromJSON('["", "system"]'), inputs.target-format)
       working-directory: ${{ steps.create.outputs.project-path }}
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create linux system --target archlinux:latest ${CREATE_OPTIONS}
-        briefcase build linux system --target archlinux:latest
-        xvfb-run briefcase run linux system --target archlinux:latest
-        briefcase package linux system --target archlinux:latest --adhoc-sign
+        briefcase create linux system --target archlinux:latest ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux system --target archlinux:latest ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux system --target archlinux:latest ${BRIEFCASE_VERBOSITY}
+        briefcase package linux system --target archlinux:latest --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         docker run --volume $(pwd)/dist:/dist archlinux \
           sh -c "\
             pacman --sync --refresh && \
             pacman --noconfirm --upgrade --print /dist/*-0.0.1-1-x86_64.pkg.tar.zst"
 
-    - name: Build Linux System Project (openSUSE, Dockerized)
-      if: >
-        startsWith(inputs.runner-os, 'ubuntu')
-        && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
-        && contains(fromJSON('["", "system"]'), inputs.target-format)
-      working-directory: ${{ steps.create.outputs.project-path }}
-      env:
-        CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
-      run: |
-        briefcase create linux system --target opensuse/tumbleweed:latest ${CREATE_OPTIONS}
-        briefcase build linux system --target opensuse/tumbleweed:latest
-        xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
-        briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
-
-        docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
-          sh -c "\
-            zypper --non-interactive --no-gpg-checks \
-              install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
+    # 2026-07-30: OpenSUSE tumbleweed is a rolling distribution, and OpenSUSE appears
+    # to semi-regularly push bad configurations that prevent our CI passing.
+    #
+    # - name: Build Linux System Project (openSUSE, Dockerized)
+    #   if: >
+    #     startsWith(inputs.runner-os, 'ubuntu')
+    #     && contains(fromJSON('["", "Linux"]'), inputs.target-platform)
+    #     && contains(fromJSON('["", "system"]'), inputs.target-format)
+    #   working-directory: ${{ steps.create.outputs.project-path }}
+    #   env:
+    #     CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
+    #   run: |
+    #     briefcase create linux system --target opensuse/tumbleweed:latest ${CREATE_OPTIONS}
+    #     briefcase build linux system --target opensuse/tumbleweed:latest
+    #     xvfb-run briefcase run linux system --target opensuse/tumbleweed:latest
+    #     briefcase package linux system --target opensuse/tumbleweed:latest --adhoc-sign
+    #
+    #     docker run --volume $(pwd)/dist:/dist opensuse/tumbleweed \
+    #       sh -c "\
+    #         zypper --non-interactive --no-gpg-checks \
+    #           install --dry-run /dist/*-0.0.1-1.$(rpm --eval '%_arch').rpm"
 
     # 2024-09-02 AppImage testing disabled entirely In Briefcase#1977, the
     # Bootstrap app was updated to use a Toga API introduced in Toga 0.4.6. This
@@ -448,10 +449,10 @@ jobs:
       run: |
         sudo apt install -y --no-install-recommends flatpak flatpak-builder elfutils
 
-        briefcase create linux flatpak ${CREATE_OPTIONS}
-        briefcase build linux flatpak
-        xvfb-run briefcase run linux flatpak
-        briefcase package linux flatpak --adhoc-sign
+        briefcase create linux flatpak ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build linux flatpak ${BRIEFCASE_VERBOSITY}
+        xvfb-run briefcase run linux flatpak ${BRIEFCASE_VERBOSITY}
+        briefcase package linux flatpak --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -471,8 +472,8 @@ jobs:
       run: |
         export JAVA_HOME=${JAVA_HOME_17_X64}
 
-        briefcase create android gradle ${CREATE_OPTIONS}
-        briefcase build android gradle
+        briefcase create android gradle ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build android gradle ${BRIEFCASE_VERBOSITY}
 
         # Only run Android app on Linux since it's duplicative (and slow) on other platforms
         # (runner-os values are always canonical lowercase runner labels, e.g. ubuntu-24.04)
@@ -489,11 +490,12 @@ jobs:
             --shutdown-on-exit \
             --Xemulator=-no-window \
             --Xemulator=-no-audio \
-            --Xemulator=-no-boot-anim
+            --Xemulator=-no-boot-anim \
+            ${BRIEFCASE_VERBOSITY}
           ;;
         esac
 
-        briefcase package android gradle --adhoc-sign
+        briefcase package android gradle --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -509,10 +511,13 @@ jobs:
         INPUT_IOS_SIMULATOR: ${{ inputs.ios-simulator }}
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create iOS xcode ${CREATE_OPTIONS}
-        briefcase build iOS xcode
-        briefcase run iOS xcode -d "${INPUT_IOS_SIMULATOR}"
-        briefcase package iOS xcode --adhoc-sign
+        IOS_SIMULATOR_OPTION=()
+        [ -n "${INPUT_IOS_SIMULATOR}" ] && IOS_SIMULATOR_OPTION=(-d "${INPUT_IOS_SIMULATOR}")
+
+        briefcase create iOS xcode ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build iOS xcode ${BRIEFCASE_VERBOSITY}
+        briefcase run iOS xcode "${IOS_SIMULATOR_OPTION[@]}" ${BRIEFCASE_VERBOSITY}
+        briefcase package iOS xcode --adhoc-sign ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
@@ -526,15 +531,15 @@ jobs:
       env:
         CREATE_OPTIONS: ${{ steps.output-format.outputs.template-override }} ${{ inputs.create-options }}
       run: |
-        briefcase create web static ${CREATE_OPTIONS}
-        briefcase build web static
-        briefcase package web static
+        briefcase create web static ${CREATE_OPTIONS} ${BRIEFCASE_VERBOSITY}
+        briefcase build web static ${BRIEFCASE_VERBOSITY}
+        briefcase package web static ${BRIEFCASE_VERBOSITY}
 
         # Clean up built artefacts to preserve disk space
         rm -rf build dist
 
     - name: Upload Failure Logs
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       if: failure()
       with:
         name: build-failure-logs-${{ inputs.runner-os }}-${{ inputs.framework }}-${{ inputs.python-version }}-${{ inputs.target-platform }}-${{ inputs.target-format }}

@@ -27,7 +27,7 @@ jobs:
     name: Pre-commit Checks
     uses: ./.github/workflows/pre-commit-run.yml
     with:
-      pre-commit-source: -r requirements.txt
+      pre-commit-source: --group pre-commit
 
   test-docs-build-verify:
     name: Docs Build Verify
@@ -111,12 +111,12 @@ jobs:
           expected: "main"
     steps:
     - name: Checkout beeware/.github
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
       with:
         python-version: "3.x"
         cache: pip
@@ -211,7 +211,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga, pyside6 ]
-        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify:
     name: App Build Verify (Default templates)
@@ -227,7 +227,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-15-intel, macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26-intel, macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify-template:
     name: App Build Verify (Briefcase template)
@@ -242,7 +242,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-15, windows-latest, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify-android:
     name: App Build Verify (Android template)
@@ -258,7 +258,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]  # toga only
-        runner-os: [ macos-15, windows-latest, ubuntu-24.04 ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04 ]
 
   test-app-build-verify-iOS:
     name: App Build Verify (iOS template)
@@ -266,7 +266,7 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-iOS-xcode-template
-      runner-os: macos-15
+      runner-os: macos-26
       target-platform: iOS
       target-format: xcode
       framework: ${{ matrix.framework }}
@@ -290,7 +290,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
 # see app-build-verify.yml; AppImage testing was disabled sept 2024
@@ -308,7 +308,7 @@ jobs:
 #      fail-fast: false
 #      matrix:
 #        # 2024-07-11 (beeware/briefcase#1908): pyside6 segfaults on AppImage start.
-#        framework: [ toga, pygame, console ]
+#        framework: [ toga, console ]
 
   test-app-build-verify-linux-flatpak:
     name: App Build Verify (Flatpak template)
@@ -323,7 +323,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         runner-os: [ ubuntu-24.04, ubuntu-24.04-arm ]
 
         exclude:
@@ -338,14 +338,14 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-macos-${{ matrix.format }}-template
-      runner-os: macos-15
+      runner-os: macos-26
       target-platform: macOS
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         format: [ app, Xcode ]
 
   test-app-build-verify-web:
@@ -369,12 +369,12 @@ jobs:
     uses: ./.github/workflows/app-build-verify.yml
     with:
       repository: beeware/briefcase-windows-${{ matrix.format }}-template
-      runner-os: windows-latest
+      runner-os: windows-2025
       target-platform: windows
       target-format: ${{ matrix.format }}
       framework: ${{ matrix.framework }}
     strategy:
       fail-fast: false
       matrix:
-        framework: [ toga, pyside6, pygame, console ]
+        framework: [ toga, pyside6, console ]
         format: [ app, VisualStudio ]

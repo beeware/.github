@@ -12,7 +12,7 @@ jobs:
   check-pr-template:
     name: Check PR template
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login != 'dependabot[bot]' && github.event.pull_request.user.login != 'Brutus[bot]'
+    if: github.event.pull_request.user.login != 'dependabot[bot]' && github.event.pull_request.user.login != 'brutusthebee'
     steps:
       - name: Check PR body
         env:
@@ -40,7 +40,7 @@ jobs:
           require "^[[:space:]]*- \[\s*[xX]\s*\] I will abide by the BeeWare Code of Conduct" \
             "The 'Code of Conduct' checkbox in the PR checklist must be checked."
 
-          require "^[[:space:]]*- \[\s*[xX]\s*\] I have read and have followed the \*\*CONTRIBUTING.md\*\* file" \
+          require "^[[:space:]]*- \[\s*[xX]\s*\] I have read and have followed the \[\*\*CONTRIBUTING.md\*\*\]\(\.\.\/blob\/main\/CONTRIBUTING.md\) file" \
             "The 'CONTRIBUTING.md' checkbox in the PR checklist must be checked."
 
           require "^[[:space:]]*- \[\s*[xX ]\s*\] This PR was generated or assisted using an AI tool" \
