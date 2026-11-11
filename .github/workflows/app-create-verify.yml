@@ -60,6 +60,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         repository: ${{ inputs.repository }}
+        path: inputs-repository
         fetch-depth: 0
         persist-credentials: false
 
@@ -122,7 +123,9 @@ jobs:
       with:
         framework: ${{ inputs.framework }}
         # use the current repo checkout if briefcase-template is being tested
-        briefcase-template-source: ${{ endsWith(inputs.repository, 'briefcase-template') && github.workspace || '' }}
+        briefcase-template-source: >-
+          ${{ endsWith(inputs.repository, 'briefcase-template')
+              && format('{0}/inputs-repository', github.workspace) || '' }}
 
     - name: Run Ruff
       working-directory: ${{ steps.create.outputs.project-path }}

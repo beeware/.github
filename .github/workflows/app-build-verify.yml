@@ -110,6 +110,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         repository: ${{ inputs.repository }}
+        path: inputs-repository
         fetch-depth: 0
         persist-credentials: false
 
@@ -185,7 +186,9 @@ jobs:
       with:
         framework: ${{ inputs.framework }}
         # use the current repo checkout if briefcase-template is being tested
-        briefcase-template-source: ${{ endsWith(inputs.repository, 'briefcase-template') && github.workspace || '' }}
+        briefcase-template-source: >-
+          ${{ endsWith(inputs.repository, 'briefcase-template')
+              && format('{0}/inputs-repository', github.workspace) || '' }}
         enable-automation: true
 
     - name: Determine Output Format Configuration
@@ -194,7 +197,7 @@ jobs:
       if: endsWith(inputs.repository, '-template') && inputs.repository != 'beeware/briefcase-template'
       id: output-format
       run: |
-        echo "template-override=--config template='${GITHUB_WORKSPACE}'" | tee -a "${GITHUB_OUTPUT}"
+        echo "template-override=--config template='$(pwd)/inputs-repository'" | tee -a "${GITHUB_OUTPUT}"
 
     # In the steps below, the builtin functions (i.e. contains, startsWith, etc.)
     # are used for comparison (instead of ==) because they are case-insensitive.
