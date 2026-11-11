@@ -197,7 +197,8 @@ jobs:
       if: endsWith(inputs.repository, '-template') && inputs.repository != 'beeware/briefcase-template'
       id: output-format
       run: |
-        echo "template-override=--config template='$(pwd)/inputs-repository'" | tee -a "${GITHUB_OUTPUT}"
+        echo "template-override=--config template='${GITHUB_WORKSPACE}/inputs-repository'" \
+        | tee -a "${GITHUB_OUTPUT}"
 
     # In the steps below, the builtin functions (i.e. contains, startsWith, etc.)
     # are used for comparison (instead of ==) because they are case-insensitive.
