@@ -227,7 +227,7 @@ jobs:
       fail-fast: false
       matrix:
         framework: [ toga ]
-        runner-os: [ macos-26-intel, macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
+        runner-os: [ macos-26, windows-2025, ubuntu-24.04, ubuntu-24.04-arm ]
 
   test-app-build-verify-template:
     name: App Build Verify (Briefcase template)
