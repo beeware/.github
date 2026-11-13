@@ -63,8 +63,22 @@ HASH_ENTRY_RE = entry_regex(HASH_KEY)
 
 APPLE_SUPPORT_REPO = "beeware/Python-Apple-support"
 
-# Matches release tags of the form "<python-version>-b<revision>", e.g. "3.14-b11".
-APPLE_TAG_RE = re.compile(r"^(?P<py_version>\d+\.\d+)-b(?P<revision>\d+)$")
+# Matches release tags of the form "<python-version>-b<revision>", e.g.
+# "3.14-b11", including pre-release revisions with an a/b/rc suffix, e.g.
+# "3.16-b0a2".
+APPLE_TAG_RE = re.compile(
+    r"^(?P<py_version>\d+\.\d+)-b"
+    r"(?P<revision>(?P<number>\d+)(?:(?P<pre>a|b|rc)(?P<preno>\d+))?)$"
+)
+
+
+def _apple_revision_sort_key(match: re.Match) -> tuple[int, int, int]:
+    """Sortable key for a Python-Apple-support revision such as "11" or
+    "0a2". A final revision sorts higher than its pre-releases (alpha < beta
+    < rc < final)."""
+    pre_rank = {"a": 0, "b": 1, "rc": 2, None: 3}[match.group("pre")]
+    preno = int(match.group("preno")) if match.group("preno") else 0
+    return (int(match.group("number")), pre_rank, preno)
 
 
 def _apple_support(
@@ -75,15 +89,19 @@ def _apple_support(
     """Flat (no per-architecture split) revisions/hashes for macOS and iOS."""
     releases = fetch_all_releases(APPLE_SUPPORT_REPO, opener=opener)
 
-    latest: dict[str, tuple[int, dict]] = {}
+    # fetch_all_releases includes pre-releases (e.g. "3.16-b0a2"); drafts are
+    # skipped, as they have no published assets.
+    latest: dict[str, tuple[tuple[int, int, int], str, dict]] = {}
     for release in releases:
+        if release.get("draft"):
+            continue
         match = APPLE_TAG_RE.match(release["tag_name"])
         if not match:
             continue
         py_version = match.group("py_version")
-        revision = int(match.group("revision"))
-        if py_version not in latest or revision > latest[py_version][0]:
-            latest[py_version] = (revision, release)
+        key = _apple_revision_sort_key(match)
+        if py_version not in latest or key > latest[py_version][0]:
+            latest[py_version] = (key, match.group("revision"), release)
 
     revisions: dict[str, str] = {}
     hashes: dict[str, str] = {}
@@ -94,10 +112,10 @@ def _apple_support(
                 file=sys.stderr,
             )
             continue
-        revision, release = latest[tag]
+        _, revision, release = latest[tag]
         expected_name = f"Python-{tag}-{platform}-support.b{revision}.tar.gz"
         digest = asset_digest(release, expected_name)
-        revisions[tag] = str(revision)
+        revisions[tag] = revision
         hashes[tag] = digest
         print(f"{tag}: support_revision = {revision}, {digest}")
     return revisions, hashes
